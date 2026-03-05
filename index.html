@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>极简摄影画框工作流 Pro</title>
+    <title>极简摄影画框工作流</title>
     
     <!-- 引入 Tailwind CSS 进行现代化原子级样式管理 -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -503,7 +503,7 @@
                         const s = dms[2].numerator ? dms[2].numerator / dms[2].denominator : dms[2];
                         return `${Math.round(d)}° ${Math.round(m)}' ${s.toFixed(1)}''`;
                     };
-                    return `${formatDMS(lat)} ${latRef || 'N'}, ${formatDMS(lng)} ${lngRef || 'E'}`;
+                    return `${latRef || 'N'} ${formatDMS(lat)}, ${lngRef || 'E'} ${formatDMS(lng)}`;
                 } catch(err) {
                     return '';
                 }
