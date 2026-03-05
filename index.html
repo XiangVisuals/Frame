@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>极简摄影画框工作流 Pro</title>
+    
+    <!-- 引入 Tailwind CSS 进行现代化原子级样式管理 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 EXIF 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    <!-- 引入 Lucide 图标库 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        serif: ['Noto Serif SC', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: '#18181b', // Zinc 900
+                        surface: '#ffffff',
+                        background: '#f4f4f5', // Zinc 100
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* 自定义滚动条和细节优化 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+        
+        body { background-color: theme('colors.background'); -webkit-font-smoothing: antialiased; }
+        
+        /* 画布预览容器特有样式，实现完美的阴影和居中 */
+        .canvas-wrapper {
+            background-image: repeating-linear-gradient(45deg, #e4e4e7 25%, transparent 25%, transparent 75%, #e4e4e7 75%, #e4e4e7), repeating-linear-gradient(45deg, #e4e4e7 25%, #f4f4f5 25%, #f4f4f5 75%, #e4e4e7 75%, #e4e4e7);
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%; /* 移动端适配：改为 100% 充满其父容器 */
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        /* 隐藏原生文件输入框 */
+        .file-input-hidden { display: none; }
+        
+        /* 拖拽态高亮 */
+        .drag-active {
+            border-color: theme('colors.blue.500') !important;
+            background-color: theme('colors.blue.50') !important;
+        }
+
+        /* Toast 动画 */
+        .toast-enter { animation: toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-leave { animation: toast-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes toast-in {
+            0% { transform: translateY(100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes toast-out {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<!-- 移动端适配：使用 h-[100dvh] 解决 Safari 底部导航栏遮挡问题 -->
+<body class="text-zinc-800 h-[100dvh] flex flex-col overflow-hidden">
+
+    <!-- 顶栏 -->
+    <header class="bg-white border-b border-zinc-200 h-14 md:h-16 flex items-center justify-between px-4 md:px-6 shrink-0 z-10 relative">
+        <div class="flex items-center gap-2">
+            <i data-lucide="frame" class="w-5 h-5 md:w-6 md:h-6 text-zinc-900"></i>
+            <h1 class="font-semibold text-base md:text-lg tracking-tight">FramePro</h1>
+        </div>
+        <div>
+            <!-- 移动端适配：小屏幕只显示“保存”，大屏幕显示完整文字 -->
+            <button id="downloadBtn" class="hidden items-center gap-1.5 md:gap-2 bg-zinc-900 hover:bg-zinc-800 text-white px-3 md:px-5 py-1.5 md:py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">导出高清图片</span>
+                <span class="sm:hidden">保存</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主体区域：左右分栏布局 (移动端自动转为上下分栏) -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        
+        <!-- 右侧/上方：预览区域 (移动端：order-1 置于最上方，高度占屏幕 45%) -->
+        <section class="order-1 lg:order-2 h-[45vh] lg:h-auto lg:flex-1 shrink-0 canvas-wrapper flex flex-col relative overflow-hidden border-b lg:border-b-0 border-zinc-200">
+            <!-- 占位状态 -->
+            <div id="emptyPreview" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 z-0 pointer-events-none">
+                <i data-lucide="image" class="w-12 h-12 md:w-16 md:h-16 mb-3 md:mb-4 opacity-50"></i>
+                <p class="text-xs md:text-sm">上传图片后在此处预览</p>
+            </div>
+            
+            <!-- 画布容器 -->
+            <div class="flex-1 p-4 md:p-8 flex items-center justify-center overflow-hidden z-10">
+                <canvas id="mainCanvas" class="hidden rounded-sm"></canvas>
+            </div>
+        </section>
+
+        <!-- 左侧/下方：控制面板 (移动端：order-2 置于下方，允许独立滚动) -->
+        <aside class="order-2 lg:order-1 w-full lg:w-[400px] xl:w-[480px] bg-white border-r border-zinc-200 overflow-y-auto flex-1 lg:flex-none z-0 pb-8 lg:pb-0">
+            <div class="p-5 md:p-6 space-y-6 md:space-y-8">
+                
+                <!-- 上传区域 -->
+                <section>
+                    <h2 class="text-sm font-semibold text-zinc-900 mb-3 flex items-center gap-2">
+                        <i data-lucide="image-plus" class="w-4 h-4 text-zinc-500"></i>
+                        图片源
+                    </h2>
+                    <div id="dropZone" class="border-2 border-dashed border-zinc-300 rounded-xl p-6 md:p-8 text-center cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all group relative">
+                        <input type="file" id="fileInput" class="file-input-hidden" accept="image/jpeg, image/png, image/webp, image/heic">
+                        <div id="uploadPlaceholder">
+                            <div class="bg-zinc-100 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                                <i data-lucide="upload-cloud" class="w-5 h-5 md:w-6 md:h-6 text-zinc-600"></i>
+                            </div>
+                            <p class="text-sm font-medium text-zinc-700">点击上传图片</p>
+                            <p class="text-xs text-zinc-400 mt-1">支持常见照片格式</p>
+                        </div>
+                        <div id="uploadingState" class="hidden flex-col items-center">
+                            <i data-lucide="loader-2" class="w-6 h-6 md:w-8 md:h-8 text-zinc-900 animate-spin mb-2"></i>
+                            <p class="text-sm text-zinc-600">正在解析图片...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 参数设置区 -->
+                <div id="settingsPanel" class="space-y-6 md:space-y-8 opacity-50 pointer-events-none transition-opacity duration-300">
+                    
+                    <!-- 文本内容设置 -->
+                    <section>
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-sm font-semibold text-zinc-900 flex items-center gap-2">
+                                <i data-lucide="type" class="w-4 h-4 text-zinc-500"></i>
+                                排版信息
+                            </h2>
+                            <button id="autoExifBtn" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                                重新提取 EXIF
+                            </button>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="text-xs text-zinc-500 mb-2 block">排版预设</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button class="preset-btn active border-2 border-zinc-900 bg-zinc-50 text-sm py-2 md:py-1.5 rounded-md font-medium" data-preset="coords">极简坐标</button>
+                                <button class="preset-btn border border-zinc-200 hover:border-zinc-300 text-sm py-2 md:py-1.5 rounded-md font-medium" data-preset="params">详细参数</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 md:space-y-4">
+                            <div>
+                                <label class="block text-xs text-zinc-500 mb-1">主标题</label>
+                                <!-- 移动端适配：使用 text-base 防止 iOS 点击输入框自动放大 -->
+                                <input type="text" id="mainText" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all" placeholder="例如: Shot on iPhone">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-zinc-500 mb-1">副标题</label>
+                                <input type="text" id="subText" class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all" placeholder="例如: 24mm f/1.8 1/100s">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 视觉样式设置 -->
+                    <section>
+                        <h2 class="text-sm font-semibold text-zinc-900 mb-3 flex items-center gap-2">
+                            <i data-lucide="palette" class="w-4 h-4 text-zinc-500"></i>
+                            视觉样式
+                        </h2>
+                        
+                        <div class="space-y-5">
+                            <!-- 边框宽度 -->
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-xs text-zinc-500">边框比例</label>
+                                    <span id="borderWidthLabel" class="text-xs font-medium text-zinc-700">8%</span>
+                                </div>
+                                <!-- 移动端适配：增加滑块的热区高度 -->
+                                <input type="range" id="borderWidth" min="2" max="20" value="8" class="w-full h-2 md:h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900">
+                            </div>
+
+                            <!-- 字体选择 -->
+                            <div>
+                                <label class="text-xs text-zinc-500 mb-2 block">字体风格</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button class="font-btn active border-2 border-zinc-900 bg-zinc-50 text-sm py-2 md:py-1.5 rounded-md font-sans" data-font="sans-serif">无衬线</button>
+                                    <button class="font-btn border border-zinc-200 hover:border-zinc-300 text-sm py-2 md:py-1.5 rounded-md font-serif" data-font="serif">衬线</button>
+                                    <button class="font-btn border border-zinc-200 hover:border-zinc-300 text-sm py-2 md:py-1.5 rounded-md font-mono" data-font="monospace">等宽</button>
+                                </div>
+                            </div>
+
+                            <!-- 颜色主题 -->
+                            <div>
+                                <label class="text-xs text-zinc-500 mb-2 block">色彩主题</label>
+                                <div class="flex gap-4 md:gap-3">
+                                    <label class="flex items-center gap-2 cursor-pointer py-1">
+                                        <input type="radio" name="theme" value="light" checked class="accent-zinc-900 w-4 h-4 md:w-4 md:h-4">
+                                        <span class="text-sm">白底黑字</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer py-1">
+                                        <input type="radio" name="theme" value="dark" class="accent-zinc-900 w-4 h-4 md:w-4 md:h-4">
+                                        <span class="text-sm">黑底白字</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                
+                <!-- 底部信息 -->
+                <div class="pt-6 border-t border-zinc-100 text-center">
+                    <p class="text-xs text-zinc-400">所有处理均在本地浏览器完成，绝不上传照片。</p>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- 全局 Toast 提示容器 -->
+    <div id="toastContainer" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        // 初始化图标
+        lucide.createIcons();
+
+        // 核心应用逻辑类
+        class FrameGenerator {
+            constructor() {
+                this.state = {
+                    image: null,
+                    objectUrl: null, // 存储对象 URL 以便后续释放内存
+                    exifData: null,
+                    config: {
+                        preset: 'coords', // 默认极简坐标预设
+                        mainText: '',
+                        subText: '',
+                        borderRatio: 0.08, // 8%
+                        fontFamily: 'sans-serif',
+                        theme: 'light',
+                    }
+                };
+                
+                this.initDOM();
+                this.bindEvents();
+            }
+
+            initDOM() {
+                this.dom = {
+                    fileInput: document.getElementById('fileInput'),
+                    dropZone: document.getElementById('dropZone'),
+                    uploadPlaceholder: document.getElementById('uploadPlaceholder'),
+                    uploadingState: document.getElementById('uploadingState'),
+                    settingsPanel: document.getElementById('settingsPanel'),
+                    mainText: document.getElementById('mainText'),
+                    subText: document.getElementById('subText'),
+                    presetBtns: document.querySelectorAll('.preset-btn'),
+                    borderWidth: document.getElementById('borderWidth'),
+                    borderWidthLabel: document.getElementById('borderWidthLabel'),
+                    fontBtns: document.querySelectorAll('.font-btn'),
+                    themeRadios: document.querySelectorAll('input[name="theme"]'),
+                    canvas: document.getElementById('mainCanvas'),
+                    ctx: document.getElementById('mainCanvas').getContext('2d'),
+                    emptyPreview: document.getElementById('emptyPreview'),
+                    downloadBtn: document.getElementById('downloadBtn'),
+                    autoExifBtn: document.getElementById('autoExifBtn'),
+                    toastContainer: document.getElementById('toastContainer')
+                };
+            }
+
+            bindEvents() {
+                // 上传与拖拽事件
+                this.dom.dropZone.addEventListener('click', () => this.dom.fileInput.click());
+                this.dom.fileInput.addEventListener('change', (e) => this.handleFileUpload(e.target.files[0]));
+                
+                ['dragover', 'dragenter'].forEach(evt => {
+                    this.dom.dropZone.addEventListener(evt, (e) => {
+                        e.preventDefault();
+                        this.dom.dropZone.classList.add('drag-active');
+                    });
+                });
+                ['dragleave', 'dragend', 'drop'].forEach(evt => {
+                    this.dom.dropZone.addEventListener(evt, (e) => {
+                        e.preventDefault();
+                        this.dom.dropZone.classList.remove('drag-active');
+                        if (evt === 'drop' && e.dataTransfer.files.length) {
+                            this.handleFileUpload(e.dataTransfer.files[0]);
+                        }
+                    });
+                });
+
+                // 配置项变更事件
+                const scheduleRender = () => {
+                    if (this.renderTimer) cancelAnimationFrame(this.renderTimer);
+                    this.renderTimer = requestAnimationFrame(() => this.renderCanvas());
+                };
+
+                this.dom.mainText.addEventListener('input', (e) => { this.state.config.mainText = e.target.value; scheduleRender(); });
+                this.dom.subText.addEventListener('input', (e) => { this.state.config.subText = e.target.value; scheduleRender(); });
+                
+                this.dom.presetBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.dom.presetBtns.forEach(b => {
+                            b.classList.remove('active', 'border-2', 'border-zinc-900', 'bg-zinc-50');
+                            b.classList.add('border', 'border-zinc-200');
+                        });
+                        const target = e.currentTarget;
+                        target.classList.remove('border', 'border-zinc-200');
+                        target.classList.add('active', 'border-2', 'border-zinc-900', 'bg-zinc-50');
+                        
+                        this.state.config.preset = target.dataset.preset;
+                        if (this.state.exifData) {
+                            this.applyExifToInputs();
+                            scheduleRender();
+                        }
+                    });
+                });
+
+                this.dom.borderWidth.addEventListener('input', (e) => {
+                    const val = e.target.value;
+                    this.dom.borderWidthLabel.textContent = `${val}%`;
+                    this.state.config.borderRatio = parseInt(val) / 100;
+                    scheduleRender();
+                });
+
+                this.dom.fontBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.dom.fontBtns.forEach(b => {
+                            b.classList.remove('active', 'border-2', 'border-zinc-900', 'bg-zinc-50');
+                            b.classList.add('border', 'border-zinc-200');
+                        });
+                        const target = e.currentTarget;
+                        target.classList.remove('border', 'border-zinc-200');
+                        target.classList.add('active', 'border-2', 'border-zinc-900', 'bg-zinc-50');
+                        
+                        this.state.config.fontFamily = target.dataset.font;
+                        scheduleRender();
+                    });
+                });
+
+                this.dom.themeRadios.forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        this.state.config.theme = e.target.value;
+                        scheduleRender();
+                    });
+                });
+
+                this.dom.autoExifBtn.addEventListener('click', () => {
+                    this.applyExifToInputs();
+                    this.showToast('已重新应用照片元数据', 'success');
+                });
+
+                this.dom.downloadBtn.addEventListener('click', () => this.downloadImage());
+            }
+
+            async handleFileUpload(file) {
+                if (!file) return;
+                // 放宽验证，支持更多移动端相册吐出的文件
+                if (!file.type.startsWith('image/') && !file.name.toLowerCase().match(/\.(jpg|jpeg|png|webp|heic)$/)) {
+                    this.showToast('请上传有效的图片文件', 'error');
+                    return;
+                }
+
+                this.setLoading(true);
+
+                try {
+                    // 并行：加载图片对象 & 解析 EXIF
+                    const [imgElement, exifData] = await Promise.all([
+                        this.loadImage(file),
+                        this.readExif(file)
+                    ]);
+
+                    this.state.image = imgElement;
+                    this.state.exifData = exifData;
+                    
+                    this.dom.settingsPanel.classList.remove('opacity-50', 'pointer-events-none');
+                    this.dom.emptyPreview.classList.add('hidden');
+                    this.dom.canvas.classList.remove('hidden');
+                    this.dom.downloadBtn.classList.remove('hidden');
+                    this.dom.downloadBtn.classList.add('flex');
+
+                    this.applyExifToInputs();
+                    this.renderCanvas();
+                    
+                    this.showToast('图片加载成功');
+
+                } catch (error) {
+                    console.error(error);
+                    this.showToast('图片解析失败，可能是内存不足或格式不支持', 'error');
+                } finally {
+                    this.setLoading(false);
+                    this.dom.fileInput.value = '';
+                }
+            }
+
+            loadImage(file) {
+                return new Promise((resolve, reject) => {
+                    // 使用 URL.createObjectURL 替代 FileReader，防止移动端大图内存溢出
+                    if (this.state.objectUrl) {
+                        URL.revokeObjectURL(this.state.objectUrl);
+                    }
+                    this.state.objectUrl = URL.createObjectURL(file);
+
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = this.state.objectUrl;
+                });
+            }
+
+            readExif(file) {
+                return new Promise((resolve) => {
+                    EXIF.getData(file, function() {
+                        const data = {
+                            make: EXIF.getTag(this, "Make"),
+                            model: EXIF.getTag(this, "Model"),
+                            focalLength: EXIF.getTag(this, "FocalLength"),
+                            fNumber: EXIF.getTag(this, "FNumber"),
+                            exposureTime: EXIF.getTag(this, "ExposureTime"),
+                            iso: EXIF.getTag(this, "ISOSpeedRatings"),
+                            lat: EXIF.getTag(this, "GPSLatitude"),
+                            latRef: EXIF.getTag(this, "GPSLatitudeRef"),
+                            lng: EXIF.getTag(this, "GPSLongitude"),
+                            lngRef: EXIF.getTag(this, "GPSLongitudeRef")
+                        };
+                        resolve(data);
+                    });
+                });
+            }
+
+            applyExifToInputs() {
+                const e = this.state.exifData;
+                if (!e) return;
+                let main = '';
+                let sub = '';
+
+                if (this.state.config.preset === 'coords') {
+                    if (e.lat && e.lng) {
+                        main = this.formatGPS(e.lat, e.latRef, e.lng, e.lngRef);
+                    } else {
+                        main = 'MINIMAL FRAME';
+                    }
+                    sub = '';
+                } else {
+                    if (e.model) {
+                        main = e.make && e.model.indexOf(e.make) === -1 ? `${e.make} ${e.model}` : e.model;
+                        main = main.charAt(0).toUpperCase() + main.slice(1);
+                    } else if (e.lat && e.lng) {
+                        main = this.formatGPS(e.lat, e.latRef, e.lng, e.lngRef);
+                    } else {
+                        main = 'MINIMAL FRAME';
+                    }
+
+                    const params = [];
+                    if (e.focalLength) {
+                        const fl = e.focalLength.numerator ? e.focalLength.numerator / e.focalLength.denominator : e.focalLength;
+                        params.push(`${Math.round(fl)}mm`);
+                    }
+                    if (e.fNumber) {
+                        const fn = e.fNumber.numerator ? e.fNumber.numerator / e.fNumber.denominator : e.fNumber;
+                        params.push(`f/${fn.toFixed(1)}`);
+                    }
+                    if (e.exposureTime) {
+                        const et = e.exposureTime.numerator ? `${e.exposureTime.numerator}/${e.exposureTime.denominator}` : e.exposureTime;
+                        if(typeof et === 'number' && et < 1) {
+                            params.push(`1/${Math.round(1/et)}s`);
+                        } else {
+                            params.push(`${et}s`);
+                        }
+                    }
+                    if (e.iso) params.push(`ISO${e.iso}`);
+                    sub = params.join('  ');
+                }
+
+                this.dom.mainText.value = main;
+                this.dom.subText.value = sub;
+                this.state.config.mainText = main;
+                this.state.config.subText = sub;
+            }
+
+            formatGPS(lat, latRef, lng, lngRef) {
+                try {
+                    const formatDMS = (dms) => {
+                        const d = dms[0].numerator ? dms[0].numerator / dms[0].denominator : dms[0];
+                        const m = dms[1].numerator ? dms[1].numerator / dms[1].denominator : dms[1];
+                        const s = dms[2].numerator ? dms[2].numerator / dms[2].denominator : dms[2];
+                        return `${Math.round(d)}° ${Math.round(m)}' ${s.toFixed(1)}''`;
+                    };
+                    return `${formatDMS(lat)} ${latRef || 'N'}, ${formatDMS(lng)} ${lngRef || 'E'}`;
+                } catch(err) {
+                    return '';
+                }
+            }
+
+            renderCanvas() {
+                const img = this.state.image;
+                if (!img) return;
+
+                const { config } = this.state;
+                const ctx = this.dom.ctx;
+                const canvas = this.dom.canvas;
+
+                // Canvas 极限尺寸保护 (解决原生上千万像素照片导致 drawImage 崩溃问题)
+                const MAX_SIZE = 4096;
+                let drawW = img.naturalWidth;
+                let drawH = img.naturalHeight;
+
+                if (drawW > MAX_SIZE || drawH > MAX_SIZE) {
+                    const ratio = Math.min(MAX_SIZE / drawW, MAX_SIZE / drawH);
+                    drawW = Math.floor(drawW * ratio);
+                    drawH = Math.floor(drawH * ratio);
+                }
+
+                const shortSide = Math.min(drawW, drawH);
+                
+                // padding 计算
+                const padding = shortSide * config.borderRatio;
+                
+                // 底部排版空间计算
+                const hasText = config.mainText || config.subText;
+                const bottomExtra = hasText ? (padding * 1.5) : 0; 
+
+                // 最终画布尺寸
+                canvas.width = drawW + (padding * 2);
+                canvas.height = drawH + padding + padding + bottomExtra;
+
+                // 解析主题颜色
+                const bgColor = config.theme === 'dark' ? '#000000' : '#ffffff';
+                const textColor = config.theme === 'dark' ? '#ffffff' : '#000000';
+                const subTextColor = config.theme === 'dark' ? '#a1a1aa' : '#71717a';
+
+                // 1. 绘制背景
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 2. 绘制原图 (使用安全的尺寸)
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, padding, padding, drawW, drawH);
+
+                // 3. 绘制文字
+                if (hasText) {
+                    const textYCenter = drawH + padding + (padding + bottomExtra) / 2;
+                    const centerX = canvas.width / 2;
+                    
+                    let fontStack = '-apple-system, "Inter", sans-serif';
+                    if (config.fontFamily === 'serif') fontStack = '"Noto Serif SC", serif';
+                    if (config.fontFamily === 'monospace') fontStack = '"JetBrains Mono", monospace';
+
+                    ctx.textAlign = 'center';
+                    const baseFontSize = shortSide * 0.025;
+
+                    if (config.mainText && config.subText) {
+                        ctx.fillStyle = textColor;
+                        ctx.font = `500 ${baseFontSize}px ${fontStack}`;
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(config.mainText, centerX, textYCenter - (baseFontSize * 0.3));
+
+                        ctx.fillStyle = subTextColor;
+                        ctx.font = `400 ${baseFontSize * 0.65}px ${fontStack}`;
+                        ctx.textBaseline = 'top';
+                        ctx.fillText(config.subText, centerX, textYCenter + (baseFontSize * 0.3));
+                    } else if (config.mainText || config.subText) {
+                        const text = config.mainText || config.subText;
+                        ctx.fillStyle = config.mainText ? textColor : subTextColor;
+                        ctx.font = `${config.mainText ? '500' : '400'} ${baseFontSize}px ${fontStack}`;
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(text, centerX, textYCenter);
+                    }
+                }
+            }
+
+            downloadImage() {
+                if (!this.state.image) return;
+                
+                try {
+                    const dataUrl = this.dom.canvas.toDataURL('image/jpeg', 0.95);
+                    const link = document.createElement('a');
+                    const timestamp = new Date().getTime();
+                    link.download = `FramePro_${timestamp}.jpg`;
+                    link.href = dataUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    this.showToast('导出成功', 'success');
+                } catch (e) {
+                    console.error("导出失败:", e);
+                    this.showToast('导出失败，可能是图片尺寸过大超出了浏览器限制', 'error');
+                }
+            }
+
+            setLoading(isLoading) {
+                if (isLoading) {
+                    this.dom.uploadPlaceholder.classList.add('hidden');
+                    this.dom.uploadingState.classList.remove('hidden');
+                    this.dom.uploadingState.classList.add('flex');
+                    this.dom.dropZone.classList.add('pointer-events-none');
+                } else {
+                    this.dom.uploadPlaceholder.classList.remove('hidden');
+                    this.dom.uploadingState.classList.add('hidden');
+                    this.dom.uploadingState.classList.remove('flex');
+                    this.dom.dropZone.classList.remove('pointer-events-none');
+                }
+            }
+
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                const bgColor = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-zinc-900' : 'bg-zinc-800';
+                
+                toast.className = `toast-enter flex items-center gap-2 px-4 py-3 rounded-lg shadow-xl text-white text-sm font-medium ${bgColor} mx-4 max-w-sm`;
+                
+                let icon = 'info';
+                if (type === 'success') icon = 'check-circle-2';
+                if (type === 'error') icon = 'alert-circle';
+
+                toast.innerHTML = `
+                    <i data-lucide="${icon}" class="w-4 h-4 shrink-0"></i>
+                    <span class="truncate">${message}</span>
+                `;
+                
+                this.dom.toastContainer.appendChild(toast);
+                lucide.createIcons({ root: toast });
+
+                setTimeout(() => {
+                    toast.classList.replace('toast-enter', 'toast-leave');
+                    toast.addEventListener('animationend', () => toast.remove());
+                }, 3000);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            new FrameGenerator();
+        });
+    </script>
+</body>
+</html>
