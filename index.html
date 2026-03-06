@@ -557,11 +557,9 @@
                         this.dom.panelBatchBtn.classList.remove('hidden');
                         this.dom.panelBatchBtn.classList.add('flex');
                         
-                        // 多图模式：作为 Flex 元素显示画廊
                         this.dom.galleryContainer.classList.remove('hidden');
                         this.dom.galleryContainer.classList.add('flex');
                     } else {
-                        // 单图模式：彻底隐藏画廊，不再占用空间，画布自动垂直居中
                         this.dom.galleryContainer.classList.add('hidden');
                         this.dom.galleryContainer.classList.remove('flex');
                     }
@@ -750,41 +748,82 @@
                 if (config.frameStyle === 'glass') {
                     ctx.save();
                     
-                    // 【终极重构算法】：使用甜点尺寸 800px 进行安全模糊，既不突破 iOS 极限，也不会因过小而导致拉伸马赛克色块
-                    const MAX_BLUR_SIZE = 800; 
-                    const downScale = Math.min(1, MAX_BLUR_SIZE / Math.max(canvas.width, canvas.height));
+                    // --- 终极核心修复：纯 JS 像素级强制重算模糊，彻底抛弃 iOS 不兼容的 filter 属性 ---
+                    // 使用一个 120px 左右的极小离屏画布，不仅运算快到飞起，还能完美结合 JS 强力揉碎颜色
+                    const MINI_SIZE = 120; 
+                    const downScale = Math.min(1, MINI_SIZE / Math.max(canvas.width, canvas.height));
                     
-                    // 安全模糊半径：在 800px 画布上 30px 是极其顺滑的弥散级别，且兼容性极佳
-                    const blurRadius = 30; 
-                    const expand = blurRadius * 2; // 极度扩展边缘，彻底剪裁掉暗黑光晕
+                    // 防止图片尺寸异常导致 0，强制最低为 1
+                    const w = Math.max(1, Math.floor(img.naturalWidth * downScale));
+                    const h = Math.max(1, Math.floor(img.naturalHeight * downScale));
                     
-                    const blurCanvas = document.createElement('canvas');
-                    const blurCtx = blurCanvas.getContext('2d');
-                    blurCanvas.width = (canvas.width * downScale) + expand * 2;
-                    blurCanvas.height = (canvas.height * downScale) + expand * 2;
+                    const miniCanvas = document.createElement('canvas');
+                    miniCanvas.width = w;
+                    miniCanvas.height = h;
+                    const miniCtx = miniCanvas.getContext('2d');
                     
-                    const scale = Math.max(blurCanvas.width / img.naturalWidth, blurCanvas.height / img.naturalHeight) * 1.1;
-                    const bgW = img.naturalWidth * scale;
-                    const bgH = img.naturalHeight * scale;
-                    const bgX = (blurCanvas.width - bgW) / 2;
-                    const bgY = (blurCanvas.height - bgH) / 2;
-
-                    blurCtx.filter = `blur(${blurRadius}px) saturate(180%) brightness(${isDark ? 0.75 : 1.05})`;
-                    blurCtx.drawImage(img, bgX, bgY, bgW, bgH);
+                    // 缩小原图
+                    miniCtx.drawImage(img, 0, 0, w, h);
                     
+                    // 纯数学强行计算模糊，对任何手机与浏览器做到 100% 绝对生效
+                    const imgDataObj = miniCtx.getImageData(0, 0, w, h);
+                    const data = imgDataObj.data;
+                    const temp = new Uint8ClampedArray(data.length);
+                    // 在 120px 上模糊 6 个像素，相当于原图极为强烈的景深虚化
+                    const radius = 6;
+                    
+                    // 运行 2 次 Box Blur 逼近顶级的光学高斯模糊
+                    for (let pass = 0; pass < 2; pass++) {
+                        // 横向揉碎
+                        for (let y = 0; y < h; y++) {
+                            for (let x = 0; x < w; x++) {
+                                let r = 0, g = 0, b = 0, count = 0;
+                                for (let k = -radius; k <= radius; k++) {
+                                    let nx = x + k;
+                                    // 完美解决上一版边缘发黑的 BUG：如果超出边界，强行使用边缘颜色进行拓展
+                                    if (nx < 0) nx = 0; else if (nx >= w) nx = w - 1;
+                                    const idx = (y * w + nx) * 4;
+                                    r += data[idx]; g += data[idx+1]; b += data[idx+2];
+                                    count++;
+                                }
+                                const outIdx = (y * w + x) * 4;
+                                temp[outIdx] = r / count; temp[outIdx+1] = g / count; temp[outIdx+2] = b / count; temp[outIdx+3] = 255;
+                            }
+                        }
+                        // 纵向揉碎
+                        for (let x = 0; x < w; x++) {
+                            for (let y = 0; y < h; y++) {
+                                let r = 0, g = 0, b = 0, count = 0;
+                                for (let k = -radius; k <= radius; k++) {
+                                    let ny = y + k;
+                                    if (ny < 0) ny = 0; else if (ny >= h) ny = h - 1;
+                                    const idx = (ny * w + x) * 4;
+                                    r += temp[idx]; g += temp[idx+1]; b += temp[idx+2];
+                                    count++;
+                                }
+                                const outIdx = (y * w + x) * 4;
+                                data[outIdx] = r / count; data[outIdx+1] = g / count; data[outIdx+2] = b / count;
+                            }
+                        }
+                    }
+                    // 把强行计算好的“纯色奶油”放回去
+                    miniCtx.putImageData(imgDataObj, 0, 0);
+                    
+                    // 最后一步：将这块 120 像素的颜色块，利用浏览器极强的硬件拉伸插值，铺满几千像素的大画布，带来浑然天成的高级柔顺感
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
                     
-                    // 从离屏画布剪裁掉扩展的暗黑边缘并绘制回主图
-                    ctx.drawImage(
-                        blurCanvas, 
-                        expand, expand, blurCanvas.width - expand * 2, blurCanvas.height - expand * 2, 
-                        0, 0, canvas.width, canvas.height
-                    );
-
+                    // 计算等比覆盖(cover)的参数，扩边 5% (1.05) 确保不留白底
+                    const coverScale = Math.max(canvas.width / w, canvas.height / h) * 1.05;
+                    const bgW = w * coverScale;
+                    const bgH = h * coverScale;
+                    const bgX = (canvas.width - bgW) / 2;
+                    const bgY = (canvas.height - bgH) / 2;
+                    
+                    ctx.drawImage(miniCanvas, bgX, bgY, bgW, bgH);
                     ctx.restore();
 
-                    // 自然通透的环境光渐变遮罩
+                    // 环境光滤镜：用微渐变叠加层制造玻璃质感
                     const glassGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
                     if (isDark) {
                         glassGradient.addColorStop(0, 'rgba(15, 15, 17, 0.1)');
