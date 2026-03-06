@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>+框</title>
+    <title>FramePro - 高级排版与相片加框</title>
     
     <!-- 引入 Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2318181b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='22' x2='2' y1='6' y2='6'/%3E%3Cline x1='22' x2='2' y1='18' y2='18'/%3E%3Cline x1='6' x2='6' y1='2' y2='22'/%3E%3Cline x1='18' x2='18' y1='2' y2='22'/%3E%3C/svg%3E">
@@ -127,7 +127,7 @@
             <div class="bg-zinc-900 p-1.5 rounded-md">
                 <i data-lucide="frame" class="w-4 h-4 md:w-5 md:h-5 text-white"></i>
             </div>
-            <h1 class="font-semibold text-base md:text-lg tracking-tight">Frame<span class="hidden sm:inline-block text-xs font-normal text-zinc-400 ml-1 border border-zinc-200 rounded px-1.5 py-0.5">1.1</span></h1>
+            <h1 class="font-semibold text-base md:text-lg tracking-tight">FramePro <span class="hidden sm:inline-block text-xs font-normal text-zinc-400 ml-1 border border-zinc-200 rounded px-1.5 py-0.5">Studio</span></h1>
         </div>
         <div class="flex items-center gap-2 md:gap-3">
             <button id="batchDownloadBtn" class="hidden items-center gap-1.5 md:gap-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-800 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-sm active:scale-95 disabled:opacity-50">
@@ -750,48 +750,50 @@
                 if (config.frameStyle === 'glass') {
                     ctx.save();
                     
-                    // 极度压缩尺寸实现原生强力拉伸模糊，彻底解决移动端 filter 不生效问题
-                    const MAX_BLUR_SIZE = 80; // 从 300 进一步压制到 80，保证绝对的模糊感
+                    // 【终极重构算法】：使用甜点尺寸 800px 进行安全模糊，既不突破 iOS 极限，也不会因过小而导致拉伸马赛克色块
+                    const MAX_BLUR_SIZE = 800; 
                     const downScale = Math.min(1, MAX_BLUR_SIZE / Math.max(canvas.width, canvas.height));
+                    
+                    // 安全模糊半径：在 800px 画布上 30px 是极其顺滑的弥散级别，且兼容性极佳
+                    const blurRadius = 30; 
+                    const expand = blurRadius * 2; // 极度扩展边缘，彻底剪裁掉暗黑光晕
                     
                     const blurCanvas = document.createElement('canvas');
                     const blurCtx = blurCanvas.getContext('2d');
-                    blurCanvas.width = canvas.width * downScale;
-                    blurCanvas.height = canvas.height * downScale;
+                    blurCanvas.width = (canvas.width * downScale) + expand * 2;
+                    blurCanvas.height = (canvas.height * downScale) + expand * 2;
                     
-                    const scale = Math.max(blurCanvas.width / img.naturalWidth, blurCanvas.height / img.naturalHeight) * 1.5;
+                    const scale = Math.max(blurCanvas.width / img.naturalWidth, blurCanvas.height / img.naturalHeight) * 1.1;
                     const bgW = img.naturalWidth * scale;
                     const bgH = img.naturalHeight * scale;
                     const bgX = (blurCanvas.width - bgW) / 2;
                     const bgY = (blurCanvas.height - bgH) / 2;
 
-                    // 移动端 Safari 对小数和较小半径兼容性更好
-                    const blurRadius = 6; 
-                    blurCtx.filter = `blur(${blurRadius}px) saturate(1.8) brightness(${isDark ? 0.75 : 1.05})`;
+                    blurCtx.filter = `blur(${blurRadius}px) saturate(180%) brightness(${isDark ? 0.75 : 1.05})`;
                     blurCtx.drawImage(img, bgX, bgY, bgW, bgH);
                     
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
                     
-                    // 确保切除暗边
-                    const expand = (blurRadius * 3) / downScale; 
+                    // 从离屏画布剪裁掉扩展的暗黑边缘并绘制回主图
                     ctx.drawImage(
                         blurCanvas, 
-                        0, 0, blurCanvas.width, blurCanvas.height, 
-                        -expand, -expand, canvas.width + expand * 2, canvas.height + expand * 2
+                        expand, expand, blurCanvas.width - expand * 2, blurCanvas.height - expand * 2, 
+                        0, 0, canvas.width, canvas.height
                     );
 
                     ctx.restore();
 
+                    // 自然通透的环境光渐变遮罩
                     const glassGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
                     if (isDark) {
-                        glassGradient.addColorStop(0, 'rgba(15, 15, 17, 0.15)');
-                        glassGradient.addColorStop(0.5, 'rgba(15, 15, 17, 0.45)');
+                        glassGradient.addColorStop(0, 'rgba(15, 15, 17, 0.1)');
+                        glassGradient.addColorStop(0.5, 'rgba(15, 15, 17, 0.35)');
                         glassGradient.addColorStop(1, 'rgba(9, 9, 11, 0.95)');
                     } else {
                         glassGradient.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
-                        glassGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.45)');
-                        glassGradient.addColorStop(1, 'rgba(240, 240, 245, 0.98)');
+                        glassGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+                        glassGradient.addColorStop(1, 'rgba(240, 240, 245, 0.95)');
                     }
                     ctx.fillStyle = glassGradient;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
