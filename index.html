@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>+框</title>
+    <title>FramePro - 高级排版与相片加框</title>
     
+    <!-- 引入 Favicon (内联 SVG 矢量图标，保持单文件结构) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2318181b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='22' x2='2' y1='6' y2='6'/%3E%3Cline x1='22' x2='2' y1='18' y2='18'/%3E%3Cline x1='6' x2='6' y1='2' y2='22'/%3E%3Cline x1='18' x2='18' y1='2' y2='22'/%3E%3C/svg%3E">
+
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 EXIF 解析库 -->
@@ -105,16 +108,16 @@
             border-radius: 2px;
         }
 
-        /* Toast 动画 */
+        /* Toast 动画优化：从顶部垂直滑入，防止横向溢出 */
         .toast-enter { animation: toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: toast-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes toast-in {
-            0% { transform: translate(-50%, 150%); opacity: 0; }
-            100% { transform: translate(-50%, 0); opacity: 1; }
+            0% { transform: translateY(-100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
         @keyframes toast-out {
-            0% { transform: translate(-50%, 0); opacity: 1; }
-            100% { transform: translate(-50%, 150%); opacity: 0; }
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100%); opacity: 0; }
         }
 
         .segment-btn { transition: all 0.2s ease-in-out; }
@@ -123,22 +126,22 @@
 <body class="text-zinc-800 h-[100dvh] flex flex-col overflow-hidden">
 
     <!-- 顶栏 -->
-    <header class="bg-white/80 backdrop-blur-md border-b border-zinc-200/60 h-14 md:h-16 flex items-center justify-between px-5 md:px-8 shrink-0 z-20 relative shadow-sm">
-        <div class="flex items-center gap-2.5">
+    <header class="bg-white/80 backdrop-blur-md border-b border-zinc-200/60 h-14 md:h-16 flex items-center justify-between px-4 md:px-8 shrink-0 z-20 relative shadow-sm">
+        <div class="flex items-center gap-2 md:gap-2.5">
             <div class="bg-zinc-900 p-1.5 rounded-md">
                 <i data-lucide="frame" class="w-4 h-4 md:w-5 md:h-5 text-white"></i>
             </div>
-            <h1 class="font-semibold text-base md:text-lg tracking-tight">Frame <span class="text-xs font-normal text-zinc-400 ml-1 border border-zinc-200 rounded px-1.5 py-0.5">1.0</span></h1>
+            <h1 class="font-semibold text-base md:text-lg tracking-tight">FramePro <span class="hidden sm:inline-block text-xs font-normal text-zinc-400 ml-1 border border-zinc-200 rounded px-1.5 py-0.5">Studio</span></h1>
         </div>
-        <div class="flex items-center gap-3">
-            <button id="downloadBtn" class="hidden items-center gap-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-800 px-4 md:px-4 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50">
-                <i data-lucide="image" class="w-4 h-4"></i>
-                <span class="hidden sm:inline">导出当前</span>
-            </button>
-            <button id="batchDownloadBtn" class="hidden items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white px-4 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50">
-                <i data-lucide="layers" class="w-4 h-4"></i>
+        <div class="flex items-center gap-2 md:gap-3">
+            <button id="batchDownloadBtn" class="hidden items-center gap-1.5 md:gap-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-800 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-sm active:scale-95 disabled:opacity-50">
+                <i data-lucide="layers" class="w-4 h-4 text-zinc-500"></i>
                 <span class="hidden sm:inline">批量打包 (ZIP)</span>
-                <span class="sm:hidden">全部</span>
+                <span class="sm:hidden text-xs">打包</span>
+            </button>
+            <button id="downloadBtn" class="hidden items-center gap-1.5 md:gap-2 bg-zinc-900 hover:bg-zinc-800 text-white px-4 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-md active:scale-95 disabled:opacity-50">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span class="text-xs sm:text-sm">保存照片</span>
             </button>
         </div>
     </header>
@@ -293,7 +296,19 @@
                     </section>
                 </div>
                 
-                <div class="pt-2 text-center space-y-1.5">
+                <!-- 新增：巨大的底部操作区，彻底解决移动端不知道怎么导出的痛点 -->
+                <div id="actionPanel" class="hidden flex-col gap-3 pt-3 pb-2 border-t border-zinc-100">
+                    <button id="panelDownloadBtn" class="w-full flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white py-3.5 rounded-xl text-[15px] font-medium shadow-md active:scale-[0.98] transition-all">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        保存当前照片
+                    </button>
+                    <button id="panelBatchBtn" class="hidden w-full items-center justify-center gap-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-800 py-3 rounded-xl text-[15px] font-medium shadow-sm active:scale-[0.98] transition-all">
+                        <i data-lucide="layers" class="w-5 h-5 text-zinc-500"></i>
+                        打包下载全部
+                    </button>
+                </div>
+
+                <div class="pt-3 text-center space-y-1.5 pb-6">
                     <p class="text-[11px] text-zinc-400 flex items-center justify-center gap-1.5">
                         <i data-lucide="shield-check" class="w-3 h-3"></i>
                         所有解析及压缩均在本地浏览器完成，绝不上传云端
@@ -306,7 +321,8 @@
         </aside>
     </main>
 
-    <div id="toastContainer" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <!-- 优化后 Toast 容器：使用 left-0 right-0 和 items-center 确保绝对居中，永不超出屏幕边缘 -->
+    <div id="toastContainer" class="fixed top-20 left-0 right-0 z-50 flex flex-col items-center gap-2 pointer-events-none px-4"></div>
 
     <script>
         lucide.createIcons();
@@ -350,8 +366,16 @@
                     canvas: document.getElementById('mainCanvas'),
                     ctx: document.getElementById('mainCanvas').getContext('2d'),
                     emptyPreview: document.getElementById('emptyPreview'),
+                    
+                    // 顶栏按钮
                     downloadBtn: document.getElementById('downloadBtn'),
                     batchDownloadBtn: document.getElementById('batchDownloadBtn'),
+                    
+                    // 面板底部大按钮
+                    actionPanel: document.getElementById('actionPanel'),
+                    panelDownloadBtn: document.getElementById('panelDownloadBtn'),
+                    panelBatchBtn: document.getElementById('panelBatchBtn'),
+
                     autoExifBtn: document.getElementById('autoExifBtn'),
                     galleryContainer: document.getElementById('galleryContainer'),
                     thumbnailList: document.getElementById('thumbnailList'),
@@ -415,7 +439,7 @@
                         this.updateSegmentedUI(this.dom.presetBtns, 'preset', val);
                         this.state.config.preset = val;
                         
-                        // 当选择坐标模式时，禁用排版选择并变灰
+                        // 当选择坐标模式时，禁用排版选择并变灰，强制居中
                         if (val === 'coords') {
                             this.dom.layoutBtns.forEach(b => {
                                 b.style.pointerEvents = 'none';
@@ -484,8 +508,15 @@
                     }
                 });
 
-                this.dom.downloadBtn.addEventListener('click', () => this.downloadCurrentImage());
-                this.dom.batchDownloadBtn.addEventListener('click', () => this.batchDownload());
+                // 绑定多处导出按钮
+                const downloadAction = () => this.downloadCurrentImage();
+                const batchDownloadAction = () => this.batchDownload();
+                
+                this.dom.downloadBtn.addEventListener('click', downloadAction);
+                this.dom.panelDownloadBtn.addEventListener('click', downloadAction);
+                
+                this.dom.batchDownloadBtn.addEventListener('click', batchDownloadAction);
+                this.dom.panelBatchBtn.addEventListener('click', batchDownloadAction);
             }
 
             async handleFiles(filesList) {
@@ -537,12 +568,22 @@
                     this.dom.settingsPanel.classList.remove('opacity-40', 'pointer-events-none');
                     this.dom.emptyPreview.classList.add('hidden');
                     this.dom.canvas.classList.remove('hidden');
+                    
+                    // 激活顶栏按钮
                     this.dom.downloadBtn.classList.remove('hidden');
                     this.dom.downloadBtn.classList.add('flex');
+                    
+                    // 激活底部面板操作区
+                    this.dom.actionPanel.classList.remove('hidden');
+                    this.dom.actionPanel.classList.add('flex');
                     
                     if (this.state.images.length > 1) {
                         this.dom.batchDownloadBtn.classList.remove('hidden');
                         this.dom.batchDownloadBtn.classList.add('flex');
+                        
+                        this.dom.panelBatchBtn.classList.remove('hidden');
+                        this.dom.panelBatchBtn.classList.add('flex');
+                        
                         this.dom.galleryContainer.classList.remove('translate-y-full');
                     }
 
@@ -600,7 +641,6 @@
                     }
                     sub = '';
                 } else {
-                    // 专业详细参数预设
                     if (e.model) {
                         main = e.make && e.model.indexOf(e.make) === -1 ? `${e.make} ${e.model}` : e.model;
                         main = main.charAt(0).toUpperCase() + main.slice(1);
@@ -629,7 +669,6 @@
                     }
                     if (e.iso) params.push(`ISO${e.iso}`);
                     
-                    // 加大参数间距提升高级感
                     sub = params.join('   ');
                 }
 
@@ -708,16 +747,13 @@
                 const shortSide = Math.min(drawW, drawH);
                 const hasText = imgData.mainText || imgData.subText;
                 
-                // --- 边距计算 ---
                 const basePadding = shortSide * config.borderRatio;
                 let padTop, padBottom, padLeft, padRight;
 
                 if (config.frameStyle === 'polaroid') {
-                    // 拍立得
                     padTop = padLeft = padRight = basePadding * 0.8;
                     padBottom = basePadding * 3.5; 
                 } else {
-                    // 经典和毛玻璃：底部留出更大呼吸空间
                     padTop = padLeft = padRight = basePadding;
                     padBottom = hasText ? basePadding * 2.5 : basePadding;
                 }
@@ -730,7 +766,7 @@
                 const textColor = isDark ? '#ffffff' : '#18181b';
                 const subTextColor = isDark ? '#a1a1aa' : '#71717a';
 
-                // --- 1. 背景层 ---
+                // 背景
                 if (config.frameStyle === 'glass') {
                     ctx.save();
                     const blurRadius = Math.max(100, shortSide * 0.15); 
@@ -773,7 +809,7 @@
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                 }
 
-                // --- 2. 主体照片层 ---
+                // 照片层
                 ctx.save();
                 if (config.frameStyle === 'glass') {
                     ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)';
@@ -800,7 +836,7 @@
                     ctx.restore();
                 }
 
-                // --- 3. 字体解析与排版引擎 ---
+                // 排版引擎
                 if (hasText) {
                     let fontStack = '-apple-system, BlinkMacSystemFont, "Inter", sans-serif';
                     if (config.fontFamily === 'nothing') fontStack = '"DotGothic16", sans-serif';
@@ -817,21 +853,18 @@
 
                     const textYCenter = padTop + drawH + (padBottom / 2);
                     
-                    // 测量文字宽度
                     ctx.font = mainFont; const mainW = ctx.measureText(imgData.mainText).width;
                     ctx.font = subFont; const subW = ctx.measureText(imgData.subText).width;
 
-                    // 确定当前排版逻辑
                     let currentLayout = config.textLayout;
                     if (config.preset === 'coords') {
-                        currentLayout = 'center'; // 如果是坐标模式，强制锁定居中
+                        currentLayout = 'center'; 
                     }
 
                     ctx.textBaseline = 'middle';
 
                     if (currentLayout === 'center') {
-                        // 【居中对齐】
-                        ctx.textAlign = 'center'; // 直接使用 center 居中对齐整个文本
+                        ctx.textAlign = 'center'; 
                         
                         if (imgData.mainText && imgData.subText) {
                             ctx.fillStyle = textColor; ctx.font = mainFont;
@@ -847,7 +880,6 @@
                         }
 
                     } else if (currentLayout === 'split') {
-                        // 【两端对齐】
                         if (imgData.mainText) {
                             ctx.textAlign = 'left';
                             ctx.fillStyle = textColor; ctx.font = mainFont;
@@ -860,7 +892,6 @@
                         }
 
                     } else if (currentLayout === 'inline') {
-                        // 【紧凑单行】将所有参数排在一行
                         ctx.textAlign = 'left';
                         const spacer = baseFontSize * 1.2;
                         const totalInlineW = mainW + (imgData.mainText && imgData.subText ? spacer : 0) + subW;
@@ -891,7 +922,7 @@
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    this.showToast('导出成功', 'success');
+                    this.showToast('保存成功', 'success');
                 } catch (e) {
                     console.error("导出失败:", e);
                     this.showToast('导出失败，可能是图片尺寸超出了浏览器限制', 'error');
@@ -962,7 +993,8 @@
                 const textColor = type === 'info' ? 'text-zinc-800' : 'text-white';
                 const shadow = 'shadow-[0_8px_30px_rgb(0,0,0,0.12)]';
                 
-                toast.className = `toast-enter flex items-center gap-2.5 px-5 py-3.5 rounded-xl ${shadow} ${textColor} text-sm font-medium ${bgColor} mx-4 max-w-sm`;
+                // px-5 py-3.5 结合 rounded-full 使其呈现现代胶囊形状
+                toast.className = `toast-enter flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-full ${shadow} ${textColor} text-sm font-medium ${bgColor} max-w-full`;
                 
                 let icon = 'info';
                 if (type === 'success') icon = 'check-circle-2';
