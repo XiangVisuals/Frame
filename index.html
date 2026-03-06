@@ -769,15 +769,30 @@
                 // 背景
                 if (config.frameStyle === 'glass') {
                     ctx.save();
-                    const blurRadius = Math.max(100, shortSide * 0.15); 
-                    ctx.filter = `blur(${blurRadius}px) saturate(180%) brightness(${isDark ? '0.75' : '1.05'})`;
                     
+                    // 移动端优化：降采样模糊策略，避免大半径 filter 导致的性能问题
+                    const downsampleFactor = 0.1; // 降采样比例 (缩小到 10%)
+                    const downCanvas = document.createElement('canvas');
+                    const downCtx = downCanvas.getContext('2d');
+                    downCanvas.width = canvas.width * downsampleFactor;
+                    downCanvas.height = canvas.height * downsampleFactor;
+                    
+                    // 计算居中裁剪放大的绘制参数
                     const scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight) * 1.5;
                     const bgW = img.naturalWidth * scale;
                     const bgH = img.naturalHeight * scale;
                     const bgX = (canvas.width - bgW) / 2;
                     const bgY = (canvas.height - bgH) / 2;
-                    ctx.drawImage(img, bgX, bgY, bgW, bgH);
+
+                    // 在缩小的 canvas 上绘制并添加轻量级 filter
+                    downCtx.filter = `blur(${Math.max(10, shortSide * 0.02 * downsampleFactor)}px) saturate(180%) brightness(${isDark ? '0.75' : '1.05'})`;
+                    downCtx.drawImage(img, bgX * downsampleFactor, bgY * downsampleFactor, bgW * downsampleFactor, bgH * downsampleFactor);
+                    
+                    // 将模糊后的小图拉伸绘制到主画布，利用浏览器的双线性插值实现平滑过渡
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(downCanvas, 0, 0, downCanvas.width, downCanvas.height, 0, 0, canvas.width, canvas.height);
+
                     ctx.restore();
 
                     const glassGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
