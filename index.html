@@ -9,24 +9,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 EXIF 解析库 -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    <!-- 引入 JSZip 用于批量下载 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- 引入 Lucide 图标库 -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- 引入 Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <!-- 引入高品质无版权/可商用字体，新增 DotGothic16 (Nothing点阵风) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DotGothic16&family=Inter:wght@400;500;600;700&family=JetBrains+Mono&family=Noto+Serif+SC:wght@400;600;700&family=Oswald:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
                         serif: ['Noto Serif SC', 'serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
                         brand: '#18181b', // Zinc 900
                         surface: '#ffffff',
-                        background: '#fafafa', // 更柔和的背景色
+                        background: '#fafafa',
                     },
                     boxShadow: {
                         'soft': '0 2px 10px -3px rgba(0, 0, 0, 0.05), 0 1px 3px -2px rgba(0, 0, 0, 0.02)',
@@ -44,9 +46,11 @@
         ::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #d4d4d8; }
         
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         body { background-color: theme('colors.background'); -webkit-font-smoothing: antialiased; }
         
-        /* 画布预览容器特有样式，实现完美的阴影和居中 */
         .canvas-wrapper {
             background-image: 
                 radial-gradient(#e4e4e7 1px, transparent 0),
@@ -67,17 +71,15 @@
             border: 1px solid rgba(0,0,0,0.04);
         }
 
-        /* 隐藏原生文件输入框 */
         .file-input-hidden { display: none; }
         
-        /* 拖拽态高亮 */
         .drag-active {
             border-color: theme('colors.zinc.800') !important;
             background-color: theme('colors.zinc.50') !important;
             transform: scale(0.99);
         }
 
-        /* 定制精致的 Range Slider */
+        /* 定制 Range Slider */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -94,9 +96,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             transition: transform 0.1s;
         }
-        input[type=range]::-webkit-slider-thumb:active {
-            transform: scale(1.2);
-        }
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
@@ -108,7 +108,6 @@
         /* Toast 动画 */
         .toast-enter { animation: toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: toast-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
         @keyframes toast-in {
             0% { transform: translate(-50%, 150%); opacity: 0; }
             100% { transform: translate(-50%, 0); opacity: 1; }
@@ -118,25 +117,28 @@
             100% { transform: translate(-50%, 150%); opacity: 0; }
         }
 
-        /* Segmented Control 切换动画支持 */
         .segment-btn { transition: all 0.2s ease-in-out; }
     </style>
 </head>
 <body class="text-zinc-800 h-[100dvh] flex flex-col overflow-hidden">
 
-    <!-- 顶栏 (毛玻璃效果) -->
-    <header class="bg-white/80 backdrop-blur-md border-b border-zinc-200/60 h-14 md:h-16 flex items-center justify-between px-5 md:px-8 shrink-0 z-20 relative">
+    <!-- 顶栏 -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-zinc-200/60 h-14 md:h-16 flex items-center justify-between px-5 md:px-8 shrink-0 z-20 relative shadow-sm">
         <div class="flex items-center gap-2.5">
             <div class="bg-zinc-900 p-1.5 rounded-md">
                 <i data-lucide="frame" class="w-4 h-4 md:w-5 md:h-5 text-white"></i>
             </div>
-            <h1 class="font-semibold text-base md:text-lg tracking-tight">Frame</h1>
+            <h1 class="font-semibold text-base md:text-lg tracking-tight">Frame <span class="text-xs font-normal text-zinc-400 ml-1 border border-zinc-200 rounded px-1.5 py-0.5">1.0</span></h1>
         </div>
-        <div>
-            <button id="downloadBtn" class="hidden items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white px-4 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
-                <i data-lucide="download" class="w-4 h-4"></i>
-                <span class="hidden sm:inline">导出高清图片</span>
-                <span class="sm:hidden">保存</span>
+        <div class="flex items-center gap-3">
+            <button id="downloadBtn" class="hidden items-center gap-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-800 px-4 md:px-4 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50">
+                <i data-lucide="image" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">导出当前</span>
+            </button>
+            <button id="batchDownloadBtn" class="hidden items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white px-4 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50">
+                <i data-lucide="layers" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">批量打包 (ZIP)</span>
+                <span class="sm:hidden">全部</span>
             </button>
         </div>
     </header>
@@ -146,122 +148,143 @@
         
         <!-- 右侧/上方：预览区域 -->
         <section class="order-1 lg:order-2 h-[45vh] lg:h-auto lg:flex-1 shrink-0 canvas-wrapper flex flex-col relative overflow-hidden border-b lg:border-b-0 border-zinc-200">
-            <!-- 占位状态 -->
             <div id="emptyPreview" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 z-0 pointer-events-none transition-opacity duration-300">
                 <div class="w-20 h-20 mb-4 rounded-2xl bg-white shadow-soft flex items-center justify-center border border-zinc-100">
-                    <i data-lucide="image-plus" class="w-8 h-8 text-zinc-300"></i>
+                    <i data-lucide="images" class="w-8 h-8 text-zinc-300"></i>
                 </div>
-                <p class="text-sm font-medium text-zinc-500">上传图片后在此处预览</p>
-                <p class="text-xs text-zinc-400 mt-1">支持最高 4K 分辨率处理</p>
+                <p class="text-sm font-medium text-zinc-500">拖拽多张图片到此处</p>
+                <p class="text-xs text-zinc-400 mt-1">自动识别 EXIF 提取光学参数</p>
             </div>
             
-            <!-- 画布容器 -->
-            <div class="flex-1 p-6 md:p-12 flex items-center justify-center overflow-hidden z-10">
+            <div class="flex-1 p-6 md:p-12 flex items-center justify-center overflow-hidden z-10 pb-20 lg:pb-24">
                 <canvas id="mainCanvas" class="hidden rounded-sm"></canvas>
+            </div>
+
+            <div id="galleryContainer" class="absolute bottom-0 left-0 right-0 h-16 md:h-20 bg-white/80 backdrop-blur-md border-t border-zinc-200/60 flex items-center px-4 overflow-x-auto hide-scrollbar z-20 transition-transform duration-300 translate-y-full">
+                <div id="thumbnailList" class="flex gap-3 h-full items-center py-2">
+                </div>
             </div>
         </section>
 
         <!-- 左侧/下方：控制面板 -->
-        <aside class="order-2 lg:order-1 w-full lg:w-[420px] xl:w-[480px] bg-white border-r border-zinc-200/60 overflow-y-auto flex-1 lg:flex-none z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-            <div class="p-5 md:p-8 space-y-8">
+        <aside class="order-2 lg:order-1 w-full lg:w-[420px] xl:w-[450px] bg-white border-r border-zinc-200/60 overflow-y-auto flex-1 lg:flex-none z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+            <div class="p-5 md:p-6 space-y-6">
                 
-                <!-- 上传区域 -->
                 <section>
-                    <div id="dropZone" class="border-2 border-dashed border-zinc-200 bg-zinc-50/50 rounded-2xl p-8 text-center cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all duration-300 group relative">
-                        <input type="file" id="fileInput" class="file-input-hidden" accept="image/jpeg, image/png, image/webp, image/heic">
+                    <div id="dropZone" class="border-2 border-dashed border-zinc-200 bg-zinc-50/50 rounded-2xl p-6 md:p-8 text-center cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all duration-300 group relative">
+                        <input type="file" id="fileInput" class="file-input-hidden" multiple accept="image/jpeg, image/png, image/webp, image/heic">
                         <div id="uploadPlaceholder">
-                            <div class="bg-white shadow-soft w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 border border-zinc-100">
-                                <i data-lucide="upload-cloud" class="w-6 h-6 md:w-7 md:h-7 text-zinc-700"></i>
+                            <div class="bg-white shadow-soft w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-all duration-300 border border-zinc-100">
+                                <i data-lucide="upload-cloud" class="w-6 h-6 text-zinc-700"></i>
                             </div>
-                            <h3 class="text-sm font-semibold text-zinc-800 mb-1">点击或拖拽上传图片</h3>
-                            <p class="text-xs text-zinc-500">支持 JPG, PNG, WEBP, HEIC</p>
+                            <h3 class="text-sm font-semibold text-zinc-800 mb-1">添加更多图片</h3>
+                            <p class="text-xs text-zinc-500">支持批量提取相机参数</p>
                         </div>
                         <div id="uploadingState" class="hidden flex-col items-center py-2">
                             <i data-lucide="loader-2" class="w-8 h-8 text-zinc-900 animate-spin mb-3"></i>
-                            <p class="text-sm font-medium text-zinc-700">正在解析图片元数据...</p>
+                            <p class="text-sm font-medium text-zinc-700" id="uploadProgressText">正在处理照片...</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- 参数设置区 (卡片化) -->
                 <div id="settingsPanel" class="space-y-6 opacity-40 pointer-events-none transition-all duration-500">
                     
-                    <!-- 排版信息卡片 -->
                     <section class="bg-white rounded-2xl p-5 border border-zinc-100 shadow-soft">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-sm font-bold text-zinc-800 flex items-center gap-2">
                                 <i data-lucide="type" class="w-4 h-4 text-zinc-400"></i>
-                                排版信息
+                                参数内容
                             </h2>
                             <button id="autoExifBtn" class="text-xs flex items-center gap-1 text-zinc-500 hover:text-zinc-900 font-medium transition-colors bg-zinc-100 hover:bg-zinc-200 px-2 py-1 rounded-md">
-                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> 重新提取
+                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> 重置提取
                             </button>
                         </div>
                         
                         <div class="mb-5">
-                            <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">排版预设</label>
-                            <!-- Segmented Control -->
+                            <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">提取预设 (全局)</label>
                             <div class="flex p-1 bg-zinc-100 rounded-lg">
-                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs font-medium rounded-md shadow-sm bg-white text-zinc-900" data-preset="coords">极简坐标</button>
-                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-preset="params">详细参数</button>
+                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-preset="coords">地理坐标</button>
+                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs font-medium rounded-md shadow-sm bg-white text-zinc-900" data-preset="params">专业详细参数</button>
                             </div>
                         </div>
 
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-1.5">主标题</label>
-                                <input type="text" id="mainText" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200/80 rounded-xl text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all" placeholder="例如: Shot on iPhone">
+                                <label class="block text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-1.5">主标题 / 设备型号</label>
+                                <input type="text" id="mainText" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200/80 rounded-xl text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-1.5">副标题</label>
-                                <input type="text" id="subText" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200/80 rounded-xl text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all" placeholder="例如: 24mm f/1.8 1/100s">
+                                <label class="block text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-1.5">副标题 / 光学参数</label>
+                                <input type="text" id="subText" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200/80 rounded-xl text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all">
                             </div>
                         </div>
                     </section>
 
-                    <!-- 视觉样式卡片 -->
                     <section class="bg-white rounded-2xl p-5 border border-zinc-100 shadow-soft">
                         <h2 class="text-sm font-bold text-zinc-800 mb-5 flex items-center gap-2">
                             <i data-lucide="palette" class="w-4 h-4 text-zinc-400"></i>
-                            视觉样式
+                            排版与美学
                         </h2>
                         
                         <div class="space-y-6">
+                            <!-- 边框风格 -->
+                            <div>
+                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">相框材质</label>
+                                <div class="grid grid-cols-3 gap-1 p-1 bg-zinc-100 rounded-lg">
+                                    <button class="segment-btn style-btn py-1.5 text-xs font-medium rounded-md shadow-sm bg-white text-zinc-900" data-style="classic">极简纯白</button>
+                                    <button class="segment-btn style-btn py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-style="glass">高级毛玻璃</button>
+                                    <button class="segment-btn style-btn py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-style="polaroid">复古拍立得</button>
+                                </div>
+                            </div>
+
+                            <!-- 排版布局 -->
+                            <div>
+                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">参数排版方式</label>
+                                <div class="grid grid-cols-3 gap-1 p-1 bg-zinc-100 rounded-lg" id="layoutGroup">
+                                    <button class="segment-btn layout-btn py-1.5 text-xs font-medium rounded-md shadow-sm bg-white text-zinc-900" data-layout="center">居中对称</button>
+                                    <button class="segment-btn layout-btn py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-layout="split">两端对齐</button>
+                                    <button class="segment-btn layout-btn py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-layout="inline">紧凑单行</button>
+                                </div>
+                            </div>
+
                             <!-- 边框宽度 -->
                             <div>
                                 <div class="flex justify-between items-center mb-3">
-                                    <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">留白比例</label>
-                                    <span id="borderWidthLabel" class="text-xs font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded">8%</span>
+                                    <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">边缘留白比例</label>
+                                    <span id="borderWidthLabel" class="text-xs font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded">6%</span>
                                 </div>
-                                <input type="range" id="borderWidth" min="2" max="20" value="8" class="w-full mt-1">
+                                <input type="range" id="borderWidth" min="2" max="25" value="6" class="w-full mt-1">
                             </div>
 
-                            <!-- 字体选择 -->
+                            <!-- 高级字体 -->
                             <div>
-                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">字体风格</label>
-                                <div class="flex p-1 bg-zinc-100 rounded-lg">
-                                    <button class="segment-btn font-btn flex-1 py-1.5 text-xs font-medium rounded-md shadow-sm bg-white text-zinc-900 font-sans" data-font="sans-serif">无衬线</button>
-                                    <button class="segment-btn font-btn flex-1 py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700 font-serif" data-font="serif">衬线</button>
-                                    <button class="segment-btn font-btn flex-1 py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700 font-mono" data-font="monospace">等宽</button>
+                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">排版字体库 (免费可商用)</label>
+                                <div class="grid grid-cols-2 gap-1.5 p-1 bg-zinc-100 rounded-lg">
+                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md shadow-sm bg-white text-zinc-900" style="font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;" data-font="system">Apple / SF Pro</button>
+                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'DotGothic16', sans-serif;" data-font="nothing">Nothing 点阵风</button>
+                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'Montserrat', sans-serif;" data-font="montserrat">Montserrat 几何</button>
+                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'Oswald', sans-serif;" data-font="oswald">Oswald 工业风</button>
+                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'Cinzel', serif;" data-font="cinzel">Cinzel 罗马风</button>
+                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700 font-serif" data-font="serif">Noto 经典衬线</button>
                                 </div>
                             </div>
 
                             <!-- 颜色主题 -->
                             <div>
-                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">色彩主题</label>
+                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">环境色调</label>
                                 <div class="flex gap-3">
                                     <label class="flex-1 relative cursor-pointer group">
                                         <input type="radio" name="theme" value="light" checked class="peer sr-only">
-                                        <div class="flex items-center justify-center gap-2 py-2 border border-zinc-200 rounded-xl bg-white text-zinc-800 peer-checked:border-zinc-900 peer-checked:ring-1 peer-checked:ring-zinc-900 transition-all text-sm font-medium">
-                                            <div class="w-3 h-3 rounded-full border border-zinc-200 bg-white"></div>
-                                            白底
+                                        <div class="flex items-center justify-center gap-2 py-2.5 border border-zinc-200 rounded-lg bg-white text-zinc-800 peer-checked:border-zinc-900 peer-checked:ring-1 peer-checked:ring-zinc-900 transition-all text-[11px] font-medium">
+                                            <div class="w-3 h-3 rounded-full border border-zinc-200 bg-white shadow-sm"></div>
+                                            明亮系 (Light)
                                         </div>
                                     </label>
                                     <label class="flex-1 relative cursor-pointer group">
                                         <input type="radio" name="theme" value="dark" class="peer sr-only">
-                                        <div class="flex items-center justify-center gap-2 py-2 border border-zinc-200 rounded-xl bg-zinc-900 text-white peer-checked:border-zinc-900 peer-checked:ring-2 peer-checked:ring-zinc-900 transition-all text-sm font-medium opacity-90 hover:opacity-100">
+                                        <div class="flex items-center justify-center gap-2 py-2.5 border border-zinc-200 rounded-lg bg-zinc-900 text-white peer-checked:border-zinc-900 peer-checked:ring-2 peer-checked:ring-zinc-900 transition-all text-[11px] font-medium opacity-90 hover:opacity-100">
                                             <div class="w-3 h-3 rounded-full border border-zinc-600 bg-zinc-800"></div>
-                                            黑底
+                                            暗影系 (Dark)
                                         </div>
                                     </label>
                                 </div>
@@ -270,37 +293,36 @@
                     </section>
                 </div>
                 
-                <!-- 底部信息 -->
-                <div class="pt-4 text-center">
+                <div class="pt-2 text-center space-y-1.5">
                     <p class="text-[11px] text-zinc-400 flex items-center justify-center gap-1.5">
-                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                        所有处理均在本地浏览器完成，保护您的隐私
+                        <i data-lucide="shield-check" class="w-3 h-3"></i>
+                        所有解析及压缩均在本地浏览器完成，绝不上传云端
+                    </p>
+                    <p class="text-[10px] text-zinc-400/70 font-mono tracking-wider">
+                        &copy; 2026 XIANG. All rights reserved.
                     </p>
                 </div>
             </div>
         </aside>
     </main>
 
-    <!-- 全局 Toast 提示容器 -->
     <div id="toastContainer" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
-        // 初始化图标
         lucide.createIcons();
 
         class FrameGenerator {
             constructor() {
                 this.state = {
-                    image: null,
-                    objectUrl: null,
-                    exifData: null,
+                    images: [],
+                    currentIndex: -1,
                     config: {
-                        preset: 'coords', 
-                        mainText: '',
-                        subText: '',
-                        borderRatio: 0.08, 
-                        fontFamily: 'sans-serif',
+                        preset: 'params', // 默认切到专业详细参数 
+                        borderRatio: 0.06, 
+                        fontFamily: 'system', // 默认苹果风
                         theme: 'light',
+                        frameStyle: 'classic',
+                        textLayout: 'center' // 默认居中排版
                     }
                 };
                 
@@ -314,10 +336,13 @@
                     dropZone: document.getElementById('dropZone'),
                     uploadPlaceholder: document.getElementById('uploadPlaceholder'),
                     uploadingState: document.getElementById('uploadingState'),
+                    uploadProgressText: document.getElementById('uploadProgressText'),
                     settingsPanel: document.getElementById('settingsPanel'),
                     mainText: document.getElementById('mainText'),
                     subText: document.getElementById('subText'),
                     presetBtns: document.querySelectorAll('.preset-btn'),
+                    styleBtns: document.querySelectorAll('.style-btn'),
+                    layoutBtns: document.querySelectorAll('.layout-btn'),
                     borderWidth: document.getElementById('borderWidth'),
                     borderWidthLabel: document.getElementById('borderWidthLabel'),
                     fontBtns: document.querySelectorAll('.font-btn'),
@@ -326,12 +351,14 @@
                     ctx: document.getElementById('mainCanvas').getContext('2d'),
                     emptyPreview: document.getElementById('emptyPreview'),
                     downloadBtn: document.getElementById('downloadBtn'),
+                    batchDownloadBtn: document.getElementById('batchDownloadBtn'),
                     autoExifBtn: document.getElementById('autoExifBtn'),
+                    galleryContainer: document.getElementById('galleryContainer'),
+                    thumbnailList: document.getElementById('thumbnailList'),
                     toastContainer: document.getElementById('toastContainer')
                 };
             }
 
-            // Segmented Control UI 切换辅助方法
             updateSegmentedUI(buttons, activeDataKey, activeValue) {
                 buttons.forEach(btn => {
                     if (btn.dataset[activeDataKey] === activeValue) {
@@ -345,9 +372,8 @@
             }
 
             bindEvents() {
-                // 上传与拖拽事件
                 this.dom.dropZone.addEventListener('click', () => this.dom.fileInput.click());
-                this.dom.fileInput.addEventListener('change', (e) => this.handleFileUpload(e.target.files[0]));
+                this.dom.fileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
                 
                 ['dragover', 'dragenter'].forEach(evt => {
                     this.dom.dropZone.addEventListener(evt, (e) => {
@@ -360,43 +386,79 @@
                         e.preventDefault();
                         this.dom.dropZone.classList.remove('drag-active');
                         if (evt === 'drop' && e.dataTransfer.files.length) {
-                            this.handleFileUpload(e.dataTransfer.files[0]);
+                            this.handleFiles(e.dataTransfer.files);
                         }
                     });
                 });
 
-                // 配置项变更事件
                 const scheduleRender = () => {
                     if (this.renderTimer) cancelAnimationFrame(this.renderTimer);
-                    this.renderTimer = requestAnimationFrame(() => this.renderCanvas());
+                    this.renderTimer = requestAnimationFrame(() => this.renderCurrentCanvas());
                 };
 
-                this.dom.mainText.addEventListener('input', (e) => { this.state.config.mainText = e.target.value; scheduleRender(); });
-                this.dom.subText.addEventListener('input', (e) => { this.state.config.subText = e.target.value; scheduleRender(); });
+                this.dom.mainText.addEventListener('input', (e) => { 
+                    if(this.state.currentIndex >= 0) {
+                        this.state.images[this.state.currentIndex].mainText = e.target.value; 
+                        scheduleRender(); 
+                    }
+                });
+                this.dom.subText.addEventListener('input', (e) => { 
+                    if(this.state.currentIndex >= 0) {
+                        this.state.images[this.state.currentIndex].subText = e.target.value; 
+                        scheduleRender(); 
+                    }
+                });
                 
-                // 预设切换
                 this.dom.presetBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const val = e.currentTarget.dataset.preset;
                         this.updateSegmentedUI(this.dom.presetBtns, 'preset', val);
                         this.state.config.preset = val;
                         
-                        if (this.state.exifData) {
-                            this.applyExifToInputs();
-                            scheduleRender();
+                        // 当选择坐标模式时，禁用排版选择并变灰
+                        if (val === 'coords') {
+                            this.dom.layoutBtns.forEach(b => {
+                                b.style.pointerEvents = 'none';
+                                b.style.opacity = '0.4';
+                            });
+                        } else {
+                            this.dom.layoutBtns.forEach(b => {
+                                b.style.pointerEvents = 'auto';
+                                b.style.opacity = '1';
+                            });
                         }
+
+                        this.state.images.forEach(imgData => this.generateTextForImage(imgData));
+                        this.syncInputsWithCurrent();
+                        scheduleRender();
                     });
                 });
 
-                // 边距拖动
+                this.dom.styleBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const val = e.currentTarget.dataset.style;
+                        this.updateSegmentedUI(this.dom.styleBtns, 'style', val);
+                        this.state.config.frameStyle = val;
+                        scheduleRender();
+                    });
+                });
+
+                this.dom.layoutBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const val = e.currentTarget.dataset.layout;
+                        this.updateSegmentedUI(this.dom.layoutBtns, 'layout', val);
+                        this.state.config.textLayout = val;
+                        scheduleRender();
+                    });
+                });
+
                 this.dom.borderWidth.addEventListener('input', (e) => {
                     const val = e.target.value;
                     this.dom.borderWidthLabel.textContent = `${val}%`;
                     this.state.config.borderRatio = parseInt(val) / 100;
                     scheduleRender();
                 });
-
-                // 字体切换
+                
                 this.dom.fontBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const val = e.currentTarget.dataset.font;
@@ -405,8 +467,7 @@
                         scheduleRender();
                     });
                 });
-
-                // 主题切换
+                
                 this.dom.themeRadios.forEach(radio => {
                     radio.addEventListener('change', (e) => {
                         this.state.config.theme = e.target.value;
@@ -415,62 +476,92 @@
                 });
 
                 this.dom.autoExifBtn.addEventListener('click', () => {
-                    this.applyExifToInputs();
-                    this.showToast('已重新应用照片元数据', 'success');
+                    if(this.state.currentIndex >= 0) {
+                        this.generateTextForImage(this.state.images[this.state.currentIndex]);
+                        this.syncInputsWithCurrent();
+                        scheduleRender();
+                        this.showToast('已重置当前照片参数', 'success');
+                    }
                 });
 
-                this.dom.downloadBtn.addEventListener('click', () => this.downloadImage());
+                this.dom.downloadBtn.addEventListener('click', () => this.downloadCurrentImage());
+                this.dom.batchDownloadBtn.addEventListener('click', () => this.batchDownload());
             }
 
-            async handleFileUpload(file) {
-                if (!file) return;
-                if (!file.type.startsWith('image/') && !file.name.toLowerCase().match(/\.(jpg|jpeg|png|webp|heic)$/)) {
-                    this.showToast('请上传有效的图片文件', 'error');
+            async handleFiles(filesList) {
+                if (!filesList || filesList.length === 0) return;
+                
+                const validFiles = Array.from(filesList).filter(f => 
+                    f.type.startsWith('image/') || f.name.toLowerCase().match(/\.(jpg|jpeg|png|webp|heic)$/)
+                );
+
+                if (validFiles.length === 0) {
+                    this.showToast('未检测到支持的图片格式', 'error');
                     return;
                 }
 
-                this.setLoading(true);
+                this.setLoading(true, `准备处理 ${validFiles.length} 张照片...`);
 
-                try {
-                    const [imgElement, exifData] = await Promise.all([
-                        this.loadImage(file),
-                        this.readExif(file)
-                    ]);
+                let successCount = 0;
+                for (let i = 0; i < validFiles.length; i++) {
+                    const file = validFiles[i];
+                    this.setLoading(true, `正在提取 EXIF (${i+1}/${validFiles.length})`);
+                    try {
+                        const [imgElement, exifData] = await Promise.all([
+                            this.loadImage(file),
+                            this.readExif(file)
+                        ]);
 
-                    this.state.image = imgElement;
-                    this.state.exifData = exifData;
-                    
+                        const imgData = {
+                            id: Date.now() + Math.random().toString(36).substr(2, 5),
+                            file: file,
+                            objectUrl: imgElement.src,
+                            img: imgElement,
+                            exifData: exifData,
+                            mainText: '',
+                            subText: ''
+                        };
+                        
+                        this.generateTextForImage(imgData);
+                        this.state.images.push(imgData);
+                        successCount++;
+                    } catch (error) {
+                        console.error(`解析失败: ${file.name}`, error);
+                    }
+                }
+
+                this.setLoading(false);
+                this.dom.fileInput.value = '';
+
+                if (successCount > 0) {
                     this.dom.settingsPanel.classList.remove('opacity-40', 'pointer-events-none');
                     this.dom.emptyPreview.classList.add('hidden');
                     this.dom.canvas.classList.remove('hidden');
                     this.dom.downloadBtn.classList.remove('hidden');
                     this.dom.downloadBtn.classList.add('flex');
-
-                    this.applyExifToInputs();
-                    this.renderCanvas();
                     
-                    this.showToast('图片加载并解析成功', 'success');
+                    if (this.state.images.length > 1) {
+                        this.dom.batchDownloadBtn.classList.remove('hidden');
+                        this.dom.batchDownloadBtn.classList.add('flex');
+                        this.dom.galleryContainer.classList.remove('translate-y-full');
+                    }
 
-                } catch (error) {
-                    console.error(error);
-                    this.showToast('图片解析失败，可能是内存不足或格式不支持', 'error');
-                } finally {
-                    this.setLoading(false);
-                    this.dom.fileInput.value = '';
+                    this.renderGallery();
+                    this.selectImage(this.state.images.length - successCount);
+                    
+                    this.showToast(`成功解析 ${successCount} 张图片及参数`, 'success');
+                } else {
+                    this.showToast('图片导入失败', 'error');
                 }
             }
 
             loadImage(file) {
                 return new Promise((resolve, reject) => {
-                    if (this.state.objectUrl) {
-                        URL.revokeObjectURL(this.state.objectUrl);
-                    }
-                    this.state.objectUrl = URL.createObjectURL(file);
-
+                    const url = URL.createObjectURL(file);
                     const img = new Image();
                     img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = this.state.objectUrl;
+                    img.onerror = () => { URL.revokeObjectURL(url); reject(); };
+                    img.src = url;
                 });
             }
 
@@ -494,9 +585,10 @@
                 });
             }
 
-            applyExifToInputs() {
-                const e = this.state.exifData;
+            generateTextForImage(imgData) {
+                const e = imgData.exifData;
                 if (!e) return;
+                
                 let main = '';
                 let sub = '';
 
@@ -504,17 +596,18 @@
                     if (e.lat && e.lng) {
                         main = this.formatGPS(e.lat, e.latRef, e.lng, e.lngRef);
                     } else {
-                        main = 'MINIMAL FRAME';
+                        main = 'FRAME PRO';
                     }
                     sub = '';
                 } else {
+                    // 专业详细参数预设
                     if (e.model) {
                         main = e.make && e.model.indexOf(e.make) === -1 ? `${e.make} ${e.model}` : e.model;
                         main = main.charAt(0).toUpperCase() + main.slice(1);
                     } else if (e.lat && e.lng) {
                         main = this.formatGPS(e.lat, e.latRef, e.lng, e.lngRef);
                     } else {
-                        main = 'MINIMAL FRAME';
+                        main = 'FRAME PRO';
                     }
 
                     const params = [];
@@ -535,16 +628,15 @@
                         }
                     }
                     if (e.iso) params.push(`ISO${e.iso}`);
-                    sub = params.join('  ');
+                    
+                    // 加大参数间距提升高级感
+                    sub = params.join('   ');
                 }
 
-                this.dom.mainText.value = main;
-                this.dom.subText.value = sub;
-                this.state.config.mainText = main;
-                this.state.config.subText = sub;
+                imgData.mainText = main;
+                imgData.subText = sub;
             }
 
-            // 格式化 GPS，去除了秒数的小数点，使用 Math.round(s)
             formatGPS(lat, latRef, lng, lngRef) {
                 try {
                     const formatDMS = (dms) => {
@@ -554,23 +646,59 @@
                         return `${Math.round(d)}° ${Math.round(m)}' ${Math.round(s)}''`;
                     };
                     return `${latRef || 'N'} ${formatDMS(lat)}, ${lngRef || 'E'} ${formatDMS(lng)}`;
-                } catch(err) {
-                    return '';
+                } catch(err) { return ''; }
+            }
+
+            renderGallery() {
+                this.dom.thumbnailList.innerHTML = '';
+                this.state.images.forEach((imgData, index) => {
+                    const wrap = document.createElement('div');
+                    wrap.className = `w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${index === this.state.currentIndex ? 'border-zinc-900 shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`;
+                    wrap.onclick = () => this.selectImage(index);
+                    
+                    const img = document.createElement('img');
+                    img.src = imgData.objectUrl;
+                    img.className = 'w-full h-full object-cover';
+                    
+                    wrap.appendChild(img);
+                    this.dom.thumbnailList.appendChild(wrap);
+                });
+            }
+
+            selectImage(index) {
+                if (index < 0 || index >= this.state.images.length) return;
+                this.state.currentIndex = index;
+                this.renderGallery();
+                this.syncInputsWithCurrent();
+                this.renderCurrentCanvas();
+                
+                const activeThumb = this.dom.thumbnailList.children[index];
+                if (activeThumb) {
+                    activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 }
             }
 
-            renderCanvas() {
-                const img = this.state.image;
-                if (!img) return;
+            syncInputsWithCurrent() {
+                const cur = this.state.images[this.state.currentIndex];
+                if(cur) {
+                    this.dom.mainText.value = cur.mainText;
+                    this.dom.subText.value = cur.subText;
+                }
+            }
 
+            renderCurrentCanvas() {
+                if(this.state.currentIndex < 0) return;
+                const imgData = this.state.images[this.state.currentIndex];
+                this.drawCanvas(imgData, this.dom.canvas, this.dom.ctx);
+            }
+
+            drawCanvas(imgData, canvas, ctx) {
+                const img = imgData.img;
                 const { config } = this.state;
-                const ctx = this.dom.ctx;
-                const canvas = this.dom.canvas;
 
                 const MAX_SIZE = 4096;
                 let drawW = img.naturalWidth;
                 let drawH = img.naturalHeight;
-
                 if (drawW > MAX_SIZE || drawH > MAX_SIZE) {
                     const ratio = Math.min(MAX_SIZE / drawW, MAX_SIZE / drawH);
                     drawW = Math.floor(drawW * ratio);
@@ -578,83 +706,191 @@
                 }
 
                 const shortSide = Math.min(drawW, drawH);
+                const hasText = imgData.mainText || imgData.subText;
                 
-                // padding 计算
-                const padding = shortSide * config.borderRatio;
-                
-                // 底部排版空间计算
-                const hasText = config.mainText || config.subText;
-                const bottomExtra = hasText ? (padding * 1.5) : 0; 
+                // --- 边距计算 ---
+                const basePadding = shortSide * config.borderRatio;
+                let padTop, padBottom, padLeft, padRight;
 
-                // 最终画布尺寸
-                canvas.width = drawW + (padding * 2);
-                canvas.height = drawH + padding + padding + bottomExtra;
+                if (config.frameStyle === 'polaroid') {
+                    // 拍立得
+                    padTop = padLeft = padRight = basePadding * 0.8;
+                    padBottom = basePadding * 3.5; 
+                } else {
+                    // 经典和毛玻璃：底部留出更大呼吸空间
+                    padTop = padLeft = padRight = basePadding;
+                    padBottom = hasText ? basePadding * 2.5 : basePadding;
+                }
 
-                // 解析主题颜色
-                const bgColor = config.theme === 'dark' ? '#09090b' : '#ffffff';
-                const textColor = config.theme === 'dark' ? '#ffffff' : '#18181b';
-                const subTextColor = config.theme === 'dark' ? '#a1a1aa' : '#71717a';
+                canvas.width = drawW + padLeft + padRight;
+                canvas.height = drawH + padTop + padBottom;
 
-                // 1. 绘制背景
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                const isDark = config.theme === 'dark';
+                const bgColor = isDark ? '#09090b' : '#ffffff';
+                const textColor = isDark ? '#ffffff' : '#18181b';
+                const subTextColor = isDark ? '#a1a1aa' : '#71717a';
 
-                // 2. 绘制原图 (加一点微小的阴影提升质感)
+                // --- 1. 背景层 ---
+                if (config.frameStyle === 'glass') {
+                    ctx.save();
+                    const blurRadius = Math.max(100, shortSide * 0.15); 
+                    ctx.filter = `blur(${blurRadius}px) saturate(180%) brightness(${isDark ? '0.75' : '1.05'})`;
+                    
+                    const scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight) * 1.5;
+                    const bgW = img.naturalWidth * scale;
+                    const bgH = img.naturalHeight * scale;
+                    const bgX = (canvas.width - bgW) / 2;
+                    const bgY = (canvas.height - bgH) / 2;
+                    ctx.drawImage(img, bgX, bgY, bgW, bgH);
+                    ctx.restore();
+
+                    const glassGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    if (isDark) {
+                        glassGradient.addColorStop(0, 'rgba(15, 15, 17, 0.15)');
+                        glassGradient.addColorStop(0.5, 'rgba(15, 15, 17, 0.45)');
+                        glassGradient.addColorStop(1, 'rgba(9, 9, 11, 0.95)');
+                    } else {
+                        glassGradient.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+                        glassGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.45)');
+                        glassGradient.addColorStop(1, 'rgba(240, 240, 245, 0.98)');
+                    }
+                    ctx.fillStyle = glassGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                } else if (config.frameStyle === 'polaroid') {
+                    const paperGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                    if (isDark) {
+                        paperGradient.addColorStop(0, '#27272a');
+                        paperGradient.addColorStop(1, '#18181b');
+                    } else {
+                        paperGradient.addColorStop(0, '#ffffff');
+                        paperGradient.addColorStop(1, '#f4f4f5');
+                    }
+                    ctx.fillStyle = paperGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                } else {
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+
+                // --- 2. 主体照片层 ---
                 ctx.save();
-                ctx.shadowColor = config.theme === 'dark' ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.1)';
-                ctx.shadowBlur = padding * 0.15;
-                ctx.shadowOffsetY = padding * 0.05;
+                if (config.frameStyle === 'glass') {
+                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)';
+                    ctx.shadowBlur = basePadding * 0.3;
+                    ctx.shadowOffsetY = basePadding * 0.1;
+                } else if (config.frameStyle === 'classic') {
+                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.08)';
+                    ctx.shadowBlur = basePadding * 0.4;
+                    ctx.shadowOffsetY = basePadding * 0.1;
+                }
+
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, padding, padding, drawW, drawH);
+                ctx.drawImage(img, padLeft, padTop, drawW, drawH);
                 ctx.restore();
 
-                // 3. 绘制文字
+                if (config.frameStyle === 'polaroid') {
+                    ctx.save();
+                    ctx.lineWidth = Math.max(1.5, shortSide * 0.002);
+                    ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.06)';
+                    ctx.beginPath(); ctx.moveTo(padLeft, padTop + drawH); ctx.lineTo(padLeft, padTop); ctx.lineTo(padLeft + drawW, padTop); ctx.stroke();
+                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)';
+                    ctx.beginPath(); ctx.moveTo(padLeft + drawW, padTop); ctx.lineTo(padLeft + drawW, padTop + drawH); ctx.lineTo(padLeft, padTop + drawH); ctx.stroke();
+                    ctx.restore();
+                }
+
+                // --- 3. 字体解析与排版引擎 ---
                 if (hasText) {
-                    const textYCenter = drawH + padding + (padding + bottomExtra) / 2;
-                    const centerX = canvas.width / 2;
-                    
-                    let fontStack = '-apple-system, "Inter", sans-serif';
-                    if (config.fontFamily === 'serif') fontStack = '"Noto Serif SC", serif';
-                    if (config.fontFamily === 'monospace') fontStack = '"JetBrains Mono", monospace';
+                    let fontStack = '-apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+                    if (config.fontFamily === 'nothing') fontStack = '"DotGothic16", sans-serif';
+                    else if (config.fontFamily === 'serif') fontStack = '"Noto Serif SC", serif';
+                    else if (config.fontFamily === 'monospace') fontStack = '"JetBrains Mono", monospace';
+                    else if (config.fontFamily === 'oswald') fontStack = '"Oswald", "Inter", sans-serif';
+                    else if (config.fontFamily === 'cinzel') fontStack = '"Cinzel", "Noto Serif SC", serif';
+                    else if (config.fontFamily === 'montserrat') fontStack = '"Montserrat", "Inter", sans-serif';
+                    else if (config.fontFamily === 'lato') fontStack = '"Lato", "Inter", sans-serif';
 
-                    ctx.textAlign = 'center';
                     const baseFontSize = shortSide * 0.024;
+                    const mainFont = `600 ${baseFontSize}px ${fontStack}`; 
+                    const subFont = `400 ${baseFontSize * 0.65}px ${fontStack}`;
 
-                    if (config.mainText && config.subText) {
-                        ctx.fillStyle = textColor;
-                        ctx.font = `600 ${baseFontSize}px ${fontStack}`;
-                        ctx.textBaseline = 'bottom';
-                        ctx.fillText(config.mainText, centerX, textYCenter - (baseFontSize * 0.35));
+                    const textYCenter = padTop + drawH + (padBottom / 2);
+                    
+                    // 测量文字宽度
+                    ctx.font = mainFont; const mainW = ctx.measureText(imgData.mainText).width;
+                    ctx.font = subFont; const subW = ctx.measureText(imgData.subText).width;
 
-                        ctx.fillStyle = subTextColor;
-                        ctx.font = `400 ${baseFontSize * 0.65}px ${fontStack}`;
-                        ctx.textBaseline = 'top';
-                        ctx.letterSpacing = "1px";
-                        ctx.fillText(config.subText, centerX, textYCenter + (baseFontSize * 0.25));
-                    } else if (config.mainText || config.subText) {
-                        const text = config.mainText || config.subText;
-                        ctx.fillStyle = config.mainText ? textColor : subTextColor;
-                        ctx.font = `${config.mainText ? '600' : '400'} ${baseFontSize}px ${fontStack}`;
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(text, centerX, textYCenter);
+                    // 确定当前排版逻辑
+                    let currentLayout = config.textLayout;
+                    if (config.preset === 'coords') {
+                        currentLayout = 'center'; // 如果是坐标模式，强制锁定居中
+                    }
+
+                    ctx.textBaseline = 'middle';
+
+                    if (currentLayout === 'center') {
+                        // 【居中对齐】
+                        ctx.textAlign = 'center'; // 直接使用 center 居中对齐整个文本
+                        
+                        if (imgData.mainText && imgData.subText) {
+                            ctx.fillStyle = textColor; ctx.font = mainFont;
+                            ctx.fillText(imgData.mainText, canvas.width / 2, textYCenter - (baseFontSize * 0.45));
+                            
+                            ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1.5px";
+                            ctx.fillText(imgData.subText, canvas.width / 2, textYCenter + (baseFontSize * 0.6));
+                        } else {
+                            const text = imgData.mainText || imgData.subText;
+                            ctx.fillStyle = imgData.mainText ? textColor : subTextColor; 
+                            ctx.font = imgData.mainText ? mainFont : subFont;
+                            ctx.fillText(text, canvas.width / 2, textYCenter);
+                        }
+
+                    } else if (currentLayout === 'split') {
+                        // 【两端对齐】
+                        if (imgData.mainText) {
+                            ctx.textAlign = 'left';
+                            ctx.fillStyle = textColor; ctx.font = mainFont;
+                            ctx.fillText(imgData.mainText, padLeft, textYCenter);
+                        }
+                        if (imgData.subText) {
+                            ctx.textAlign = 'right';
+                            ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1px";
+                            ctx.fillText(imgData.subText, canvas.width - padRight, textYCenter);
+                        }
+
+                    } else if (currentLayout === 'inline') {
+                        // 【紧凑单行】将所有参数排在一行
+                        ctx.textAlign = 'left';
+                        const spacer = baseFontSize * 1.2;
+                        const totalInlineW = mainW + (imgData.mainText && imgData.subText ? spacer : 0) + subW;
+                        let inlineX = (canvas.width - totalInlineW) / 2;
+
+                        if (imgData.mainText) {
+                            ctx.fillStyle = textColor; ctx.font = mainFont;
+                            ctx.fillText(imgData.mainText, inlineX, textYCenter);
+                            inlineX += mainW + spacer;
+                        }
+                        if (imgData.subText) {
+                            ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1px";
+                            ctx.fillText(imgData.subText, inlineX, textYCenter);
+                        }
                     }
                 }
             }
 
-            downloadImage() {
-                if (!this.state.image) return;
-                
+            downloadCurrentImage() {
+                if (this.state.currentIndex < 0) return;
                 try {
                     const dataUrl = this.dom.canvas.toDataURL('image/jpeg', 0.95);
                     const link = document.createElement('a');
-                    const timestamp = new Date().getTime();
-                    link.download = `FramePro_${timestamp}.jpg`;
+                    const imgData = this.state.images[this.state.currentIndex];
+                    const originalName = imgData.file.name.split('.')[0];
+                    link.download = `FramePro_${originalName}_${new Date().getTime()}.jpg`;
                     link.href = dataUrl;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    
                     this.showToast('导出成功', 'success');
                 } catch (e) {
                     console.error("导出失败:", e);
@@ -662,11 +898,55 @@
                 }
             }
 
-            setLoading(isLoading) {
+            async batchDownload() {
+                if (this.state.images.length === 0) return;
+                if (typeof JSZip === 'undefined') {
+                    this.showToast('ZIP库加载失败，请检查网络', 'error');
+                    return;
+                }
+
+                this.setLoading(true, '正在打包多张高画质照片，请耐心等待...');
+                
+                try {
+                    const zip = new JSZip();
+                    const offscreenCanvas = document.createElement('canvas');
+                    const offscreenCtx = offscreenCanvas.getContext('2d');
+
+                    for (let i = 0; i < this.state.images.length; i++) {
+                        const imgData = this.state.images[i];
+                        this.dom.uploadProgressText.innerText = `处理打包中 (${i+1}/${this.state.images.length})...`;
+                        
+                        this.drawCanvas(imgData, offscreenCanvas, offscreenCtx);
+                        const blob = await new Promise(resolve => offscreenCanvas.toBlob(resolve, 'image/jpeg', 0.92));
+                        const originalName = imgData.file.name.split('.')[0];
+                        zip.file(`FramePro_${originalName}_${i+1}.jpg`, blob);
+                    }
+
+                    this.dom.uploadProgressText.innerText = `正在生成 ZIP 文件...`;
+                    const zipContent = await zip.generateAsync({ type: "blob" });
+                    
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(zipContent);
+                    link.download = `FramePro_Batch_${new Date().getTime()}.zip`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    this.showToast(`成功打包导出 ${this.state.images.length} 张图片！`, 'success');
+                } catch (error) {
+                    console.error("批量打包失败:", error);
+                    this.showToast('打包导出失败', 'error');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            setLoading(isLoading, text = '处理中...') {
                 if (isLoading) {
                     this.dom.uploadPlaceholder.classList.add('hidden');
                     this.dom.uploadingState.classList.remove('hidden');
                     this.dom.uploadingState.classList.add('flex');
+                    this.dom.uploadProgressText.innerText = text;
                     this.dom.dropZone.classList.add('pointer-events-none');
                 } else {
                     this.dom.uploadPlaceholder.classList.remove('hidden');
