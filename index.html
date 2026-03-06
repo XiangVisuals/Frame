@@ -152,13 +152,10 @@
                 <p class="text-xs text-zinc-400 mt-1">自动识别 EXIF 提取光学参数</p>
             </div>
             
-            <!-- 核心修复点：移除 absolute 绝对定位和强行修改的 pb-20 内边距，
-                 采用完全原生的 Flexbox 自动拉伸撑满 (flex-1 min-h-0)，在所有场景下保证画布完美居中 -->
             <div id="canvasContainer" class="flex-1 w-full h-full min-h-0 p-6 md:p-12 flex items-center justify-center overflow-hidden z-10 transition-all duration-300">
                 <canvas id="mainCanvas" class="hidden rounded-sm"></canvas>
             </div>
 
-            <!-- 画廊容器现在作为 Flex 子元素，仅在需要时出现并自然挤压上方容器的空间 -->
             <div id="galleryContainer" class="hidden w-full h-16 md:h-20 shrink-0 bg-white/80 backdrop-blur-md border-t border-zinc-200/60 items-center px-4 overflow-x-auto hide-scrollbar z-20">
                 <div id="thumbnailList" class="flex gap-3 h-full items-center py-2">
                 </div>
@@ -753,7 +750,8 @@
                 if (config.frameStyle === 'glass') {
                     ctx.save();
                     
-                    const MAX_BLUR_SIZE = 300; 
+                    // 极度压缩尺寸实现原生强力拉伸模糊，彻底解决移动端 filter 不生效问题
+                    const MAX_BLUR_SIZE = 80; // 从 300 进一步压制到 80，保证绝对的模糊感
                     const downScale = Math.min(1, MAX_BLUR_SIZE / Math.max(canvas.width, canvas.height));
                     
                     const blurCanvas = document.createElement('canvas');
@@ -767,13 +765,16 @@
                     const bgX = (blurCanvas.width - bgW) / 2;
                     const bgY = (blurCanvas.height - bgH) / 2;
 
-                    const blurRadius = 15; 
-                    blurCtx.filter = `blur(${blurRadius}px) saturate(180%) brightness(${isDark ? '0.75' : '1.05'})`;
+                    // 移动端 Safari 对小数和较小半径兼容性更好
+                    const blurRadius = 6; 
+                    blurCtx.filter = `blur(${blurRadius}px) saturate(1.8) brightness(${isDark ? 0.75 : 1.05})`;
                     blurCtx.drawImage(img, bgX, bgY, bgW, bgH);
                     
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
-                    const expand = (blurRadius * 2) / downScale;
+                    
+                    // 确保切除暗边
+                    const expand = (blurRadius * 3) / downScale; 
                     ctx.drawImage(
                         blurCanvas, 
                         0, 0, blurCanvas.width, blurCanvas.height, 
