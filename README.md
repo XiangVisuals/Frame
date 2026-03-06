@@ -32,7 +32,7 @@ Frame&+框 致力于用最简单的操作，赋予照片最具质感的画廊级
 
 | 极简纯白 + 居中对齐 | 光学毛玻璃 + 居中对称 | 复古拍立得 + 点阵风 | 
 | :---: | :---: | :---: |
-| ![Preview 1](预留_预览图1路径.png) | ![Preview 2](预留_预览图2路径.png) | ![Preview 3](预留_预览图3路径.png) | 
+| ![Preview 1](img/1.jpg) | ![Preview 2](img/2.jpg) | ![Preview 3](img/3.jpg) | 
 
 ## 🚀 快速开始 (Getting Started)
 
