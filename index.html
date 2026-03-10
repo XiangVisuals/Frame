@@ -681,6 +681,8 @@
                             make: EXIF.getTag(this, "Make"),
                             model: EXIF.getTag(this, "Model"),
                             focalLength: EXIF.getTag(this, "FocalLength"),
+                            // 优先提取 35mm 等效焦距，这个才是常规相机参数里的焦距概念
+                            focalLength35mm: EXIF.getTag(this, "FocalLengthIn35mmFilm"), 
                             fNumber: EXIF.getTag(this, "FNumber"),
                             exposureTime: EXIF.getTag(this, "ExposureTime"),
                             iso: EXIF.getTag(this, "ISOSpeedRatings"),
@@ -739,10 +741,14 @@
                     }
 
                     const params = [];
-                    if (e.focalLength) {
+                    // 核心修改点：优先使用 35mm 等效焦段，如果没有再退回物理焦距
+                    if (e.focalLength35mm) {
+                        params.push(`${Math.round(e.focalLength35mm)}mm`);
+                    } else if (e.focalLength) {
                         const fl = e.focalLength.numerator ? e.focalLength.numerator / e.focalLength.denominator : e.focalLength;
                         params.push(`${Math.round(fl)}mm`);
                     }
+                    
                     if (e.fNumber) {
                         const fn = e.fNumber.numerator ? e.fNumber.numerator / e.fNumber.denominator : e.fNumber;
                         params.push(`f/${fn.toFixed(1)}`);
