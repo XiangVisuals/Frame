@@ -5,18 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>+框</title>
     
-    <!-- 引入 Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2318181b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='22' x2='2' y1='6' y2='6'/%3E%3Cline x1='22' x2='2' y1='18' y2='18'/%3E%3Cline x1='6' x2='6' y1='2' y2='22'/%3E%3Cline x1='18' x2='18' y1='2' y2='22'/%3E%3C/svg%3E">
 
-    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 EXIF 解析库 -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
-    <!-- 引入 JSZip 用于批量下载 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- 引入 Lucide 图标库 -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- 引入高品质无版权/可商用字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DotGothic16&family=Inter:wght@400;500;600;700&family=JetBrains+Mono&family=Noto+Serif+SC:wght@400;600;700&family=Oswald:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 
     <script>
@@ -29,7 +23,7 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        brand: '#18181b', // Zinc 900
+                        brand: '#18181b',
                         surface: '#ffffff',
                         background: '#fafafa',
                     },
@@ -127,7 +121,7 @@
             <div class="bg-zinc-900 p-1.5 rounded-md">
                 <i data-lucide="frame" class="w-4 h-4 md:w-5 md:h-5 text-white"></i>
             </div>
-            <h1 class="font-semibold text-base md:text-lg tracking-tight">Frame<span class="hidden sm:inline-block text-xs font-normal text-zinc-400 ml-1 border border-zinc-200 rounded px-1.5 py-0.5">1.2</span></h1>
+            <h1 class="font-semibold text-base md:text-lg tracking-tight">Frame <span class="hidden sm:inline-block text-xs font-normal text-zinc-400 ml-1 border border-zinc-200 rounded px-1.5 py-0.5">1.3</span></h1>
         </div>
         <div class="flex items-center gap-2 md:gap-3">
             <button id="batchDownloadBtn" class="hidden items-center gap-1.5 md:gap-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-800 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-sm active:scale-95 disabled:opacity-50">
@@ -164,6 +158,7 @@
 
         <aside class="order-2 lg:order-1 w-full lg:w-[420px] xl:w-[450px] bg-white border-r border-zinc-200/60 overflow-y-auto flex-1 lg:flex-none z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
             <div class="p-5 md:p-6 space-y-6">
+                
                 <section>
                     <div id="dropZone" class="border-2 border-dashed border-zinc-200 bg-zinc-50/50 rounded-2xl p-6 md:p-8 text-center cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all duration-300 group relative">
                         <input type="file" id="fileInput" class="file-input-hidden" multiple accept="image/jpeg, image/png, image/webp, image/heic">
@@ -182,6 +177,7 @@
                 </section>
 
                 <div id="settingsPanel" class="space-y-6 opacity-40 pointer-events-none transition-all duration-500">
+                    
                     <section class="bg-white rounded-2xl p-5 border border-zinc-100 shadow-soft">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-sm font-bold text-zinc-800 flex items-center gap-2">
@@ -220,15 +216,21 @@
                         </h2>
                         
                         <div class="space-y-6">
+                            <!-- 边框风格 -->
                             <div>
-                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">相框材质</label>
-                                <div class="grid grid-cols-3 gap-1 p-1 bg-zinc-100 rounded-lg">
-                                    <button class="segment-btn style-btn py-1.5 text-xs font-medium rounded-md shadow-sm bg-white text-zinc-900" data-style="classic">极简纯白</button>
-                                    <button class="segment-btn style-btn py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-style="glass">高级毛玻璃</button>
-                                    <button class="segment-btn style-btn py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-style="polaroid">复古拍立得</button>
+                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">相框材质 / 风格</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-zinc-100 rounded-lg">
+                                    <button class="segment-btn style-btn py-1.5 text-[11px] font-medium rounded-md shadow-sm bg-white text-zinc-900" data-style="classic">极简纯白</button>
+                                    <button class="segment-btn style-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-style="glass">高级毛玻璃</button>
+                                    <button class="segment-btn style-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-style="polaroid">复古拍立得</button>
+                                    <button class="segment-btn style-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700 relative overflow-hidden group" data-style="palette">
+                                        <span class="relative z-10">色卡美学</span>
+                                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    </button>
                                 </div>
                             </div>
 
+                            <!-- 排版布局 -->
                             <div>
                                 <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">参数排版方式</label>
                                 <div class="grid grid-cols-3 gap-1 p-1 bg-zinc-100 rounded-lg" id="layoutGroup">
@@ -238,6 +240,7 @@
                                 </div>
                             </div>
 
+                            <!-- 边框宽度 -->
                             <div>
                                 <div class="flex justify-between items-center mb-3">
                                     <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">边缘留白比例</label>
@@ -246,8 +249,9 @@
                                 <input type="range" id="borderWidth" min="2" max="25" value="6" class="w-full mt-1">
                             </div>
 
+                            <!-- 高级字体 -->
                             <div>
-                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">排版字体库 (免费可商用)</label>
+                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">排版字体库</label>
                                 <div class="grid grid-cols-2 gap-1.5 p-1 bg-zinc-100 rounded-lg">
                                     <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md shadow-sm bg-white text-zinc-900" style="font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;" data-font="system">Apple / SF Pro</button>
                                     <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'DotGothic16', sans-serif;" data-font="nothing">Nothing 点阵风</button>
@@ -258,6 +262,7 @@
                                 </div>
                             </div>
 
+                            <!-- 颜色主题 -->
                             <div>
                                 <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">环境色调</label>
                                 <div class="flex gap-3">
@@ -316,12 +321,12 @@
                     images: [],
                     currentIndex: -1,
                     config: {
-                        preset: 'params', 
+                        preset: 'params',
                         borderRatio: 0.06, 
-                        fontFamily: 'system', 
+                        fontFamily: 'system',
                         theme: 'light',
                         frameStyle: 'classic',
-                        textLayout: 'center' 
+                        textLayout: 'center'
                     }
                 };
                 
@@ -353,9 +358,11 @@
                     
                     downloadBtn: document.getElementById('downloadBtn'),
                     batchDownloadBtn: document.getElementById('batchDownloadBtn'),
+                    
                     actionPanel: document.getElementById('actionPanel'),
                     panelDownloadBtn: document.getElementById('panelDownloadBtn'),
                     panelBatchBtn: document.getElementById('panelBatchBtn'),
+
                     autoExifBtn: document.getElementById('autoExifBtn'),
                     galleryContainer: document.getElementById('galleryContainer'),
                     thumbnailList: document.getElementById('thumbnailList'),
@@ -419,7 +426,8 @@
                         this.updateSegmentedUI(this.dom.presetBtns, 'preset', val);
                         this.state.config.preset = val;
                         
-                        if (val === 'coords') {
+                        // 当选择坐标模式或色卡美学时，禁用布局选择并变灰，强制排版
+                        if (val === 'coords' || this.state.config.frameStyle === 'palette') {
                             this.dom.layoutBtns.forEach(b => {
                                 b.style.pointerEvents = 'none';
                                 b.style.opacity = '0.4';
@@ -442,6 +450,19 @@
                         const val = e.currentTarget.dataset.style;
                         this.updateSegmentedUI(this.dom.styleBtns, 'style', val);
                         this.state.config.frameStyle = val;
+                        
+                        if (val === 'palette' || this.state.config.preset === 'coords') {
+                            this.dom.layoutBtns.forEach(b => {
+                                b.style.pointerEvents = 'none';
+                                b.style.opacity = '0.4';
+                            });
+                        } else {
+                            this.dom.layoutBtns.forEach(b => {
+                                b.style.pointerEvents = 'auto';
+                                b.style.opacity = '1';
+                            });
+                        }
+                        
                         scheduleRender();
                     });
                 });
@@ -492,8 +513,69 @@
                 
                 this.dom.downloadBtn.addEventListener('click', downloadAction);
                 this.dom.panelDownloadBtn.addEventListener('click', downloadAction);
+                
                 this.dom.batchDownloadBtn.addEventListener('click', batchDownloadAction);
                 this.dom.panelBatchBtn.addEventListener('click', batchDownloadAction);
+            }
+
+            // 本地极速提取色卡主色调 (基于简化 K-Means)
+            extractColors(img, count = 5) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const size = 64; 
+                canvas.width = size;
+                canvas.height = size;
+                ctx.drawImage(img, 0, 0, size, size);
+                
+                let data;
+                try {
+                    data = ctx.getImageData(0, 0, size, size).data;
+                } catch(e) {
+                    return ['#27272a', '#3f3f46', '#52525b', '#71717a', '#a1a1aa'];
+                }
+
+                let pixels = [];
+                for(let i=0; i<data.length; i+=4) {
+                    if(data[i+3] > 128) {
+                        pixels.push([data[i], data[i+1], data[i+2]]);
+                    }
+                }
+                if (pixels.length === 0) return ['#27272a', '#3f3f46', '#52525b', '#71717a', '#a1a1aa'];
+
+                let centroids = [];
+                let step = Math.floor(pixels.length / count);
+                for(let i=0; i<count; i++) {
+                    centroids.push(pixels[Math.min(i * step + Math.floor(step/2), pixels.length-1)]);
+                }
+
+                for(let iter=0; iter<5; iter++) {
+                    let clusters = Array.from({length: count}, () => []);
+                    for(let p of pixels) {
+                        let minDist = Infinity;
+                        let bestIdx = 0;
+                        for(let i=0; i<count; i++) {
+                            let d = Math.abs(p[0]-centroids[i][0]) + Math.abs(p[1]-centroids[i][1]) + Math.abs(p[2]-centroids[i][2]);
+                            if(d < minDist) { minDist = d; bestIdx = i; }
+                        }
+                        clusters[bestIdx].push(p);
+                    }
+                    for(let i=0; i<count; i++) {
+                        if(clusters[i].length > 0) {
+                            let r=0, g=0, b=0;
+                            for(let p of clusters[i]) { r+=p[0]; g+=p[1]; b+=p[2]; }
+                            centroids[i] = [Math.round(r/clusters[i].length), Math.round(g/clusters[i].length), Math.round(b/clusters[i].length)];
+                        }
+                    }
+                }
+
+                // 按照明亮度排序 (暗 -> 亮) 展现有层次感的色卡
+                centroids.sort((a,b) => {
+                    let lumaA = 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+                    let lumaB = 0.2126 * b[0] + 0.7152 * b[1] + 0.0722 * b[2];
+                    return lumaA - lumaB; 
+                });
+
+                return centroids.map(c => `rgb(${c[0]},${c[1]},${c[2]})`);
             }
 
             async handleFiles(filesList) {
@@ -513,12 +595,17 @@
                 let successCount = 0;
                 for (let i = 0; i < validFiles.length; i++) {
                     const file = validFiles[i];
-                    this.setLoading(true, `正在提取 EXIF (${i+1}/${validFiles.length})`);
+                    this.setLoading(true, `正在提取分析 (${i+1}/${validFiles.length})`);
                     try {
                         const [imgElement, exifData] = await Promise.all([
                             this.loadImage(file),
                             this.readExif(file)
                         ]);
+                        
+                        // 预提取颜色与额外信息以供色卡模式使用
+                        const colors = this.extractColors(imgElement, 5);
+                        const gpsStr = this.formatGPS(exifData.lat, exifData.latRef, exifData.lng, exifData.lngRef);
+                        const dateTimeStr = this.formatExifDate(exifData.dateTime);
 
                         const imgData = {
                             id: Date.now() + Math.random().toString(36).substr(2, 5),
@@ -527,7 +614,10 @@
                             img: imgElement,
                             exifData: exifData,
                             mainText: '',
-                            subText: ''
+                            subText: '',
+                            colors: colors,
+                            gpsStr: gpsStr,
+                            dateTimeStr: dateTimeStr
                         };
                         
                         this.generateTextForImage(imgData);
@@ -548,12 +638,14 @@
                     
                     this.dom.downloadBtn.classList.remove('hidden');
                     this.dom.downloadBtn.classList.add('flex');
+                    
                     this.dom.actionPanel.classList.remove('hidden');
                     this.dom.actionPanel.classList.add('flex');
                     
                     if (this.state.images.length > 1) {
                         this.dom.batchDownloadBtn.classList.remove('hidden');
                         this.dom.batchDownloadBtn.classList.add('flex');
+                        
                         this.dom.panelBatchBtn.classList.remove('hidden');
                         this.dom.panelBatchBtn.classList.add('flex');
                         
@@ -566,7 +658,7 @@
 
                     this.renderGallery();
                     this.selectImage(this.state.images.length - successCount);
-                    this.showToast(`成功解析 ${successCount} 张图片及参数`, 'success');
+                    this.showToast(`成功解析 ${successCount} 张图片`, 'success');
                 } else {
                     this.showToast('图片导入失败', 'error');
                 }
@@ -595,11 +687,31 @@
                             lat: EXIF.getTag(this, "GPSLatitude"),
                             latRef: EXIF.getTag(this, "GPSLatitudeRef"),
                             lng: EXIF.getTag(this, "GPSLongitude"),
-                            lngRef: EXIF.getTag(this, "GPSLongitudeRef")
+                            lngRef: EXIF.getTag(this, "GPSLongitudeRef"),
+                            dateTime: EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime")
                         };
                         resolve(data);
                     });
                 });
+            }
+
+            formatExifDate(str) {
+                if(!str) return '';
+                const parts = str.split(' ');
+                if(parts.length < 1) return str;
+                const dateParts = parts[0].split(':');
+                if(dateParts.length === 3) {
+                    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    const m = parseInt(dateParts[1], 10);
+                    const d = parseInt(dateParts[2], 10);
+                    const y = dateParts[0];
+                    let suffix = "th";
+                    if(d===1||d===21||d===31) suffix="st";
+                    else if(d===2||d===22) suffix="nd";
+                    else if(d===3||d===23) suffix="rd";
+                    return `${months[m-1]} ${d}${suffix}, ${y}`;
+                }
+                return str;
             }
 
             generateTextForImage(imgData) {
@@ -661,9 +773,9 @@
                         const d = dms[0].numerator ? dms[0].numerator / dms[0].denominator : dms[0];
                         const m = dms[1].numerator ? dms[1].numerator / dms[1].denominator : dms[1];
                         const s = dms[2].numerator ? dms[2].numerator / dms[2].denominator : dms[2];
-                        return `${Math.round(d)}° ${Math.round(m)}' ${Math.round(s)}''`;
+                        return `${Math.floor(d)}°${Math.floor(m)}'${s.toFixed(2)}""`;
                     };
-                    return `${latRef || 'N'} ${formatDMS(lat)}, ${lngRef || 'E'} ${formatDMS(lng)}`;
+                    return `${formatDMS(lat)}${latRef || 'N'}, ${formatDMS(lng)}${lngRef || 'E'}`;
                 } catch(err) { return ''; }
             }
 
@@ -728,17 +840,25 @@
                 
                 const basePadding = shortSide * config.borderRatio;
                 let padTop, padBottom, padLeft, padRight;
+                let outerMargin = 0; 
 
                 if (config.frameStyle === 'polaroid') {
                     padTop = padLeft = padRight = basePadding * 0.8;
                     padBottom = basePadding * 3.5; 
+                    outerMargin = basePadding * 1.2; 
+                } else if (config.frameStyle === 'palette') {
+                    // 色卡美学特定参数设置，为上方与下方留足空间
+                    padTop = basePadding * 1.6;
+                    padBottom = basePadding * 2.8;
+                    padLeft = padRight = basePadding * 1.2;
+                    outerMargin = 0;
                 } else {
                     padTop = padLeft = padRight = basePadding;
                     padBottom = hasText ? basePadding * 2.5 : basePadding;
                 }
 
-                canvas.width = drawW + padLeft + padRight;
-                canvas.height = drawH + padTop + padBottom;
+                canvas.width = drawW + padLeft + padRight + outerMargin * 2;
+                canvas.height = drawH + padTop + padBottom + outerMargin * 2;
 
                 const isDark = config.theme === 'dark';
                 const bgColor = isDark ? '#09090b' : '#ffffff';
@@ -747,40 +867,36 @@
 
                 if (config.frameStyle === 'glass') {
                     ctx.save();
-                    
-                    // --- 终极核心修复：纯 JS 像素级强制重算模糊，彻底抛弃 iOS 不兼容的 filter 属性 ---
-                    // 使用一个 120px 左右的极小离屏画布，不仅运算快到飞起，还能完美结合 JS 强力揉碎颜色
                     const MINI_SIZE = 120; 
                     const downScale = Math.min(1, MINI_SIZE / Math.max(canvas.width, canvas.height));
                     
-                    // 防止图片尺寸异常导致 0，强制最低为 1
-                    const w = Math.max(1, Math.floor(img.naturalWidth * downScale));
-                    const h = Math.max(1, Math.floor(img.naturalHeight * downScale));
+                    const w = Math.max(1, Math.floor(canvas.width * downScale));
+                    const h = Math.max(1, Math.floor(canvas.height * downScale));
                     
                     const miniCanvas = document.createElement('canvas');
                     miniCanvas.width = w;
                     miniCanvas.height = h;
                     const miniCtx = miniCanvas.getContext('2d');
                     
-                    // 缩小原图
-                    miniCtx.drawImage(img, 0, 0, w, h);
+                    const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight) * 1.1; 
+                    const bgW = img.naturalWidth * scale;
+                    const bgH = img.naturalHeight * scale;
+                    const bgX = (w - bgW) / 2;
+                    const bgY = (h - bgH) / 2;
                     
-                    // 纯数学强行计算模糊，对任何手机与浏览器做到 100% 绝对生效
+                    miniCtx.drawImage(img, bgX, bgY, bgW, bgH);
+                    
                     const imgDataObj = miniCtx.getImageData(0, 0, w, h);
                     const data = imgDataObj.data;
                     const temp = new Uint8ClampedArray(data.length);
-                    // 在 120px 上模糊 6 个像素，相当于原图极为强烈的景深虚化
                     const radius = 6;
                     
-                    // 运行 2 次 Box Blur 逼近顶级的光学高斯模糊
                     for (let pass = 0; pass < 2; pass++) {
-                        // 横向揉碎
                         for (let y = 0; y < h; y++) {
                             for (let x = 0; x < w; x++) {
                                 let r = 0, g = 0, b = 0, count = 0;
                                 for (let k = -radius; k <= radius; k++) {
                                     let nx = x + k;
-                                    // 完美解决上一版边缘发黑的 BUG：如果超出边界，强行使用边缘颜色进行拓展
                                     if (nx < 0) nx = 0; else if (nx >= w) nx = w - 1;
                                     const idx = (y * w + nx) * 4;
                                     r += data[idx]; g += data[idx+1]; b += data[idx+2];
@@ -790,7 +906,6 @@
                                 temp[outIdx] = r / count; temp[outIdx+1] = g / count; temp[outIdx+2] = b / count; temp[outIdx+3] = 255;
                             }
                         }
-                        // 纵向揉碎
                         for (let x = 0; x < w; x++) {
                             for (let y = 0; y < h; y++) {
                                 let r = 0, g = 0, b = 0, count = 0;
@@ -806,24 +921,20 @@
                             }
                         }
                     }
-                    // 把强行计算好的“纯色奶油”放回去
                     miniCtx.putImageData(imgDataObj, 0, 0);
                     
-                    // 最后一步：将这块 120 像素的颜色块，利用浏览器极强的硬件拉伸插值，铺满几千像素的大画布，带来浑然天成的高级柔顺感
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
                     
-                    // 计算等比覆盖(cover)的参数，扩边 5% (1.05) 确保不留白底
                     const coverScale = Math.max(canvas.width / w, canvas.height / h) * 1.05;
-                    const bgW = w * coverScale;
-                    const bgH = h * coverScale;
-                    const bgX = (canvas.width - bgW) / 2;
-                    const bgY = (canvas.height - bgH) / 2;
+                    const bgWW = w * coverScale;
+                    const bgHH = h * coverScale;
+                    const bgXX = (canvas.width - bgWW) / 2;
+                    const bgYY = (canvas.height - bgHH) / 2;
                     
-                    ctx.drawImage(miniCanvas, bgX, bgY, bgW, bgH);
+                    ctx.drawImage(miniCanvas, bgXX, bgYY, bgWW, bgHH);
                     ctx.restore();
 
-                    // 环境光滤镜：用微渐变叠加层制造玻璃质感
                     const glassGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
                     if (isDark) {
                         glassGradient.addColorStop(0, 'rgba(15, 15, 17, 0.1)');
@@ -838,16 +949,44 @@
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 } else if (config.frameStyle === 'polaroid') {
-                    const paperGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = isDark ? '#000000' : '#f4f4f5';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.save();
+                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.95)' : 'rgba(0,0,0,0.18)';
+                    ctx.shadowBlur = outerMargin * 0.5;
+                    ctx.shadowOffsetY = outerMargin * 0.2;
+                    ctx.shadowOffsetX = 0;
+                    
+                    const paperX = outerMargin;
+                    const paperY = outerMargin;
+                    const paperW = drawW + padLeft + padRight;
+                    const paperH = drawH + padTop + padBottom;
+                    const cornerRadius = Math.max(4, shortSide * 0.015); 
+
+                    ctx.beginPath();
+                    if (ctx.roundRect) {
+                        ctx.roundRect(paperX, paperY, paperW, paperH, cornerRadius);
+                    } else {
+                        ctx.rect(paperX, paperY, paperW, paperH); 
+                    }
+                    
+                    const paperGradient = ctx.createLinearGradient(paperX, paperY, paperX + paperW, paperY + paperH);
                     if (isDark) {
                         paperGradient.addColorStop(0, '#27272a');
                         paperGradient.addColorStop(1, '#18181b');
                     } else {
                         paperGradient.addColorStop(0, '#ffffff');
-                        paperGradient.addColorStop(1, '#f4f4f5');
+                        paperGradient.addColorStop(1, '#f8f8fa');
                     }
                     ctx.fillStyle = paperGradient;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fill();
+                    
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,1)';
+                    ctx.stroke();
+                    ctx.restore();
+
                 } else {
                     ctx.fillStyle = bgColor;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -858,7 +997,7 @@
                     ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)';
                     ctx.shadowBlur = basePadding * 0.3;
                     ctx.shadowOffsetY = basePadding * 0.1;
-                } else if (config.frameStyle === 'classic') {
+                } else if (config.frameStyle === 'classic' || config.frameStyle === 'palette') {
                     ctx.shadowColor = isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.08)';
                     ctx.shadowBlur = basePadding * 0.4;
                     ctx.shadowOffsetY = basePadding * 0.1;
@@ -866,20 +1005,92 @@
 
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, padLeft, padTop, drawW, drawH);
+                ctx.drawImage(img, padLeft + outerMargin, padTop + outerMargin, drawW, drawH);
                 ctx.restore();
 
                 if (config.frameStyle === 'polaroid') {
                     ctx.save();
+                    const photoX = padLeft + outerMargin;
+                    const photoY = padTop + outerMargin;
+                    
                     ctx.lineWidth = Math.max(1.5, shortSide * 0.002);
-                    ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.06)';
-                    ctx.beginPath(); ctx.moveTo(padLeft, padTop + drawH); ctx.lineTo(padLeft, padTop); ctx.lineTo(padLeft + drawW, padTop); ctx.stroke();
-                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)';
-                    ctx.beginPath(); ctx.moveTo(padLeft + drawW, padTop); ctx.lineTo(padLeft + drawW, padTop + drawH); ctx.lineTo(padLeft, padTop + drawH); ctx.stroke();
+                    ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.15)';
+                    ctx.beginPath(); ctx.moveTo(photoX, photoY + drawH); ctx.lineTo(photoX, photoY); ctx.lineTo(photoX + drawW, photoY); ctx.stroke();
+                    
+                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)';
+                    ctx.beginPath(); ctx.moveTo(photoX + drawW, photoY); ctx.lineTo(photoX + drawW, photoY + drawH); ctx.lineTo(photoX, photoY + drawH); ctx.stroke();
+                    
+                    const innerShadowGrad = ctx.createLinearGradient(0, photoY, 0, photoY + basePadding * 0.5);
+                    innerShadowGrad.addColorStop(0, isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.12)');
+                    innerShadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = innerShadowGrad;
+                    ctx.fillRect(photoX, photoY, drawW, basePadding * 0.5);
                     ctx.restore();
                 }
 
-                if (hasText) {
+                // --------- 色卡美学专项排版 ---------
+                if (config.frameStyle === 'palette') {
+                    let fontStack = '-apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+                    if (config.fontFamily === 'nothing') fontStack = '"DotGothic16", sans-serif';
+                    else if (config.fontFamily === 'serif') fontStack = '"Noto Serif SC", serif';
+                    else if (config.fontFamily === 'monospace') fontStack = '"JetBrains Mono", monospace';
+                    else if (config.fontFamily === 'oswald') fontStack = '"Oswald", "Inter", sans-serif';
+                    else if (config.fontFamily === 'cinzel') fontStack = '"Cinzel", "Noto Serif SC", serif';
+                    else if (config.fontFamily === 'montserrat') fontStack = '"Montserrat", "Inter", sans-serif';
+                    else if (config.fontFamily === 'lato') fontStack = '"Lato", "Inter", sans-serif';
+
+                    const baseFontSize = shortSide * 0.024;
+                    
+                    // 1. 左上角：拍摄时间与地理坐标
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillStyle = subTextColor; 
+                    ctx.font = `500 ${baseFontSize * 0.6}px ${fontStack}`;
+                    
+                    const topLeftX = padLeft + outerMargin;
+                    const topLeftY = padTop + outerMargin - baseFontSize * 0.8;
+                    
+                    let leftLines = [];
+                    if (imgData.dateTimeStr) leftLines.push(`PHOTOGRAPHED IN :  ${imgData.dateTimeStr}`);
+                    if (imgData.gpsStr) leftLines.push(`GEO :  ${imgData.gpsStr}`);
+                    
+                    let currY = topLeftY;
+                    for (let i = leftLines.length - 1; i >= 0; i--) {
+                        ctx.fillText(leftLines[i], topLeftX, currY);
+                        currY -= baseFontSize * 1.0;
+                    }
+                    
+                    // 2. 左下角：主色调色卡
+                    const photoBotY = padTop + drawH + outerMargin;
+                    const colorBlockW = drawW * 0.08; // 总共约占图片 40% 宽度
+                    const colorBlockH = basePadding * 0.45;
+                    const colorBlockY = photoBotY + basePadding * 0.8;
+                    
+                    if (imgData.colors && imgData.colors.length > 0) {
+                        for(let i=0; i<imgData.colors.length; i++) {
+                            ctx.fillStyle = imgData.colors[i];
+                            ctx.fillRect(padLeft + outerMargin + i * colorBlockW, colorBlockY, colorBlockW, colorBlockH);
+                        }
+                    }
+                    
+                    // 3. 右下角：设备与光学参数 (不再显示巨型主标题)
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'top';
+                    
+                    // 设备型号 (使用主文本，加粗放大)
+                    ctx.fillStyle = textColor;
+                    ctx.font = `600 ${baseFontSize * 1.5}px ${fontStack}`;
+                    const deviceY = photoBotY + basePadding * 0.65;
+                    ctx.fillText(imgData.mainText || '', padLeft + outerMargin + drawW, deviceY);
+                    
+                    // 光学参数 (使用副文本)
+                    ctx.fillStyle = subTextColor;
+                    ctx.font = `400 ${baseFontSize * 0.65}px ${fontStack}`;
+                    ctx.fillText(imgData.subText || '', padLeft + outerMargin + drawW, deviceY + baseFontSize * 1.9);
+
+                } 
+                // --------- 传统文字排版 ---------
+                else if (hasText) {
                     let fontStack = '-apple-system, BlinkMacSystemFont, "Inter", sans-serif';
                     if (config.fontFamily === 'nothing') fontStack = '"DotGothic16", sans-serif';
                     else if (config.fontFamily === 'serif') fontStack = '"Noto Serif SC", serif';
@@ -893,7 +1104,7 @@
                     const mainFont = `600 ${baseFontSize}px ${fontStack}`; 
                     const subFont = `400 ${baseFontSize * 0.65}px ${fontStack}`;
 
-                    const textYCenter = padTop + drawH + (padBottom / 2);
+                    const textYCenter = padTop + drawH + (padBottom / 2) + outerMargin;
                     
                     ctx.font = mainFont; const mainW = ctx.measureText(imgData.mainText).width;
                     ctx.font = subFont; const subW = ctx.measureText(imgData.subText).width;
@@ -925,12 +1136,12 @@
                         if (imgData.mainText) {
                             ctx.textAlign = 'left';
                             ctx.fillStyle = textColor; ctx.font = mainFont;
-                            ctx.fillText(imgData.mainText, padLeft, textYCenter);
+                            ctx.fillText(imgData.mainText, padLeft + outerMargin, textYCenter);
                         }
                         if (imgData.subText) {
                             ctx.textAlign = 'right';
                             ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1px";
-                            ctx.fillText(imgData.subText, canvas.width - padRight, textYCenter);
+                            ctx.fillText(imgData.subText, canvas.width - padRight - outerMargin, textYCenter);
                         }
 
                     } else if (currentLayout === 'inline') {
