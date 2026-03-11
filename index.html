@@ -426,7 +426,6 @@
                         this.updateSegmentedUI(this.dom.presetBtns, 'preset', val);
                         this.state.config.preset = val;
                         
-                        // 当选择坐标模式或色卡美学时，禁用布局选择并变灰，强制排版
                         if (val === 'coords' || this.state.config.frameStyle === 'palette') {
                             this.dom.layoutBtns.forEach(b => {
                                 b.style.pointerEvents = 'none';
@@ -518,64 +517,101 @@
                 this.dom.panelBatchBtn.addEventListener('click', batchDownloadAction);
             }
 
-            // 本地极速提取色卡主色调 (基于简化 K-Means)
+            // 核心优化：使用 K-Means++ 算法提取色卡颜色
             extractColors(img, count = 5) {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                const size = 64; 
-                canvas.width = size;
-                canvas.height = size;
-                ctx.drawImage(img, 0, 0, size, size);
+                const maxSize = 100; // 提高取样尺寸，获取更准确的颜色分布
+                
+                let w = img.naturalWidth;
+                let h = img.naturalHeight;
+                if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+                else { w = Math.round(w * maxSize / h); h = maxSize; }
+
+                canvas.width = w;
+                canvas.height = h;
+                ctx.drawImage(img, 0, 0, w, h);
                 
                 let data;
                 try {
-                    data = ctx.getImageData(0, 0, size, size).data;
+                    data = ctx.getImageData(0, 0, w, h).data;
                 } catch(e) {
                     return ['#27272a', '#3f3f46', '#52525b', '#71717a', '#a1a1aa'];
                 }
 
+                // 过滤透明或近乎纯黑白的极端背景色，专注画面主体色
                 let pixels = [];
                 for(let i=0; i<data.length; i+=4) {
-                    if(data[i+3] > 128) {
+                    if(data[i+3] >= 200) { 
                         pixels.push([data[i], data[i+1], data[i+2]]);
                     }
                 }
                 if (pixels.length === 0) return ['#27272a', '#3f3f46', '#52525b', '#71717a', '#a1a1aa'];
 
-                let centroids = [];
-                let step = Math.floor(pixels.length / count);
-                for(let i=0; i<count; i++) {
-                    centroids.push(pixels[Math.min(i * step + Math.floor(step/2), pixels.length-1)]);
+                // 1. K-Means++ 初始化种子 (避免取到相近颜色)
+                let centroids = [pixels[Math.floor(Math.random() * pixels.length)]];
+                for (let i = 1; i < count; i++) {
+                    let maxDist = -1;
+                    let nextCentroid = pixels[0];
+                    for (let p of pixels) {
+                        let minDist = Infinity;
+                        for (let c of centroids) {
+                            // 欧式距离平方
+                            let d = Math.pow(p[0]-c[0], 2) + Math.pow(p[1]-c[1], 2) + Math.pow(p[2]-c[2], 2);
+                            if (d < minDist) minDist = d;
+                        }
+                        if (minDist > maxDist) {
+                            maxDist = minDist;
+                            nextCentroid = p;
+                        }
+                    }
+                    centroids.push(nextCentroid);
                 }
 
-                for(let iter=0; iter<5; iter++) {
+                // 2. K-Means 迭代聚类
+                for(let iter=0; iter<10; iter++) {
                     let clusters = Array.from({length: count}, () => []);
+                    // 分配像素到最近的聚类中心
                     for(let p of pixels) {
                         let minDist = Infinity;
                         let bestIdx = 0;
                         for(let i=0; i<count; i++) {
-                            let d = Math.abs(p[0]-centroids[i][0]) + Math.abs(p[1]-centroids[i][1]) + Math.abs(p[2]-centroids[i][2]);
+                            let c = centroids[i];
+                            let d = Math.pow(p[0]-c[0], 2) + Math.pow(p[1]-c[1], 2) + Math.pow(p[2]-c[2], 2);
                             if(d < minDist) { minDist = d; bestIdx = i; }
                         }
                         clusters[bestIdx].push(p);
                     }
+                    
+                    // 重新计算聚类中心
+                    let moved = false;
                     for(let i=0; i<count; i++) {
                         if(clusters[i].length > 0) {
                             let r=0, g=0, b=0;
                             for(let p of clusters[i]) { r+=p[0]; g+=p[1]; b+=p[2]; }
-                            centroids[i] = [Math.round(r/clusters[i].length), Math.round(g/clusters[i].length), Math.round(b/clusters[i].length)];
+                            let newC = [Math.round(r/clusters[i].length), Math.round(g/clusters[i].length), Math.round(b/clusters[i].length)];
+                            if (newC[0]!==centroids[i][0] || newC[1]!==centroids[i][1] || newC[2]!==centroids[i][2]) {
+                                moved = true;
+                                centroids[i] = newC;
+                            }
                         }
                     }
+                    if (!moved) break;
                 }
 
-                // 按照明亮度排序 (暗 -> 亮) 展现有层次感的色卡
+                // 3. 按亮度从暗到亮排序，呈现优雅的色彩过渡梯队
                 centroids.sort((a,b) => {
                     let lumaA = 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
                     let lumaB = 0.2126 * b[0] + 0.7152 * b[1] + 0.0722 * b[2];
                     return lumaA - lumaB; 
                 });
 
-                return centroids.map(c => `rgb(${c[0]},${c[1]},${c[2]})`);
+                const rgbToHex = (c) => '#' + c.map(x => {
+                    const hex = x.toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+
+                return centroids.map(rgbToHex);
             }
 
             async handleFiles(filesList) {
@@ -602,7 +638,7 @@
                             this.readExif(file)
                         ]);
                         
-                        // 预提取颜色与额外信息以供色卡模式使用
+                        // 提取色彩和元数据
                         const colors = this.extractColors(imgElement, 5);
                         const gpsStr = this.formatGPS(exifData.lat, exifData.latRef, exifData.lng, exifData.lngRef);
                         const dateTimeStr = this.formatExifDate(exifData.dateTime);
@@ -681,7 +717,6 @@
                             make: EXIF.getTag(this, "Make"),
                             model: EXIF.getTag(this, "Model"),
                             focalLength: EXIF.getTag(this, "FocalLength"),
-                            // 优先提取 35mm 等效焦距，这个才是常规相机参数里的焦距概念
                             focalLength35mm: EXIF.getTag(this, "FocalLengthIn35mmFilm"), 
                             fNumber: EXIF.getTag(this, "FNumber"),
                             exposureTime: EXIF.getTag(this, "ExposureTime"),
@@ -699,19 +734,23 @@
 
             formatExifDate(str) {
                 if(!str) return '';
+                // Standard EXIF format is "YYYY:MM:DD HH:MM:SS"
                 const parts = str.split(' ');
                 if(parts.length < 1) return str;
+                
                 const dateParts = parts[0].split(':');
                 if(dateParts.length === 3) {
-                    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    const m = parseInt(dateParts[1], 10);
-                    const d = parseInt(dateParts[2], 10);
                     const y = dateParts[0];
-                    let suffix = "th";
-                    if(d===1||d===21||d===31) suffix="st";
-                    else if(d===2||d===22) suffix="nd";
-                    else if(d===3||d===23) suffix="rd";
-                    return `${months[m-1]} ${d}${suffix}, ${y}`;
+                    const m = dateParts[1];
+                    const d = dateParts[2];
+                    
+                    const timePart = parts[1] ? parts[1] : '';
+                    
+                    if (timePart) {
+                        return `${y}-${m}-${d} ${timePart}`;
+                    } else {
+                         return `${y}-${m}-${d}`;
+                    }
                 }
                 return str;
             }
@@ -741,7 +780,6 @@
                     }
 
                     const params = [];
-                    // 核心修改点：优先使用 35mm 等效焦段，如果没有再退回物理焦距
                     if (e.focalLength35mm) {
                         params.push(`${Math.round(e.focalLength35mm)}mm`);
                     } else if (e.focalLength) {
@@ -871,6 +909,7 @@
                 const textColor = isDark ? '#ffffff' : '#18181b';
                 const subTextColor = isDark ? '#a1a1aa' : '#71717a';
 
+                // 背景渲染
                 if (config.frameStyle === 'glass') {
                     ctx.save();
                     const MINI_SIZE = 120; 
@@ -998,6 +1037,7 @@
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                 }
 
+                // 照片主体渲染
                 ctx.save();
                 if (config.frameStyle === 'glass') {
                     ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)';
@@ -1014,6 +1054,7 @@
                 ctx.drawImage(img, padLeft + outerMargin, padTop + outerMargin, drawW, drawH);
                 ctx.restore();
 
+                // 拍立得照片内阴影
                 if (config.frameStyle === 'polaroid') {
                     ctx.save();
                     const photoX = padLeft + outerMargin;
@@ -1057,7 +1098,7 @@
                     const topLeftY = padTop + outerMargin - baseFontSize * 0.8;
                     
                     let leftLines = [];
-                    if (imgData.dateTimeStr) leftLines.push(`PHOTOGRAPHED IN :  ${imgData.dateTimeStr}`);
+                    if (imgData.dateTimeStr) leftLines.push(`⏰  ${imgData.dateTimeStr}`);
                     if (imgData.gpsStr) leftLines.push(`📌  ${imgData.gpsStr}`);
                     
                     let currY = topLeftY;
@@ -1079,7 +1120,7 @@
                         }
                     }
                     
-                    // 3. 右下角：设备与光学参数 (不再显示巨型主标题)
+                    // 3. 右下角：设备与光学参数
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'top';
                     
@@ -1095,7 +1136,7 @@
                     ctx.fillText(imgData.subText || '', padLeft + outerMargin + drawW, deviceY + baseFontSize * 1.9);
 
                 } 
-                // --------- 传统文字排版 ---------
+                // --------- 其他传统排版样式 ---------
                 else if (hasText) {
                     let fontStack = '-apple-system, BlinkMacSystemFont, "Inter", sans-serif';
                     if (config.fontFamily === 'nothing') fontStack = '"DotGothic16", sans-serif';
@@ -1131,6 +1172,7 @@
                             
                             ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1.5px";
                             ctx.fillText(imgData.subText, canvas.width / 2, textYCenter + (baseFontSize * 0.6));
+                            ctx.letterSpacing = "0px";
                         } else {
                             const text = imgData.mainText || imgData.subText;
                             ctx.fillStyle = imgData.mainText ? textColor : subTextColor; 
@@ -1148,6 +1190,7 @@
                             ctx.textAlign = 'right';
                             ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1px";
                             ctx.fillText(imgData.subText, canvas.width - padRight - outerMargin, textYCenter);
+                            ctx.letterSpacing = "0px";
                         }
 
                     } else if (currentLayout === 'inline') {
@@ -1164,6 +1207,7 @@
                         if (imgData.subText) {
                             ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1px";
                             ctx.fillText(imgData.subText, inlineX, textYCenter);
+                            ctx.letterSpacing = "0px";
                         }
                     }
                 }
