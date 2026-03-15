@@ -817,7 +817,7 @@
                         const d = dms[0].numerator ? dms[0].numerator / dms[0].denominator : dms[0];
                         const m = dms[1].numerator ? dms[1].numerator / dms[1].denominator : dms[1];
                         const s = dms[2].numerator ? dms[2].numerator / dms[2].denominator : dms[2];
-                        return `${Math.floor(d)}°${Math.floor(m)}'${s.toFixed(2)}""`;
+                        return `${Math.floor(d)}°${Math.floor(m)}'${s.toFixed(2)}"`; // <--- 此处已修复
                     };
                     return `${formatDMS(lat)}${latRef || 'N'}, ${formatDMS(lng)}${lngRef || 'E'}`;
                 } catch(err) { return ''; }
