@@ -3,33 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>+框</title>
+    <title>XIANG FRAME</title>
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2318181b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='22' x2='2' y1='6' y2='6'/%3E%3Cline x1='22' x2='2' y1='18' y2='18'/%3E%3Cline x1='6' x2='6' y1='2' y2='22'/%3E%3Cline x1='18' x2='18' y1='2' y2='22'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='1.5' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cline x1='22' x2='2' y1='6' y2='6'/%3E%3Cline x1='22' x2='2' y1='18' y2='18'/%3E%3Cline x1='6' x2='6' y1='2' y2='22'/%3E%3Cline x1='18' x2='18' y1='2' y2='22'/%3E%3C/svg%3E">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DotGothic16&family=Inter:wght@400;500;600;700&family=JetBrains+Mono&family=Noto+Serif+SC:wght@400;600;700&family=Oswald:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
-                        serif: ['Noto Serif SC', 'serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Helvetica Neue"', '"PingFang SC"', 'sans-serif'],
+                        serif: ['Playfair Display', 'Noto Serif SC', 'Songti SC', 'serif'],
+                        cinzel: ['Cinzel', 'Noto Serif SC', 'serif'],
+                        mono: ['JetBrains Mono', 'Courier New', 'monospace'],
                     },
                     colors: {
-                        brand: '#18181b',
+                        brand: '#000000',
                         surface: '#ffffff',
-                        background: '#fafafa',
+                        background: '#f8f8f8',
+                        zinc: {
+                            50: '#fafafa',
+                            100: '#f4f4f5',
+                            200: '#e4e4e7',
+                            300: '#d4d4d8',
+                            400: '#a1a1aa',
+                            500: '#71717a',
+                            800: '#27272a',
+                            900: '#18181b',
+                        }
                     },
-                    boxShadow: {
-                        'soft': '0 2px 10px -3px rgba(0, 0, 0, 0.05), 0 1px 3px -2px rgba(0, 0, 0, 0.02)',
-                        'float': '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                        'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
                     }
                 }
             }
@@ -37,23 +52,25 @@
     </script>
 
     <style>
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #d4d4d8; }
+        ::-webkit-scrollbar-thumb { background: #e4e4e7; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
         
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        body { background-color: theme('colors.background'); -webkit-font-smoothing: antialiased; }
+        body { 
+            background-color: theme('colors.background'); 
+            -webkit-font-smoothing: antialiased; 
+            text-rendering: optimizeLegibility;
+        }
         
         .canvas-wrapper {
-            background-image: 
-                radial-gradient(#e4e4e7 1px, transparent 0),
-                radial-gradient(#e4e4e7 1px, transparent 0);
+            background-color: #f0f0f0;
+            background-image: linear-gradient(45deg, #e8e8e8 25%, transparent 25%, transparent 75%, #e8e8e8 75%, #e8e8e8), linear-gradient(45deg, #e8e8e8 25%, transparent 25%, transparent 75%, #e8e8e8 75%, #e8e8e8);
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
-            background-color: #f4f4f5;
         }
 
         canvas {
@@ -62,17 +79,15 @@
             width: auto;
             height: auto;
             object-fit: contain;
-            box-shadow: theme('boxShadow.float');
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 24px 40px -12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .file-input-hidden { display: none; }
         
         .drag-active {
-            border-color: theme('colors.zinc.800') !important;
-            background-color: theme('colors.zinc.50') !important;
-            transform: scale(0.99);
+            border-color: #000 !important;
+            background-color: #f8f8f8 !important;
         }
 
         input[type=range] {
@@ -82,202 +97,199 @@
         }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 18px;
-            width: 18px;
-            border-radius: 50%;
-            background: #18181b;
+            height: 14px;
+            width: 4px;
+            background: #000;
             cursor: pointer;
-            margin-top: -7px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            margin-top: -6px;
             transition: transform 0.1s;
         }
-        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
+        input[type=range]::-webkit-slider-thumb:active { transform: scaleY(1.3); }
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
-            height: 4px;
+            height: 2px;
             cursor: pointer;
             background: #e4e4e7;
-            border-radius: 2px;
+        }
+
+        @keyframes lineProgress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-line {
+            animation: lineProgress 1.5s infinite cubic-bezier(0.65, 0, 0.35, 1);
         }
 
         .toast-enter { animation: toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: toast-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes toast-in {
-            0% { transform: translateY(-100%); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes toast-out {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100%); opacity: 0; }
-        }
+        @keyframes toast-in { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes toast-out { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100%); opacity: 0; } }
 
-        .segment-btn { transition: all 0.2s ease-in-out; }
+        .form-input {
+            border-radius: 0;
+            border: 1px solid #e4e4e7;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            border-color: #000;
+            box-shadow: none;
+            outline: none;
+        }
     </style>
 </head>
-<body class="text-zinc-800 h-[100dvh] flex flex-col overflow-hidden">
+<body class="text-black h-[100dvh] flex flex-col overflow-hidden font-sans">
 
-    <header class="bg-white/80 backdrop-blur-md border-b border-zinc-200/60 h-14 md:h-16 flex items-center justify-between px-4 md:px-8 shrink-0 z-20 relative shadow-sm">
-        <div class="flex items-center gap-2 md:gap-2.5">
-            <div class="bg-zinc-900 p-1.5 rounded-md">
-                <i data-lucide="frame" class="w-4 h-4 md:w-5 md:h-5 text-white"></i>
+    <!-- 全局启动动画 -->
+    <div id="initialLoader" class="fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div class="flex flex-col items-center animate-slide-up">
+            <h1 class="font-sans font-light text-3xl tracking-wide mb-6 text-black">FRAME</h1>
+            <div class="w-24 h-[1px] bg-zinc-200 overflow-hidden relative">
+                <div class="absolute inset-y-0 left-0 w-full bg-black animate-line"></div>
             </div>
-            <h1 class="font-semibold text-base md:text-lg tracking-tight">Frame <span class="hidden sm:inline-block text-xs font-normal text-zinc-400 ml-1 border border-zinc-200 rounded px-1.5 py-0.5">1.3</span></h1>
+            <p class="mt-4 text-[11px] tracking-widest text-zinc-400">加载中...</p>
         </div>
-        <div class="flex items-center gap-2 md:gap-3">
-            <button id="batchDownloadBtn" class="hidden items-center gap-1.5 md:gap-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-800 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-sm active:scale-95 disabled:opacity-50">
-                <i data-lucide="layers" class="w-4 h-4 text-zinc-500"></i>
+    </div>
+
+    <!-- 处理进度浮层 -->
+    <div id="processingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-md z-[100] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500">
+        <h2 class="font-sans font-light text-2xl tracking-wide mb-6 text-black">Processing</h2>
+        <div class="w-32 h-[1px] bg-zinc-200 overflow-hidden relative mb-4">
+            <div class="absolute inset-y-0 left-0 w-full bg-black animate-line"></div>
+        </div>
+        <p id="uploadProgressText" class="text-[11px] tracking-widest text-black">正在分析光学参数...</p>
+    </div>
+
+    <header class="bg-white border-b border-zinc-200 h-14 md:h-[68px] flex items-center justify-between px-5 md:px-8 shrink-0 z-20 relative">
+        <div class="flex items-baseline gap-2.5">
+            <h1 class="font-sans font-medium text-xl tracking-wide">FRAME</h1>
+            <span class="hidden sm:inline-block text-[10px] uppercase tracking-widest text-zinc-400">1.5</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="batchDownloadBtn" class="hidden items-center gap-2 bg-transparent border border-zinc-200 hover:border-black text-black px-4 py-2 text-xs font-medium transition-colors">
+                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
                 <span class="hidden sm:inline">批量打包 (ZIP)</span>
-                <span class="sm:hidden text-xs">打包</span>
+                <span class="sm:hidden">打包</span>
             </button>
-            <button id="downloadBtn" class="hidden items-center gap-1.5 md:gap-2 bg-zinc-900 hover:bg-zinc-800 text-white px-4 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-medium transition-all shadow-md active:scale-95 disabled:opacity-50">
-                <i data-lucide="download" class="w-4 h-4"></i>
-                <span class="text-xs sm:text-sm">保存照片</span>
+            <button id="downloadBtn" class="hidden items-center gap-2 bg-black hover:bg-zinc-800 text-white px-5 py-2 text-xs font-medium transition-colors">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>保存照片</span>
             </button>
         </div>
     </header>
 
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-        <section class="order-1 lg:order-2 h-[45vh] lg:h-auto lg:flex-1 shrink-0 canvas-wrapper flex flex-col relative overflow-hidden border-b lg:border-b-0 border-zinc-200">
+        <section class="order-1 lg:order-2 h-[45vh] lg:h-auto lg:flex-1 shrink-0 canvas-wrapper flex flex-col relative overflow-hidden border-b lg:border-b-0 lg:border-l border-zinc-200">
             <div id="emptyPreview" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 z-0 pointer-events-none transition-opacity duration-300">
-                <div class="w-20 h-20 mb-4 rounded-2xl bg-white shadow-soft flex items-center justify-center border border-zinc-100">
-                    <i data-lucide="images" class="w-8 h-8 text-zinc-300"></i>
-                </div>
-                <p class="text-sm font-medium text-zinc-500">拖拽多张图片到此处</p>
-                <p class="text-xs text-zinc-400 mt-1">自动识别 EXIF 提取光学参数</p>
+                <i data-lucide="image-plus" class="w-10 h-10 text-zinc-300 mb-5 font-light"></i>
+                <p class="text-xs tracking-widest text-zinc-500">将照片拖拽至此处</p>
             </div>
             
-            <div id="canvasContainer" class="flex-1 w-full h-full min-h-0 p-6 md:p-12 flex items-center justify-center overflow-hidden z-10 transition-all duration-300">
-                <canvas id="mainCanvas" class="hidden rounded-sm"></canvas>
+            <div id="canvasContainer" class="flex-1 w-full h-full min-h-0 p-8 md:p-16 flex items-center justify-center overflow-hidden z-10">
+                <canvas id="mainCanvas" class="hidden"></canvas>
             </div>
 
-            <div id="galleryContainer" class="hidden w-full h-16 md:h-20 shrink-0 bg-white/80 backdrop-blur-md border-t border-zinc-200/60 items-center px-4 overflow-x-auto hide-scrollbar z-20">
-                <div id="thumbnailList" class="flex gap-3 h-full items-center py-2">
+            <div id="galleryContainer" class="hidden w-full h-20 shrink-0 bg-white border-t border-zinc-200 items-center px-6 overflow-x-auto hide-scrollbar z-20">
+                <div id="thumbnailList" class="flex gap-4 h-full items-center py-2">
                 </div>
             </div>
         </section>
 
-        <aside class="order-2 lg:order-1 w-full lg:w-[420px] xl:w-[450px] bg-white border-r border-zinc-200/60 overflow-y-auto flex-1 lg:flex-none z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-            <div class="p-5 md:p-6 space-y-6">
+        <aside class="order-2 lg:order-1 w-full lg:w-[400px] xl:w-[420px] bg-white overflow-y-auto flex-1 lg:flex-none z-10">
+            <div class="p-6 md:p-8 space-y-8">
                 
                 <section>
-                    <div id="dropZone" class="border-2 border-dashed border-zinc-200 bg-zinc-50/50 rounded-2xl p-6 md:p-8 text-center cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all duration-300 group relative">
+                    <div id="dropZone" class="border border-dashed border-zinc-300 bg-zinc-50/50 p-8 text-center cursor-pointer hover:bg-zinc-100 transition-colors duration-300 group">
                         <input type="file" id="fileInput" class="file-input-hidden" multiple accept="image/jpeg, image/png, image/webp, image/heic">
-                        <div id="uploadPlaceholder">
-                            <div class="bg-white shadow-soft w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-all duration-300 border border-zinc-100">
-                                <i data-lucide="upload-cloud" class="w-6 h-6 text-zinc-700"></i>
-                            </div>
-                            <h3 class="text-sm font-semibold text-zinc-800 mb-1">添加更多图片</h3>
-                            <p class="text-xs text-zinc-500">支持批量提取相机参数</p>
-                        </div>
-                        <div id="uploadingState" class="hidden flex-col items-center py-2">
-                            <i data-lucide="loader-2" class="w-8 h-8 text-zinc-900 animate-spin mb-3"></i>
-                            <p class="text-sm font-medium text-zinc-700" id="uploadProgressText">正在处理照片...</p>
-                        </div>
+                        <i data-lucide="plus" class="w-5 h-5 text-zinc-400 mx-auto mb-3 group-hover:text-black transition-colors"></i>
+                        <h3 class="text-xs tracking-wider font-medium text-black mb-1">添加照片</h3>
                     </div>
                 </section>
 
-                <div id="settingsPanel" class="space-y-6 opacity-40 pointer-events-none transition-all duration-500">
+                <div id="settingsPanel" class="space-y-8 opacity-30 pointer-events-none transition-all duration-500">
                     
-                    <section class="bg-white rounded-2xl p-5 border border-zinc-100 shadow-soft">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-sm font-bold text-zinc-800 flex items-center gap-2">
-                                <i data-lucide="type" class="w-4 h-4 text-zinc-400"></i>
-                                参数内容
-                            </h2>
-                            <button id="autoExifBtn" class="text-xs flex items-center gap-1 text-zinc-500 hover:text-zinc-900 font-medium transition-colors bg-zinc-100 hover:bg-zinc-200 px-2 py-1 rounded-md">
-                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> 重置提取
+                    <section class="border-b border-zinc-100 pb-8">
+                        <div class="flex items-center justify-between mb-5">
+                            <h2 class="text-xs tracking-wider text-zinc-400 font-medium">参数信息</h2>
+                            <button id="autoExifBtn" class="text-xs flex items-center gap-1 text-zinc-400 hover:text-black transition-colors">
+                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> 重置
                             </button>
                         </div>
                         
                         <div class="mb-5">
-                            <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">提取预设 (全局)</label>
-                            <div class="flex p-1 bg-zinc-100 rounded-lg">
-                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-preset="coords">地理坐标</button>
-                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs font-medium rounded-md shadow-sm bg-white text-zinc-900" data-preset="params">专业详细参数</button>
+                            <div class="flex border border-zinc-200 p-0.5 bg-zinc-50">
+                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs tracking-wider font-medium bg-black text-white transition-colors" data-preset="params">专业参数</button>
+                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs tracking-wider font-medium text-zinc-500 hover:text-black bg-transparent transition-colors" data-preset="coords">地理位置</button>
                             </div>
                         </div>
 
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-1.5">主标题 / 设备型号</label>
-                                <input type="text" id="mainText" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200/80 rounded-xl text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all">
+                                <label class="block text-xs tracking-wider text-zinc-500 mb-2">主文本 (设备/标题)</label>
+                                <input type="text" id="mainText" class="w-full px-3 py-2 form-input bg-transparent text-sm text-black placeholder-zinc-300">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-1.5">副标题 / 光学参数</label>
-                                <input type="text" id="subText" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200/80 rounded-xl text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all">
+                                <label class="block text-xs tracking-wider text-zinc-500 mb-2">副文本 (光学/描述)</label>
+                                <input type="text" id="subText" class="w-full px-3 py-2 form-input bg-transparent text-sm text-black placeholder-zinc-300">
                             </div>
                         </div>
                     </section>
 
-                    <section class="bg-white rounded-2xl p-5 border border-zinc-100 shadow-soft">
-                        <h2 class="text-sm font-bold text-zinc-800 mb-5 flex items-center gap-2">
-                            <i data-lucide="palette" class="w-4 h-4 text-zinc-400"></i>
-                            排版与美学
-                        </h2>
+                    <section class="pb-4">
+                        <h2 class="text-xs tracking-wider text-zinc-400 font-medium mb-5">视觉排版</h2>
                         
-                        <div class="space-y-6">
-                            <!-- 边框风格 -->
+                        <div class="space-y-7">
                             <div>
-                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">相框材质 / 风格</label>
-                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-zinc-100 rounded-lg">
-                                    <button class="segment-btn style-btn py-1.5 text-[11px] font-medium rounded-md shadow-sm bg-white text-zinc-900" data-style="classic">极简纯白</button>
-                                    <button class="segment-btn style-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-style="glass">高级毛玻璃</button>
-                                    <button class="segment-btn style-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-style="polaroid">复古拍立得</button>
-                                    <button class="segment-btn style-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700 relative overflow-hidden group" data-style="palette">
-                                        <span class="relative z-10">色卡美学</span>
-                                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    </button>
+                                <label class="text-xs tracking-wider text-black mb-2.5 block">相框模版</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium bg-black text-white transition-colors" data-style="classic">极简留白</button>
+                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="film">真实胶片</button>
+                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="cinematic">宽幅电影</button>
+                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="glass">高级毛玻璃</button>
+                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="palette">色彩卡片</button>
+                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="museum">画廊美术馆</button>
                                 </div>
                             </div>
 
-                            <!-- 排版布局 -->
                             <div>
-                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">参数排版方式</label>
-                                <div class="grid grid-cols-3 gap-1 p-1 bg-zinc-100 rounded-lg" id="layoutGroup">
-                                    <button class="segment-btn layout-btn py-1.5 text-xs font-medium rounded-md shadow-sm bg-white text-zinc-900" data-layout="center">居中对称</button>
-                                    <button class="segment-btn layout-btn py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-layout="split">两端对齐</button>
-                                    <button class="segment-btn layout-btn py-1.5 text-xs font-medium rounded-md text-zinc-500 hover:text-zinc-700" data-layout="inline">紧凑单行</button>
+                                <label class="text-xs tracking-wider text-black mb-2.5 block">文字布局</label>
+                                <div class="flex border border-zinc-200 p-0.5 bg-zinc-50" id="layoutGroup">
+                                    <button class="segment-btn layout-btn flex-1 py-1.5 text-[11px] tracking-wider font-medium bg-black text-white transition-colors" data-layout="center">居中对齐</button>
+                                    <button class="segment-btn layout-btn flex-1 py-1.5 text-[11px] tracking-wider font-medium text-zinc-500 hover:text-black bg-transparent transition-colors" data-layout="split">两端分布</button>
+                                    <button class="segment-btn layout-btn flex-1 py-1.5 text-[11px] tracking-wider font-medium text-zinc-500 hover:text-black bg-transparent transition-colors" data-layout="inline">紧凑单行</button>
                                 </div>
                             </div>
 
-                            <!-- 边框宽度 -->
                             <div>
                                 <div class="flex justify-between items-center mb-3">
-                                    <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">边缘留白比例</label>
-                                    <span id="borderWidthLabel" class="text-xs font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded">6%</span>
+                                    <label class="text-xs tracking-wider text-black">边距比例</label>
+                                    <span id="borderWidthLabel" class="text-xs font-mono text-zinc-500">6%</span>
                                 </div>
-                                <input type="range" id="borderWidth" min="2" max="25" value="6" class="w-full mt-1">
+                                <input type="range" id="borderWidth" min="2" max="25" value="6" class="w-full">
                             </div>
 
-                            <!-- 高级字体 -->
                             <div>
-                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">排版字体库</label>
-                                <div class="grid grid-cols-2 gap-1.5 p-1 bg-zinc-100 rounded-lg">
-                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md shadow-sm bg-white text-zinc-900" style="font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;" data-font="system">Apple / SF Pro</button>
-                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'DotGothic16', sans-serif;" data-font="nothing">Nothing 点阵风</button>
-                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'Montserrat', sans-serif;" data-font="montserrat">Montserrat 几何</button>
-                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'Oswald', sans-serif;" data-font="oswald">Oswald 工业风</button>
-                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700" style="font-family: 'Cinzel', serif;" data-font="cinzel">Cinzel 罗马风</button>
-                                    <button class="segment-btn font-btn py-1.5 text-[11px] font-medium rounded-md text-zinc-500 hover:text-zinc-700 font-serif" data-font="serif">Noto 经典衬线</button>
+                                <label class="text-xs tracking-wider text-black mb-2.5 block">英文字体引擎</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button class="segment-btn font-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium bg-black text-white transition-colors" style="font-family: -apple-system, 'SF Pro Text', sans-serif;" data-font="system">Apple 原生无衬线</button>
+                                    <button class="segment-btn font-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" style="font-family: 'Playfair Display', 'Noto Serif SC', serif;" data-font="serif">优雅衬线体</button>
+                                    <button class="segment-btn font-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" style="font-family: 'Cinzel', 'Noto Serif SC', serif;" data-font="cinzel">Cinzel 罗马字</button>
+                                    <button class="segment-btn font-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" style="font-family: 'JetBrains Mono', monospace;" data-font="mono">机能等宽</button>
                                 </div>
                             </div>
 
-                            <!-- 颜色主题 -->
                             <div>
-                                <label class="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase mb-2 block">环境色调</label>
-                                <div class="flex gap-3">
+                                <label class="text-xs tracking-wider text-black mb-2.5 block">环境色调</label>
+                                <div class="flex gap-2">
                                     <label class="flex-1 relative cursor-pointer group">
                                         <input type="radio" name="theme" value="light" checked class="peer sr-only">
-                                        <div class="flex items-center justify-center gap-2 py-2.5 border border-zinc-200 rounded-lg bg-white text-zinc-800 peer-checked:border-zinc-900 peer-checked:ring-1 peer-checked:ring-zinc-900 transition-all text-[11px] font-medium">
-                                            <div class="w-3 h-3 rounded-full border border-zinc-200 bg-white shadow-sm"></div>
+                                        <div class="flex items-center justify-center py-2.5 border border-zinc-200 bg-white text-black peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-colors text-[11px] tracking-wider font-medium">
                                             明亮系 (Light)
                                         </div>
                                     </label>
                                     <label class="flex-1 relative cursor-pointer group">
                                         <input type="radio" name="theme" value="dark" class="peer sr-only">
-                                        <div class="flex items-center justify-center gap-2 py-2.5 border border-zinc-200 rounded-lg bg-zinc-900 text-white peer-checked:border-zinc-900 peer-checked:ring-2 peer-checked:ring-zinc-900 transition-all text-[11px] font-medium opacity-90 hover:opacity-100">
-                                            <div class="w-3 h-3 rounded-full border border-zinc-600 bg-zinc-800"></div>
-                                            暗影系 (Dark)
+                                        <div class="flex items-center justify-center py-2.5 border border-zinc-200 bg-white text-zinc-500 peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-colors text-[11px] tracking-wider font-medium hover:text-black">
+                                            暗黑系 (Dark)
                                         </div>
                                     </label>
                                 </div>
@@ -286,34 +298,30 @@
                     </section>
                 </div>
                 
-                <div id="actionPanel" class="hidden flex-col gap-3 pt-3 pb-2 border-t border-zinc-100">
-                    <button id="panelDownloadBtn" class="w-full flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white py-3.5 rounded-xl text-[15px] font-medium shadow-md active:scale-[0.98] transition-all">
-                        <i data-lucide="download" class="w-5 h-5"></i>
-                        保存当前照片
-                    </button>
-                    <button id="panelBatchBtn" class="hidden w-full items-center justify-center gap-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-800 py-3 rounded-xl text-[15px] font-medium shadow-sm active:scale-[0.98] transition-all">
-                        <i data-lucide="layers" class="w-5 h-5 text-zinc-500"></i>
-                        打包下载全部
-                    </button>
-                </div>
-
-                <div class="pt-3 text-center space-y-1.5 pb-6">
-                    <p class="text-[11px] text-zinc-400 flex items-center justify-center gap-1.5">
-                        <i data-lucide="shield-check" class="w-3 h-3"></i>
-                        所有解析及压缩均在本地浏览器完成，绝不上传云端
-                    </p>
-                    <p class="text-[10px] text-zinc-400/70 font-mono tracking-wider">
-                        &copy; 2026 XIANG. All rights reserved.
+                <div class="pt-8 text-center border-t border-zinc-100">
+                    <p class="font-sans font-medium text-xs text-zinc-400 mb-1">XIANG VISUALS.</p>
+                    <p class="text-[10px] text-zinc-400 tracking-widest">
+                        本地浏览器处理，保护隐私 &copy; 2026
                     </p>
                 </div>
             </div>
         </aside>
     </main>
 
-    <div id="toastContainer" class="fixed top-20 left-0 right-0 z-50 flex flex-col items-center gap-2 pointer-events-none px-4"></div>
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 pointer-events-none"></div>
 
     <script>
         lucide.createIcons();
+
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('initialLoader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 1000);
+            }, 1200);
+        });
 
         class FrameGenerator {
             constructor() {
@@ -338,8 +346,7 @@
                 this.dom = {
                     fileInput: document.getElementById('fileInput'),
                     dropZone: document.getElementById('dropZone'),
-                    uploadPlaceholder: document.getElementById('uploadPlaceholder'),
-                    uploadingState: document.getElementById('uploadingState'),
+                    processingOverlay: document.getElementById('processingOverlay'),
                     uploadProgressText: document.getElementById('uploadProgressText'),
                     settingsPanel: document.getElementById('settingsPanel'),
                     mainText: document.getElementById('mainText'),
@@ -359,10 +366,6 @@
                     downloadBtn: document.getElementById('downloadBtn'),
                     batchDownloadBtn: document.getElementById('batchDownloadBtn'),
                     
-                    actionPanel: document.getElementById('actionPanel'),
-                    panelDownloadBtn: document.getElementById('panelDownloadBtn'),
-                    panelBatchBtn: document.getElementById('panelBatchBtn'),
-
                     autoExifBtn: document.getElementById('autoExifBtn'),
                     galleryContainer: document.getElementById('galleryContainer'),
                     thumbnailList: document.getElementById('thumbnailList'),
@@ -373,11 +376,13 @@
             updateSegmentedUI(buttons, activeDataKey, activeValue) {
                 buttons.forEach(btn => {
                     if (btn.dataset[activeDataKey] === activeValue) {
-                        btn.classList.remove('text-zinc-500', 'hover:text-zinc-700');
-                        btn.classList.add('shadow-sm', 'bg-white', 'text-zinc-900');
+                        btn.classList.remove('text-zinc-500', 'hover:text-black', 'bg-transparent', 'hover:border-black');
+                        btn.classList.add('bg-black', 'text-white');
+                        if (btn.classList.contains('border')) btn.classList.add('border-black');
                     } else {
-                        btn.classList.remove('shadow-sm', 'bg-white', 'text-zinc-900');
-                        btn.classList.add('text-zinc-500', 'hover:text-zinc-700');
+                        btn.classList.remove('bg-black', 'text-white', 'border-black');
+                        btn.classList.add('text-zinc-500', 'hover:text-black', 'bg-transparent');
+                        if (btn.classList.contains('border')) btn.classList.add('border-zinc-200', 'hover:border-black');
                     }
                 });
             }
@@ -426,16 +431,10 @@
                         this.updateSegmentedUI(this.dom.presetBtns, 'preset', val);
                         this.state.config.preset = val;
                         
-                        if (val === 'coords' || this.state.config.frameStyle === 'palette') {
-                            this.dom.layoutBtns.forEach(b => {
-                                b.style.pointerEvents = 'none';
-                                b.style.opacity = '0.4';
-                            });
+                        if (val === 'coords' || ['palette', 'museum', 'film', 'cinematic'].includes(this.state.config.frameStyle)) {
+                            this.dom.layoutBtns.forEach(b => { b.style.pointerEvents = 'none'; b.style.opacity = '0.3'; });
                         } else {
-                            this.dom.layoutBtns.forEach(b => {
-                                b.style.pointerEvents = 'auto';
-                                b.style.opacity = '1';
-                            });
+                            this.dom.layoutBtns.forEach(b => { b.style.pointerEvents = 'auto'; b.style.opacity = '1'; });
                         }
 
                         this.state.images.forEach(imgData => this.generateTextForImage(imgData));
@@ -450,16 +449,10 @@
                         this.updateSegmentedUI(this.dom.styleBtns, 'style', val);
                         this.state.config.frameStyle = val;
                         
-                        if (val === 'palette' || this.state.config.preset === 'coords') {
-                            this.dom.layoutBtns.forEach(b => {
-                                b.style.pointerEvents = 'none';
-                                b.style.opacity = '0.4';
-                            });
+                        if (['palette', 'museum', 'film', 'cinematic'].includes(val) || this.state.config.preset === 'coords') {
+                            this.dom.layoutBtns.forEach(b => { b.style.pointerEvents = 'none'; b.style.opacity = '0.3'; });
                         } else {
-                            this.dom.layoutBtns.forEach(b => {
-                                b.style.pointerEvents = 'auto';
-                                b.style.opacity = '1';
-                            });
+                            this.dom.layoutBtns.forEach(b => { b.style.pointerEvents = 'auto'; b.style.opacity = '1'; });
                         }
                         
                         scheduleRender();
@@ -503,25 +496,18 @@
                         this.generateTextForImage(this.state.images[this.state.currentIndex]);
                         this.syncInputsWithCurrent();
                         scheduleRender();
-                        this.showToast('已重置当前照片参数', 'success');
+                        this.showToast('元数据已重置', 'info');
                     }
                 });
 
-                const downloadAction = () => this.downloadCurrentImage();
-                const batchDownloadAction = () => this.batchDownload();
-                
-                this.dom.downloadBtn.addEventListener('click', downloadAction);
-                this.dom.panelDownloadBtn.addEventListener('click', downloadAction);
-                
-                this.dom.batchDownloadBtn.addEventListener('click', batchDownloadAction);
-                this.dom.panelBatchBtn.addEventListener('click', batchDownloadAction);
+                this.dom.downloadBtn.addEventListener('click', () => this.downloadCurrentImage());
+                this.dom.batchDownloadBtn.addEventListener('click', () => this.batchDownload());
             }
 
-            // 核心优化：使用 K-Means++ 算法提取色卡颜色
             extractColors(img, count = 5) {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                const maxSize = 100; // 提高取样尺寸，获取更准确的颜色分布
+                const maxSize = 100; 
                 
                 let w = img.naturalWidth;
                 let h = img.naturalHeight;
@@ -536,19 +522,17 @@
                 try {
                     data = ctx.getImageData(0, 0, w, h).data;
                 } catch(e) {
-                    return ['#27272a', '#3f3f46', '#52525b', '#71717a', '#a1a1aa'];
+                    return ['#111111', '#333333', '#555555', '#777777', '#999999'];
                 }
 
-                // 过滤透明或近乎纯黑白的极端背景色，专注画面主体色
                 let pixels = [];
                 for(let i=0; i<data.length; i+=4) {
                     if(data[i+3] >= 200) { 
                         pixels.push([data[i], data[i+1], data[i+2]]);
                     }
                 }
-                if (pixels.length === 0) return ['#27272a', '#3f3f46', '#52525b', '#71717a', '#a1a1aa'];
+                if (pixels.length === 0) return ['#111111', '#333333', '#555555', '#777777', '#999999'];
 
-                // 1. K-Means++ 初始化种子 (避免取到相近颜色)
                 let centroids = [pixels[Math.floor(Math.random() * pixels.length)]];
                 for (let i = 1; i < count; i++) {
                     let maxDist = -1;
@@ -556,7 +540,6 @@
                     for (let p of pixels) {
                         let minDist = Infinity;
                         for (let c of centroids) {
-                            // 欧式距离平方
                             let d = Math.pow(p[0]-c[0], 2) + Math.pow(p[1]-c[1], 2) + Math.pow(p[2]-c[2], 2);
                             if (d < minDist) minDist = d;
                         }
@@ -568,10 +551,8 @@
                     centroids.push(nextCentroid);
                 }
 
-                // 2. K-Means 迭代聚类
                 for(let iter=0; iter<10; iter++) {
                     let clusters = Array.from({length: count}, () => []);
-                    // 分配像素到最近的聚类中心
                     for(let p of pixels) {
                         let minDist = Infinity;
                         let bestIdx = 0;
@@ -583,7 +564,6 @@
                         clusters[bestIdx].push(p);
                     }
                     
-                    // 重新计算聚类中心
                     let moved = false;
                     for(let i=0; i<count; i++) {
                         if(clusters[i].length > 0) {
@@ -599,7 +579,6 @@
                     if (!moved) break;
                 }
 
-                // 3. 按亮度从暗到亮排序，呈现优雅的色彩过渡梯队
                 centroids.sort((a,b) => {
                     let lumaA = 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
                     let lumaB = 0.2126 * b[0] + 0.7152 * b[1] + 0.0722 * b[2];
@@ -622,25 +601,24 @@
                 );
 
                 if (validFiles.length === 0) {
-                    this.showToast('未检测到支持的图片格式', 'error');
+                    this.showToast('不支持的图片格式', 'error');
                     return;
                 }
 
-                this.setLoading(true, `准备处理 ${validFiles.length} 张照片...`);
+                this.setLoading(true, `正在准备 ${validFiles.length} 张照片...`);
 
                 let successCount = 0;
                 for (let i = 0; i < validFiles.length; i++) {
                     const file = validFiles[i];
-                    this.setLoading(true, `正在提取分析 (${i+1}/${validFiles.length})`);
+                    this.setLoading(true, `正在分析 (${i+1}/${validFiles.length})`);
                     try {
                         const [imgElement, exifData] = await Promise.all([
                             this.loadImage(file),
                             this.readExif(file)
                         ]);
                         
-                        // 提取色彩和元数据
                         const colors = this.extractColors(imgElement, 5);
-                        const gpsStr = this.formatGPS(exifData.lat, exifData.latRef, exifData.lng, exifData.lngRef);
+                        const gpsStr = this.formatGPS(e => exifData.lat, e => exifData.latRef, e => exifData.lng, e => exifData.lngRef);
                         const dateTimeStr = this.formatExifDate(exifData.dateTime);
 
                         const imgData = {
@@ -668,22 +646,16 @@
                 this.dom.fileInput.value = '';
 
                 if (successCount > 0) {
-                    this.dom.settingsPanel.classList.remove('opacity-40', 'pointer-events-none');
+                    this.dom.settingsPanel.classList.remove('opacity-30', 'pointer-events-none');
                     this.dom.emptyPreview.classList.add('hidden');
                     this.dom.canvas.classList.remove('hidden');
                     
                     this.dom.downloadBtn.classList.remove('hidden');
                     this.dom.downloadBtn.classList.add('flex');
                     
-                    this.dom.actionPanel.classList.remove('hidden');
-                    this.dom.actionPanel.classList.add('flex');
-                    
                     if (this.state.images.length > 1) {
                         this.dom.batchDownloadBtn.classList.remove('hidden');
                         this.dom.batchDownloadBtn.classList.add('flex');
-                        
-                        this.dom.panelBatchBtn.classList.remove('hidden');
-                        this.dom.panelBatchBtn.classList.add('flex');
                         
                         this.dom.galleryContainer.classList.remove('hidden');
                         this.dom.galleryContainer.classList.add('flex');
@@ -694,9 +666,9 @@
 
                     this.renderGallery();
                     this.selectImage(this.state.images.length - successCount);
-                    this.showToast(`成功解析 ${successCount} 张图片`, 'success');
+                    this.showToast(`成功载入 ${successCount} 张照片`, 'success');
                 } else {
-                    this.showToast('图片导入失败', 'error');
+                    this.showToast('导入失败', 'error');
                 }
             }
 
@@ -734,7 +706,6 @@
 
             formatExifDate(str) {
                 if(!str) return '';
-                // Standard EXIF format is "YYYY:MM:DD HH:MM:SS"
                 const parts = str.split(' ');
                 if(parts.length < 1) return str;
                 
@@ -743,14 +714,8 @@
                     const y = dateParts[0];
                     const m = dateParts[1];
                     const d = dateParts[2];
-                    
                     const timePart = parts[1] ? parts[1] : '';
-                    
-                    if (timePart) {
-                        return `${y}-${m}-${d} ${timePart}`;
-                    } else {
-                         return `${y}-${m}-${d}`;
-                    }
+                    return timePart ? `${y}-${m}-${d} ${timePart}` : `${y}-${m}-${d}`;
                 }
                 return str;
             }
@@ -766,17 +731,16 @@
                     if (e.lat && e.lng) {
                         main = this.formatGPS(e.lat, e.latRef, e.lng, e.lngRef);
                     } else {
-                        main = 'FRAME PRO';
+                        main = 'XIANG VISUALS';
                     }
                     sub = '';
                 } else {
                     if (e.model) {
                         main = e.make && e.model.indexOf(e.make) === -1 ? `${e.make} ${e.model}` : e.model;
-                        main = main.charAt(0).toUpperCase() + main.slice(1);
                     } else if (e.lat && e.lng) {
                         main = this.formatGPS(e.lat, e.latRef, e.lng, e.lngRef);
                     } else {
-                        main = 'FRAME PRO';
+                        main = 'XIANG VISUALS';
                     }
 
                     const params = [];
@@ -803,7 +767,6 @@
                         }
                     }
                     if (e.iso) params.push(`ISO${e.iso}`);
-                    
                     sub = params.join('   ');
                 }
 
@@ -817,7 +780,7 @@
                         const d = dms[0].numerator ? dms[0].numerator / dms[0].denominator : dms[0];
                         const m = dms[1].numerator ? dms[1].numerator / dms[1].denominator : dms[1];
                         const s = dms[2].numerator ? dms[2].numerator / dms[2].denominator : dms[2];
-                        return `${Math.floor(d)}°${Math.floor(m)}'${s.toFixed(2)}"`; // <--- 此处已修复
+                        return `${Math.floor(d)}°${Math.floor(m)}'${s.toFixed(2)}"`; 
                     };
                     return `${formatDMS(lat)}${latRef || 'N'}, ${formatDMS(lng)}${lngRef || 'E'}`;
                 } catch(err) { return ''; }
@@ -827,13 +790,11 @@
                 this.dom.thumbnailList.innerHTML = '';
                 this.state.images.forEach((imgData, index) => {
                     const wrap = document.createElement('div');
-                    wrap.className = `w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${index === this.state.currentIndex ? 'border-zinc-900 shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`;
+                    wrap.className = `w-12 h-12 shrink-0 overflow-hidden cursor-pointer transition-all ${index === this.state.currentIndex ? 'border-2 border-black opacity-100' : 'border border-transparent opacity-40 hover:opacity-100'}`;
                     wrap.onclick = () => this.selectImage(index);
-                    
                     const img = document.createElement('img');
                     img.src = imgData.objectUrl;
                     img.className = 'w-full h-full object-cover';
-                    
                     wrap.appendChild(img);
                     this.dom.thumbnailList.appendChild(wrap);
                 });
@@ -845,7 +806,6 @@
                 this.renderGallery();
                 this.syncInputsWithCurrent();
                 this.renderCurrentCanvas();
-                
                 const activeThumb = this.dom.thumbnailList.children[index];
                 if (activeThumb) {
                     activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
@@ -881,61 +841,101 @@
 
                 const shortSide = Math.min(drawW, drawH);
                 const hasText = imgData.mainText || imgData.subText;
-                
                 const basePadding = shortSide * config.borderRatio;
-                let padTop, padBottom, padLeft, padRight;
+                
+                let padTop = 0, padBottom = 0, padLeft = 0, padRight = 0;
                 let outerMargin = 0; 
+                let finalCanvasWidth = 0, finalCanvasHeight = 0;
 
-                if (config.frameStyle === 'polaroid') {
-                    padTop = padLeft = padRight = basePadding * 0.8;
-                    padBottom = basePadding * 3.5; 
-                    outerMargin = basePadding * 1.2; 
-                } else if (config.frameStyle === 'palette') {
-                    // 色卡美学特定参数设置，为上方与下方留足空间
-                    padTop = basePadding * 1.6;
-                    padBottom = basePadding * 2.8;
+                // --- 修改后的宽幅电影裁剪逻辑 ---
+                if (config.frameStyle === 'cinematic') {
+                    // 1. 设置最终画布为 2.35:1 比例
+                    finalCanvasWidth = drawW; // 以图片宽度作为画布宽度基准
+                    finalCanvasHeight = finalCanvasWidth / 2.35;
+
+                    // 2. 设定内边距（用于放置文字和留白）
+                    const tempPadTop = basePadding * 1.2;
+                    const tempPadBottom = hasText ? basePadding * 3.2 : basePadding * 1.2;
+                    const tempPadSide = basePadding * 0.8;
+
+                    // 3. 计算图片在画布中实际占据的区域尺寸
+                    const targetDrawW = finalCanvasWidth - (tempPadSide * 2);
+                    const targetDrawH = finalCanvasHeight - (tempPadTop + tempPadBottom);
+
+                    // 4. 应用这些参数
+                    padTop = tempPadTop;
+                    padBottom = tempPadBottom;
+                    padLeft = tempPadSide;
+                    padRight = tempPadSide;
+                    
+                    // 保存当前的 drawW/drawH 给 drawImage 使用
+                    drawW = targetDrawW;
+                    drawH = targetDrawH;
+                } 
+                else if (config.frameStyle === 'palette') {
+                    padTop = basePadding * 1.8;
+                    padBottom = basePadding * 3.0;
                     padLeft = padRight = basePadding * 1.2;
-                    outerMargin = 0;
-                } else {
+                } 
+                else if (config.frameStyle === 'museum') {
+                    padTop = padLeft = padRight = basePadding * 1.2;
+                    padBottom = basePadding * 4.0; 
+                } 
+                else if (config.frameStyle === 'film') {
+                    padTop = padBottom = basePadding * 3.0;
+                    padLeft = padRight = basePadding * 1.5;
+                } 
+                else {
                     padTop = padLeft = padRight = basePadding;
-                    padBottom = hasText ? basePadding * 2.5 : basePadding;
+                    padBottom = hasText ? basePadding * 2.8 : basePadding;
                 }
 
-                canvas.width = drawW + padLeft + padRight + outerMargin * 2;
-                canvas.height = drawH + padTop + padBottom + outerMargin * 2;
+                if (config.frameStyle !== 'cinematic') {
+                    finalCanvasWidth = drawW + padLeft + padRight + outerMargin * 2;
+                    finalCanvasHeight = drawH + padTop + padBottom + outerMargin * 2;
+                }
+                
+                canvas.width = finalCanvasWidth;
+                canvas.height = finalCanvasHeight;
 
                 const isDark = config.theme === 'dark';
-                const bgColor = isDark ? '#09090b' : '#ffffff';
-                const textColor = isDark ? '#ffffff' : '#18181b';
-                const subTextColor = isDark ? '#a1a1aa' : '#71717a';
+                let bgColor = isDark ? '#0a0a0a' : '#ffffff';
+                let textColor = isDark ? '#ffffff' : '#000000';
+                let subTextColor = isDark ? '#888888' : '#777777';
 
-                // 背景渲染
+                if (config.frameStyle === 'film') {
+                    bgColor = '#0f0f0f'; 
+                    textColor = '#f39c12'; 
+                    subTextColor = '#b9770e';
+                } else if (config.frameStyle === 'cinematic') {
+                    bgColor = '#000000'; 
+                    textColor = '#ffffff';
+                    subTextColor = '#888888';
+                } else if (config.frameStyle === 'museum') {
+                    bgColor = isDark ? '#141414' : '#fdfdfd';
+                }
+
+                // 渲染底图背景
                 if (config.frameStyle === 'glass') {
                     ctx.save();
                     const MINI_SIZE = 120; 
                     const downScale = Math.min(1, MINI_SIZE / Math.max(canvas.width, canvas.height));
-                    
                     const w = Math.max(1, Math.floor(canvas.width * downScale));
                     const h = Math.max(1, Math.floor(canvas.height * downScale));
-                    
                     const miniCanvas = document.createElement('canvas');
                     miniCanvas.width = w;
                     miniCanvas.height = h;
                     const miniCtx = miniCanvas.getContext('2d');
-                    
                     const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight) * 1.1; 
                     const bgW = img.naturalWidth * scale;
                     const bgH = img.naturalHeight * scale;
                     const bgX = (w - bgW) / 2;
                     const bgY = (h - bgH) / 2;
-                    
                     miniCtx.drawImage(img, bgX, bgY, bgW, bgH);
-                    
                     const imgDataObj = miniCtx.getImageData(0, 0, w, h);
                     const data = imgDataObj.data;
                     const temp = new Uint8ClampedArray(data.length);
                     const radius = 6;
-                    
                     for (let pass = 0; pass < 2; pass++) {
                         for (let y = 0; y < h; y++) {
                             for (let x = 0; x < w; x++) {
@@ -967,219 +967,211 @@
                         }
                     }
                     miniCtx.putImageData(imgDataObj, 0, 0);
-                    
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
-                    
                     const coverScale = Math.max(canvas.width / w, canvas.height / h) * 1.05;
                     const bgWW = w * coverScale;
                     const bgHH = h * coverScale;
                     const bgXX = (canvas.width - bgWW) / 2;
                     const bgYY = (canvas.height - bgHH) / 2;
-                    
                     ctx.drawImage(miniCanvas, bgXX, bgYY, bgWW, bgHH);
                     ctx.restore();
-
                     const glassGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
                     if (isDark) {
-                        glassGradient.addColorStop(0, 'rgba(15, 15, 17, 0.1)');
-                        glassGradient.addColorStop(0.5, 'rgba(15, 15, 17, 0.35)');
-                        glassGradient.addColorStop(1, 'rgba(9, 9, 11, 0.95)');
+                        glassGradient.addColorStop(0, 'rgba(10, 10, 10, 0.4)');
+                        glassGradient.addColorStop(1, 'rgba(10, 10, 10, 0.95)');
                     } else {
-                        glassGradient.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
-                        glassGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
-                        glassGradient.addColorStop(1, 'rgba(240, 240, 245, 0.95)');
+                        glassGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+                        glassGradient.addColorStop(1, 'rgba(255, 255, 255, 0.95)');
                     }
                     ctx.fillStyle = glassGradient;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                } else if (config.frameStyle === 'polaroid') {
-                    ctx.fillStyle = isDark ? '#000000' : '#f4f4f5';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                    ctx.save();
-                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.95)' : 'rgba(0,0,0,0.18)';
-                    ctx.shadowBlur = outerMargin * 0.5;
-                    ctx.shadowOffsetY = outerMargin * 0.2;
-                    ctx.shadowOffsetX = 0;
-                    
-                    const paperX = outerMargin;
-                    const paperY = outerMargin;
-                    const paperW = drawW + padLeft + padRight;
-                    const paperH = drawH + padTop + padBottom;
-                    const cornerRadius = Math.max(4, shortSide * 0.015); 
-
-                    ctx.beginPath();
-                    if (ctx.roundRect) {
-                        ctx.roundRect(paperX, paperY, paperW, paperH, cornerRadius);
-                    } else {
-                        ctx.rect(paperX, paperY, paperW, paperH); 
-                    }
-                    
-                    const paperGradient = ctx.createLinearGradient(paperX, paperY, paperX + paperW, paperY + paperH);
-                    if (isDark) {
-                        paperGradient.addColorStop(0, '#27272a');
-                        paperGradient.addColorStop(1, '#18181b');
-                    } else {
-                        paperGradient.addColorStop(0, '#ffffff');
-                        paperGradient.addColorStop(1, '#f8f8fa');
-                    }
-                    ctx.fillStyle = paperGradient;
-                    ctx.fill();
-                    
-                    ctx.lineWidth = 1;
-                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,1)';
-                    ctx.stroke();
-                    ctx.restore();
-
                 } else {
                     ctx.fillStyle = bgColor;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                 }
 
-                // 照片主体渲染
+                if (config.frameStyle === 'film') {
+                    ctx.save();
+                    const holeW = shortSide * 0.012;
+                    const holeH = shortSide * 0.018;
+                    const holeSpacing = shortSide * 0.032;
+                    const holeRadius = holeW * 0.15;
+                    const topY = (padTop - holeH) * 0.4;
+                    const botY = canvas.height - (padBottom * 0.6) - holeH;
+                    ctx.fillStyle = isDark ? '#000000' : '#ffffff'; 
+                    ctx.beginPath();
+                    for(let x = padLeft * 0.5; x < canvas.width - (padRight * 0.5); x += holeSpacing) {
+                        if (ctx.roundRect) {
+                            ctx.roundRect(x, topY, holeW, holeH, holeRadius);
+                            ctx.roundRect(x, botY, holeW, holeH, holeRadius);
+                        } else {
+                            ctx.rect(x, topY, holeW, holeH);
+                            ctx.rect(x, botY, holeW, holeH);
+                        }
+                    }
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // 照片渲染 (包含宽幅电影的裁剪逻辑)
                 ctx.save();
                 if (config.frameStyle === 'glass') {
-                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)';
-                    ctx.shadowBlur = basePadding * 0.3;
-                    ctx.shadowOffsetY = basePadding * 0.1;
-                } else if (config.frameStyle === 'classic' || config.frameStyle === 'palette') {
-                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.08)';
+                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.15)';
                     ctx.shadowBlur = basePadding * 0.4;
+                    ctx.shadowOffsetY = basePadding * 0.15;
+                } else if (config.frameStyle === 'classic' || config.frameStyle === 'palette' || config.frameStyle === 'museum') {
+                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.05)';
+                    ctx.shadowBlur = basePadding * 0.3;
                     ctx.shadowOffsetY = basePadding * 0.1;
                 }
 
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, padLeft + outerMargin, padTop + outerMargin, drawW, drawH);
+
+                if (config.frameStyle === 'cinematic') {
+                    // 计算原图中心裁剪区域
+                    const imgAspect = img.naturalWidth / img.naturalHeight;
+                    const targetAspect = drawW / drawH;
+                    let sx, sy, sw, sh;
+                    if (imgAspect > targetAspect) {
+                        sh = img.naturalHeight;
+                        sw = sh * targetAspect;
+                        sx = (img.naturalWidth - sw) / 2;
+                        sy = 0;
+                    } else {
+                        sw = img.naturalWidth;
+                        sh = sw / targetAspect;
+                        sx = 0;
+                        sy = (img.naturalHeight - sh) / 2;
+                    }
+                    ctx.drawImage(img, sx, sy, sw, sh, padLeft + outerMargin, padTop + outerMargin, drawW, drawH);
+                } else {
+                    ctx.drawImage(img, padLeft + outerMargin, padTop + outerMargin, drawW, drawH);
+                }
                 ctx.restore();
 
-                // 拍立得照片内阴影
-                if (config.frameStyle === 'polaroid') {
-                    ctx.save();
-                    const photoX = padLeft + outerMargin;
-                    const photoY = padTop + outerMargin;
-                    
-                    ctx.lineWidth = Math.max(1.5, shortSide * 0.002);
-                    ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.15)';
-                    ctx.beginPath(); ctx.moveTo(photoX, photoY + drawH); ctx.lineTo(photoX, photoY); ctx.lineTo(photoX + drawW, photoY); ctx.stroke();
-                    
-                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)';
-                    ctx.beginPath(); ctx.moveTo(photoX + drawW, photoY); ctx.lineTo(photoX + drawW, photoY + drawH); ctx.lineTo(photoX, photoY + drawH); ctx.stroke();
-                    
-                    const innerShadowGrad = ctx.createLinearGradient(0, photoY, 0, photoY + basePadding * 0.5);
-                    innerShadowGrad.addColorStop(0, isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.12)');
-                    innerShadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = innerShadowGrad;
-                    ctx.fillRect(photoX, photoY, drawW, basePadding * 0.5);
-                    ctx.restore();
+                let fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", sans-serif';
+                if (config.fontFamily === 'serif') fontStack = '"Playfair Display", "Noto Serif SC", "Songti SC", serif';
+                else if (config.fontFamily === 'mono') fontStack = '"JetBrains Mono", "Courier New", monospace';
+                else if (config.fontFamily === 'cinzel') fontStack = '"Cinzel", "Noto Serif SC", serif';
+
+                const baseFontSize = shortSide * 0.024;
+                ctx.letterSpacing = "0px";
+
+                if (config.frameStyle === 'cinematic') {
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const textY = padTop + drawH + (padBottom / 2);
+                    ctx.fillStyle = textColor;
+                    ctx.font = `400 ${baseFontSize * 0.8}px ${fontStack}`;
+                    let combinedText = '';
+                    if(imgData.mainText && imgData.subText) {
+                        combinedText = `${imgData.mainText}   /   ${imgData.subText}`;
+                    } else {
+                        combinedText = imgData.mainText || imgData.subText;
+                    }
+                    if (combinedText) {
+                        ctx.letterSpacing = "1.5px"; 
+                        ctx.fillText(combinedText.toUpperCase(), canvas.width / 2, textY);
+                        ctx.letterSpacing = "0px";
+                    }
                 }
-
-                // --------- 色卡美学专项排版 ---------
-                if (config.frameStyle === 'palette') {
-                    let fontStack = '-apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-                    if (config.fontFamily === 'nothing') fontStack = '"DotGothic16", sans-serif';
-                    else if (config.fontFamily === 'serif') fontStack = '"Noto Serif SC", serif';
-                    else if (config.fontFamily === 'monospace') fontStack = '"JetBrains Mono", monospace';
-                    else if (config.fontFamily === 'oswald') fontStack = '"Oswald", "Inter", sans-serif';
-                    else if (config.fontFamily === 'cinzel') fontStack = '"Cinzel", "Noto Serif SC", serif';
-                    else if (config.fontFamily === 'montserrat') fontStack = '"Montserrat", "Inter", sans-serif';
-                    else if (config.fontFamily === 'lato') fontStack = '"Lato", "Inter", sans-serif';
-
-                    const baseFontSize = shortSide * 0.024;
-                    
-                    // 1. 左上角：拍摄时间与地理坐标
+                else if (config.frameStyle === 'palette') {
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'bottom';
                     ctx.fillStyle = subTextColor; 
-                    ctx.font = `500 ${baseFontSize * 0.6}px ${fontStack}`;
-                    
+                    ctx.font = `400 ${baseFontSize * 0.55}px ${fontStack}`;
                     const topLeftX = padLeft + outerMargin;
                     const topLeftY = padTop + outerMargin - baseFontSize * 0.8;
-                    
                     let leftLines = [];
-                    if (imgData.dateTimeStr) leftLines.push(`⏰  ${imgData.dateTimeStr}`);
-                    if (imgData.gpsStr) leftLines.push(`📌  ${imgData.gpsStr}`);
-                    
+                    if (imgData.dateTimeStr) leftLines.push(`${imgData.dateTimeStr}`);
+                    if (imgData.gpsStr) leftLines.push(`${imgData.gpsStr}`);
                     let currY = topLeftY;
                     for (let i = leftLines.length - 1; i >= 0; i--) {
                         ctx.fillText(leftLines[i], topLeftX, currY);
                         currY -= baseFontSize * 1.0;
                     }
-                    
-                    // 2. 左下角：主色调色卡
                     const photoBotY = padTop + drawH + outerMargin;
-                    const colorBlockW = drawW * 0.08; // 总共约占图片 40% 宽度
-                    const colorBlockH = basePadding * 0.45;
-                    const colorBlockY = photoBotY + basePadding * 0.8;
-                    
+                    const colorBlockW = drawW * 0.08; 
+                    const colorBlockH = basePadding * 0.4;
+                    const colorBlockY = photoBotY + basePadding * 0.9;
                     if (imgData.colors && imgData.colors.length > 0) {
                         for(let i=0; i<imgData.colors.length; i++) {
                             ctx.fillStyle = imgData.colors[i];
                             ctx.fillRect(padLeft + outerMargin + i * colorBlockW, colorBlockY, colorBlockW, colorBlockH);
                         }
                     }
-                    
-                    // 3. 右下角：设备与光学参数
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'top';
-                    
-                    // 设备型号 (使用主文本，加粗放大)
                     ctx.fillStyle = textColor;
-                    ctx.font = `600 ${baseFontSize * 1.5}px ${fontStack}`;
-                    const deviceY = photoBotY + basePadding * 0.65;
+                    ctx.font = `500 ${baseFontSize * 1.3}px ${fontStack}`;
+                    const deviceY = photoBotY + basePadding * 0.7;
                     ctx.fillText(imgData.mainText || '', padLeft + outerMargin + drawW, deviceY);
-                    
-                    // 光学参数 (使用副文本)
                     ctx.fillStyle = subTextColor;
-                    ctx.font = `400 ${baseFontSize * 0.65}px ${fontStack}`;
-                    ctx.fillText(imgData.subText || '', padLeft + outerMargin + drawW, deviceY + baseFontSize * 1.9);
-
+                    ctx.font = `400 ${baseFontSize * 0.6}px ${fontStack}`;
+                    ctx.fillText(imgData.subText || '', padLeft + outerMargin + drawW, deviceY + baseFontSize * 1.8);
                 } 
-                // --------- 其他传统排版样式 ---------
+                else if (config.frameStyle === 'museum') {
+                    const lineY = padTop + drawH + basePadding * 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(padLeft, lineY);
+                    ctx.lineTo(padLeft + drawW, lineY);
+                    ctx.lineWidth = Math.max(1, shortSide * 0.001);
+                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)';
+                    ctx.stroke();
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.fillStyle = textColor;
+                    ctx.font = `500 ${baseFontSize * 1.2}px ${fontStack}`;
+                    ctx.fillText(imgData.mainText || '', padLeft, lineY + basePadding * 0.8);
+                    ctx.fillStyle = subTextColor;
+                    ctx.font = `400 ${baseFontSize * 0.6}px ${fontStack}`;
+                    ctx.fillText(imgData.subText || '', padLeft, lineY + basePadding * 0.8 + baseFontSize * 1.8);
+                }
+                else if (config.frameStyle === 'film') {
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = textColor; 
+                    const filmFont = '"JetBrains Mono", "Courier New", monospace';
+                    ctx.font = `400 ${baseFontSize * 0.6}px ${filmFont}`;
+                    ctx.letterSpacing = "2px";
+                    const textYBot = canvas.height - (padBottom * 0.35);
+                    ctx.textAlign = 'left';
+                    if (imgData.mainText) {
+                        ctx.fillText(`KODAK 400TX  •  ${imgData.mainText.toUpperCase()}`, padLeft, textYBot);
+                    } else {
+                        ctx.fillText(`KODAK 400TX`, padLeft, textYBot);
+                    }
+                    ctx.textAlign = 'right';
+                    if (imgData.subText) {
+                        ctx.fillText(`${imgData.subText.toUpperCase()}  •  [ 36A ]`, canvas.width - padRight, textYBot);
+                    } else {
+                        ctx.fillText(`[ 36A ]`, canvas.width - padRight, textYBot);
+                    }
+                    ctx.letterSpacing = "0px";
+                }
                 else if (hasText) {
-                    let fontStack = '-apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-                    if (config.fontFamily === 'nothing') fontStack = '"DotGothic16", sans-serif';
-                    else if (config.fontFamily === 'serif') fontStack = '"Noto Serif SC", serif';
-                    else if (config.fontFamily === 'monospace') fontStack = '"JetBrains Mono", monospace';
-                    else if (config.fontFamily === 'oswald') fontStack = '"Oswald", "Inter", sans-serif';
-                    else if (config.fontFamily === 'cinzel') fontStack = '"Cinzel", "Noto Serif SC", serif';
-                    else if (config.fontFamily === 'montserrat') fontStack = '"Montserrat", "Inter", sans-serif';
-                    else if (config.fontFamily === 'lato') fontStack = '"Lato", "Inter", sans-serif';
-
-                    const baseFontSize = shortSide * 0.024;
-                    const mainFont = `600 ${baseFontSize}px ${fontStack}`; 
-                    const subFont = `400 ${baseFontSize * 0.65}px ${fontStack}`;
-
+                    const mainFont = `500 ${baseFontSize * 0.95}px ${fontStack}`; 
+                    const subFont = `400 ${baseFontSize * 0.6}px ${fontStack}`;
                     const textYCenter = padTop + drawH + (padBottom / 2) + outerMargin;
-                    
                     ctx.font = mainFont; const mainW = ctx.measureText(imgData.mainText).width;
                     ctx.font = subFont; const subW = ctx.measureText(imgData.subText).width;
-
                     let currentLayout = config.textLayout;
-                    if (config.preset === 'coords') {
-                        currentLayout = 'center'; 
-                    }
-
+                    if (config.preset === 'coords') currentLayout = 'center'; 
                     ctx.textBaseline = 'middle';
-
                     if (currentLayout === 'center') {
                         ctx.textAlign = 'center'; 
-                        
                         if (imgData.mainText && imgData.subText) {
                             ctx.fillStyle = textColor; ctx.font = mainFont;
                             ctx.fillText(imgData.mainText, canvas.width / 2, textYCenter - (baseFontSize * 0.45));
-                            
-                            ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1.5px";
-                            ctx.fillText(imgData.subText, canvas.width / 2, textYCenter + (baseFontSize * 0.6));
-                            ctx.letterSpacing = "0px";
+                            ctx.fillStyle = subTextColor; ctx.font = subFont;
+                            ctx.fillText(imgData.subText, canvas.width / 2, textYCenter + (baseFontSize * 0.65));
                         } else {
                             const text = imgData.mainText || imgData.subText;
                             ctx.fillStyle = imgData.mainText ? textColor : subTextColor; 
                             ctx.font = imgData.mainText ? mainFont : subFont;
                             ctx.fillText(text, canvas.width / 2, textYCenter);
                         }
-
                     } else if (currentLayout === 'split') {
                         if (imgData.mainText) {
                             ctx.textAlign = 'left';
@@ -1188,26 +1180,22 @@
                         }
                         if (imgData.subText) {
                             ctx.textAlign = 'right';
-                            ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1px";
+                            ctx.fillStyle = subTextColor; ctx.font = subFont;
                             ctx.fillText(imgData.subText, canvas.width - padRight - outerMargin, textYCenter);
-                            ctx.letterSpacing = "0px";
                         }
-
                     } else if (currentLayout === 'inline') {
                         ctx.textAlign = 'left';
-                        const spacer = baseFontSize * 1.2;
+                        const spacer = baseFontSize * 1.5;
                         const totalInlineW = mainW + (imgData.mainText && imgData.subText ? spacer : 0) + subW;
                         let inlineX = (canvas.width - totalInlineW) / 2;
-
                         if (imgData.mainText) {
                             ctx.fillStyle = textColor; ctx.font = mainFont;
                             ctx.fillText(imgData.mainText, inlineX, textYCenter);
                             inlineX += mainW + spacer;
                         }
                         if (imgData.subText) {
-                            ctx.fillStyle = subTextColor; ctx.font = subFont; ctx.letterSpacing = "1px";
+                            ctx.fillStyle = subTextColor; ctx.font = subFont;
                             ctx.fillText(imgData.subText, inlineX, textYCenter);
-                            ctx.letterSpacing = "0px";
                         }
                     }
                 }
@@ -1220,7 +1208,7 @@
                     const link = document.createElement('a');
                     const imgData = this.state.images[this.state.currentIndex];
                     const originalName = imgData.file.name.split('.')[0];
-                    link.download = `FramePro_${originalName}_${new Date().getTime()}.jpg`;
+                    link.download = `Xiang_${originalName}_${new Date().getTime()}.jpg`;
                     link.href = dataUrl;
                     document.body.appendChild(link);
                     link.click();
@@ -1235,41 +1223,34 @@
             async batchDownload() {
                 if (this.state.images.length === 0) return;
                 if (typeof JSZip === 'undefined') {
-                    this.showToast('ZIP库加载失败，请检查网络', 'error');
+                    this.showToast('环境出错：需要 JSZIP 库支持', 'error');
                     return;
                 }
-
-                this.setLoading(true, '正在打包多张高画质照片，请耐心等待...');
-                
+                this.setLoading(true, '正在打包高画质照片，请耐心等待...');
                 try {
                     const zip = new JSZip();
                     const offscreenCanvas = document.createElement('canvas');
                     const offscreenCtx = offscreenCanvas.getContext('2d');
-
                     for (let i = 0; i < this.state.images.length; i++) {
                         const imgData = this.state.images[i];
-                        this.dom.uploadProgressText.innerText = `处理打包中 (${i+1}/${this.state.images.length})...`;
-                        
+                        this.dom.uploadProgressText.innerText = `处理中 (${i+1}/${this.state.images.length})...`;
                         this.drawCanvas(imgData, offscreenCanvas, offscreenCtx);
                         const blob = await new Promise(resolve => offscreenCanvas.toBlob(resolve, 'image/jpeg', 0.92));
                         const originalName = imgData.file.name.split('.')[0];
-                        zip.file(`FramePro_${originalName}_${i+1}.jpg`, blob);
+                        zip.file(`Xiang_${originalName}_${i+1}.jpg`, blob);
                     }
-
-                    this.dom.uploadProgressText.innerText = `正在生成 ZIP 文件...`;
+                    this.dom.uploadProgressText.innerText = `正在生成 ZIP 压缩包...`;
                     const zipContent = await zip.generateAsync({ type: "blob" });
-                    
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(zipContent);
-                    link.download = `FramePro_Batch_${new Date().getTime()}.zip`;
+                    link.download = `Xiang_Archive_${new Date().getTime()}.zip`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-
-                    this.showToast(`成功打包导出 ${this.state.images.length} 张图片！`, 'success');
+                    this.showToast(`成功导出 ${this.state.images.length} 张照片`, 'success');
                 } catch (error) {
-                    console.error("批量打包失败:", error);
-                    this.showToast('打包导出失败', 'error');
+                    console.error("Batch failed:", error);
+                    this.showToast('批量导出失败', 'error');
                 } finally {
                     this.setLoading(false);
                 }
@@ -1277,39 +1258,26 @@
 
             setLoading(isLoading, text = '处理中...') {
                 if (isLoading) {
-                    this.dom.uploadPlaceholder.classList.add('hidden');
-                    this.dom.uploadingState.classList.remove('hidden');
-                    this.dom.uploadingState.classList.add('flex');
+                    this.dom.processingOverlay.classList.remove('opacity-0', 'pointer-events-none');
                     this.dom.uploadProgressText.innerText = text;
-                    this.dom.dropZone.classList.add('pointer-events-none');
                 } else {
-                    this.dom.uploadPlaceholder.classList.remove('hidden');
-                    this.dom.uploadingState.classList.add('hidden');
-                    this.dom.uploadingState.classList.remove('flex');
-                    this.dom.dropZone.classList.remove('pointer-events-none');
+                    this.dom.processingOverlay.classList.add('opacity-0', 'pointer-events-none');
                 }
             }
 
             showToast(message, type = 'info') {
                 const toast = document.createElement('div');
-                const bgColor = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-zinc-900' : 'bg-white border border-zinc-200';
-                const textColor = type === 'info' ? 'text-zinc-800' : 'text-white';
-                const shadow = 'shadow-[0_8px_30px_rgb(0,0,0,0.12)]';
-                
-                toast.className = `toast-enter flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-full ${shadow} ${textColor} text-sm font-medium ${bgColor} max-w-full`;
-                
+                const bgColor = type === 'error' ? 'bg-red-600' : 'bg-black';
+                toast.className = `toast-enter flex items-center justify-center gap-3 px-5 py-3 ${bgColor} text-white shadow-xl max-w-sm border border-white/10`;
                 let icon = 'info';
-                if (type === 'success') icon = 'check-circle-2';
-                if (type === 'error') icon = 'alert-circle';
-
+                if (type === 'success') icon = 'check';
+                if (type === 'error') icon = 'alert-triangle';
                 toast.innerHTML = `
-                    <i data-lucide="${icon}" class="w-4 h-4 shrink-0 ${type === 'info' ? 'text-zinc-500' : ''}"></i>
-                    <span class="truncate">${message}</span>
+                    <i data-lucide="${icon}" class="w-3.5 h-3.5 shrink-0 opacity-70"></i>
+                    <span class="text-[11px] tracking-wider font-medium">${message}</span>
                 `;
-                
                 this.dom.toastContainer.appendChild(toast);
                 lucide.createIcons({ root: toast });
-
                 setTimeout(() => {
                     toast.classList.replace('toast-enter', 'toast-leave');
                     toast.addEventListener('animationend', () => toast.remove());
