@@ -690,9 +690,9 @@
 
                 const shortEdge = Math.min(imgW, imgH);
                 
-                // 基础环境留白
-                const wallPaddingX = imgW * 0.25;
-                const wallPaddingY = imgH * 0.25;
+                // 基础环境留白 (改为 let 以便针对特殊模版覆盖)
+                let wallPaddingX = imgW * 0.25;
+                let wallPaddingY = imgH * 0.25;
                 
                 let sceneW, sceneH;
                 let drawLogic = () => {};
@@ -839,55 +839,61 @@
                     };
 
                 } else if (style === 'exif') {
-                    const padX = shortEdge * 0.08 * matMultiplier;
-                    const padTop = shortEdge * 0.1 * matMultiplier;
-                    const padBot = shortEdge * 0.35 * matMultiplier; 
+                    // EXIF 模版：取消外部墙面留白，只输出纯白色相纸底板
+                    wallPaddingX = 0;
+                    wallPaddingY = 0;
+
+                    // 定义相纸四周的留白比例
+                    const padX = shortEdge * 0.06 * matMultiplier;   // 左右白边
+                    const padTop = shortEdge * 0.06 * matMultiplier; // 上方白边
+                    const padBot = shortEdge * 0.28 * matMultiplier; // 下方留白，用于放置文字
 
                     const paperW = imgW + padX * 2;
                     const paperH = imgH + padTop + padBot;
-                    sceneW = paperW + wallPaddingX * 2; 
-                    sceneH = paperH + wallPaddingY * 2;
+                    
+                    sceneW = paperW; 
+                    sceneH = paperH;
 
                     drawLogic = (scale) => {
-                        drawBackground(scale);
+                        const pX = 0, pY = 0, pW = paperW * scale, pH = paperH * scale;
                         
-                        const pX = wallPaddingX * scale, pY = wallPaddingY * scale, pW = paperW * scale, pH = paperH * scale;
-                        
-                        ctx.save();
-                        ctx.shadowColor = `rgba(0, 0, 0, ${0.08 * shadowMultiplier})`;
-                        ctx.shadowBlur = shortEdge * 0.04 * scale * shadowMultiplier;
-                        ctx.shadowOffsetY = shortEdge * 0.015 * scale * shadowMultiplier;
+                        // 绘制纯白底纸
                         ctx.fillStyle = '#ffffff'; 
                         ctx.fillRect(pX, pY, pW, pH);
-                        ctx.restore();
 
-                        const iX = pX + padX * scale;
-                        const iY = pY + padTop * scale;
+                        // 根据留白计算图片坐标
+                        const iX = padX * scale;
+                        const iY = padTop * scale;
                         const iW = imgW * scale;
                         const iH = imgH * scale;
                         ctx.drawImage(imgObj, iX, iY, iW, iH);
                         
+                        // 图片周围的细黑线，增加质感
                         ctx.strokeStyle = '#000000';
                         ctx.lineWidth = Math.max(1, shortEdge * 0.002 * scale);
                         ctx.strokeRect(iX, iY, iW, iH);
 
                         if (matMultiplier > 0.4) {
+                            // 文字对齐到图片的左侧边缘 (iX)
                             const textX = iX;
-                            const textY = iY + iH + (shortEdge * 0.06 * scale * matMultiplier);
+                            const textY = iY + iH + (shortEdge * 0.05 * scale * matMultiplier);
                             const baseFontSize = shortEdge * 0.016 * scale;
 
                             ctx.fillStyle = '#000000';
                             ctx.textAlign = 'left';
                             ctx.textBaseline = 'top';
 
-                            ctx.font = `600 ${baseFontSize * 1.3}px "JetBrains Mono", monospace`;
+                            // 相机型号 - 加粗，略大
+                            ctx.font = `600 ${baseFontSize * 1.2}px "JetBrains Mono", monospace`;
                             ctx.fillText((exifCamera || 'DIGITAL CAMERA').toUpperCase(), textX, textY);
 
-                            ctx.font = `400 ${baseFontSize}px "JetBrains Mono", monospace`;
-                            ctx.fillText((exifLens || 'STANDARD LENS').toUpperCase(), textX, textY + baseFontSize * 2.5);
+                            // 镜头 - 正常，略小
+                            ctx.font = `400 ${baseFontSize * 0.85}px "JetBrains Mono", monospace`;
+                            ctx.fillText((exifLens || 'STANDARD LENS').toUpperCase(), textX, textY + baseFontSize * 2.3);
 
-                            ctx.font = `400 ${baseFontSize}px "JetBrains Mono", monospace`;
-                            ctx.fillText((exifParams || '50mm f/2.8 1/500s ISO100'), textX, textY + baseFontSize * 4);
+                            // 参数 - 正常，略小，紧跟在镜头下方
+                            ctx.font = `400 ${baseFontSize * 0.85}px "JetBrains Mono", monospace`;
+                            ctx.fillText((exifParams || '50mm f/2.8 1/500s ISO100'), textX, textY + baseFontSize * 3.5);
                         }
                     };
 
