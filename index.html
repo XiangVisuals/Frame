@@ -3,48 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>XIANG FRAME</title>
+    <title>XIANG EDITION PRO | 高级画廊与胶片展示生成器</title>
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='1.5' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cline x1='22' x2='2' y1='6' y2='6'/%3E%3Cline x1='22' x2='2' y1='18' y2='18'/%3E%3Cline x1='6' x2='6' y1='2' y2='22'/%3E%3Cline x1='18' x2='18' y1='2' y2='22'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='1.5' stroke-linecap='square' stroke-linejoin='miter'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3C/svg%3E">
 
+    <!-- 依赖库 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- 引入 EXIF 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
+    
+    <!-- 字体：引入 Inter 无衬线体，Noto Serif 衬线体，以及用于 EXIF 的等宽字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Helvetica Neue"', '"PingFang SC"', 'sans-serif'],
-                        serif: ['Playfair Display', 'Noto Serif SC', 'Songti SC', 'serif'],
-                        cinzel: ['Cinzel', 'Noto Serif SC', 'serif'],
-                        mono: ['JetBrains Mono', 'Courier New', 'monospace'],
-                    },
-                    colors: {
-                        brand: '#000000',
-                        surface: '#ffffff',
-                        background: '#f8f8f8',
-                        zinc: {
-                            50: '#fafafa',
-                            100: '#f4f4f5',
-                            200: '#e4e4e7',
-                            300: '#d4d4d8',
-                            400: '#a1a1aa',
-                            500: '#71717a',
-                            800: '#27272a',
-                            900: '#18181b',
-                        }
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 1s ease-out forwards',
-                        'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                    },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        serif: ['"Noto Serif SC"', 'Georgia', 'serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                     }
                 }
             }
@@ -52,44 +34,61 @@
     </script>
 
     <style>
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e4e4e7; }
-        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
-        
+        /* 隐藏滚动条但保留滚动功能 */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        body { 
-            background-color: theme('colors.background'); 
-            -webkit-font-smoothing: antialiased; 
-            text-rendering: optimizeLegibility;
-        }
         
-        .canvas-wrapper {
-            background-color: #f0f0f0;
-            background-image: linear-gradient(45deg, #e8e8e8 25%, transparent 25%, transparent 75%, #e8e8e8 75%, #e8e8e8), linear-gradient(45deg, #e8e8e8 25%, transparent 25%, transparent 75%, #e8e8e8 75%, #e8e8e8);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
+        /* 细长优雅的滚动条，用于侧边栏和面板 */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #d1d5db; }
+
+        body {
+            background-color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            overflow: hidden; 
         }
 
-        canvas {
+        /* 预览区背景纹理 */
+        .preview-area {
+            background-image: radial-gradient(#d4d4d8 1px, transparent 1px);
+            background-size: 24px 24px;
+            transition: background-color 0.4s ease;
+        }
+
+        /* Canvas 预览动画 */
+        #previewCanvas {
             max-width: 100%;
             max-height: 100%;
-            width: auto;
-            height: auto;
             object-fit: contain;
-            box-shadow: 0 24px 40px -12px rgba(0, 0, 0, 0.15);
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            transform: scale(0.98);
+        }
+        #previewCanvas.loaded {
+            opacity: 1;
+            transform: scale(1);
         }
 
-        .file-input-hidden { display: none; }
-        
-        .drag-active {
-            border-color: #000 !important;
-            background-color: #f8f8f8 !important;
+        /* 表单控件美化 */
+        .input-elegant {
+            border: 1px solid transparent;
+            border-bottom: 1px solid #e5e7eb;
+            background: #fafafa;
+            border-radius: 4px 4px 0 0;
+            padding: 10px 12px;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        .input-elegant:focus {
+            outline: none;
+            background: #f4f4f5;
+            border-bottom-color: #000;
         }
 
+        /* 自定义 Range 滑块 */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -98,1220 +97,1056 @@
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 14px;
-            width: 4px;
+            width: 14px;
+            border-radius: 50%;
             background: #000;
             cursor: pointer;
             margin-top: -6px;
-            transition: transform 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
-        input[type=range]::-webkit-slider-thumb:active { transform: scaleY(1.3); }
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 2px;
             cursor: pointer;
-            background: #e4e4e7;
+            background: #e5e7eb;
+            border-radius: 2px;
         }
 
-        @keyframes lineProgress {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        .animate-line {
-            animation: lineProgress 1.5s infinite cubic-bezier(0.65, 0, 0.35, 1);
-        }
-
-        .toast-enter { animation: toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .toast-leave { animation: toast-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes toast-in { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-        @keyframes toast-out { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100%); opacity: 0; } }
-
-        .form-input {
-            border-radius: 0;
-            border: 1px solid #e4e4e7;
-            transition: all 0.2s ease;
-        }
-        .form-input:focus {
+        /* 缩略图激活状态 */
+        .thumb-item { transition: all 0.2s ease; }
+        .thumb-item.active {
             border-color: #000;
-            box-shadow: none;
-            outline: none;
+            box-shadow: 0 0 0 1px #000;
         }
+
+        /* 选项卡按钮 */
+        .style-btn { transition: all 0.2s ease; }
+        .style-btn.active { border-color: #000; background-color: #000; color: #fff; }
+
+        /* 拖拽高亮 */
+        .drag-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(4px);
+        }
+        body.drag-active .drag-overlay {
+            opacity: 1;
+            pointer-events: all;
+            z-index: 100;
+        }
+
+        @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast { animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
-<body class="text-black h-[100dvh] flex flex-col overflow-hidden font-sans">
+<body class="text-black h-[100dvh] flex flex-col font-sans">
 
-    <!-- 全局启动动画 -->
-    <div id="initialLoader" class="fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center transition-opacity duration-1000">
-        <div class="flex flex-col items-center animate-slide-up">
-            <h1 class="font-sans font-light text-3xl tracking-wide mb-6 text-black">FRAME</h1>
-            <div class="w-24 h-[1px] bg-zinc-200 overflow-hidden relative">
-                <div class="absolute inset-y-0 left-0 w-full bg-black animate-line"></div>
+    <!-- 全局拖拽遮罩 -->
+    <div id="dragOverlay" class="drag-overlay fixed inset-0 flex items-center justify-center border-4 border-black border-dashed m-4 rounded-xl z-[100]">
+        <div class="text-center">
+            <i data-lucide="image-plus" class="w-16 h-16 mx-auto mb-4 text-black"></i>
+            <h2 class="text-2xl font-serif font-bold">松开鼠标，导入作品</h2>
+            <p class="text-zinc-500 mt-2">支持多选 JPG, PNG, WEBP 文件</p>
+        </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <header class="bg-white border-b border-zinc-200 h-14 flex items-center justify-between px-3 md:px-6 shrink-0 z-30">
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="w-6 h-6 bg-black text-white flex items-center justify-center rounded-sm">
+                <span class="font-serif font-bold text-xs">X</span>
             </div>
-            <p class="mt-4 text-[11px] tracking-widest text-zinc-400">加载中...</p>
+            <h1 class="font-serif font-bold text-[13px] md:text-[15px] tracking-wider uppercase">Xiang Edition <span class="text-zinc-400 font-sans font-normal text-xs ml-1">PRO</span></h1>
         </div>
-    </div>
-
-    <!-- 处理进度浮层 -->
-    <div id="processingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-md z-[100] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500">
-        <h2 class="font-sans font-light text-2xl tracking-wide mb-6 text-black">Processing</h2>
-        <div class="w-32 h-[1px] bg-zinc-200 overflow-hidden relative mb-4">
-            <div class="absolute inset-y-0 left-0 w-full bg-black animate-line"></div>
-        </div>
-        <p id="uploadProgressText" class="text-[11px] tracking-widest text-black">正在分析光学参数...</p>
-    </div>
-
-    <header class="bg-white border-b border-zinc-200 h-14 md:h-[68px] flex items-center justify-between px-5 md:px-8 shrink-0 z-20 relative">
-        <div class="flex items-baseline gap-2.5">
-            <h1 class="font-sans font-medium text-xl tracking-wide">FRAME</h1>
-            <span class="hidden sm:inline-block text-[10px] uppercase tracking-widest text-zinc-400">1.5</span>
-        </div>
-        <div class="flex items-center gap-3">
-            <button id="batchDownloadBtn" class="hidden items-center gap-2 bg-transparent border border-zinc-200 hover:border-black text-black px-4 py-2 text-xs font-medium transition-colors">
-                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">批量打包 (ZIP)</span>
-                <span class="sm:hidden">打包</span>
+        <div class="flex items-center gap-2 md:gap-3">
+            <button id="btnAddFiles" class="flex items-center gap-1.5 md:gap-2 hover:bg-zinc-100 text-black px-2 md:px-3 py-1.5 rounded text-xs font-medium transition-colors">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">导入作品</span>
             </button>
-            <button id="downloadBtn" class="hidden items-center gap-2 bg-black hover:bg-zinc-800 text-white px-5 py-2 text-xs font-medium transition-colors">
+            <div class="w-px h-4 bg-zinc-200 mx-0.5 md:mx-1"></div>
+            <button id="btnDownloadAll" class="hidden items-center gap-1.5 md:gap-2 border border-zinc-200 hover:border-black text-black px-3 md:px-4 py-1.5 rounded text-xs font-medium transition-colors" disabled>
+                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">批量打包</span>
+                <span class="sm:hidden">批量</span>
+            </button>
+            <button id="btnDownloadCurrent" class="hidden items-center gap-1.5 md:gap-2 bg-black hover:bg-zinc-800 text-white px-3 md:px-5 py-1.5 rounded text-xs font-medium transition-colors shadow-sm" disabled>
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span>保存照片</span>
+                <span class="hidden sm:inline">导出当前</span>
+                <span class="sm:hidden">导出</span>
             </button>
         </div>
     </header>
 
-    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-        <section class="order-1 lg:order-2 h-[45vh] lg:h-auto lg:flex-1 shrink-0 canvas-wrapper flex flex-col relative overflow-hidden border-b lg:border-b-0 lg:border-l border-zinc-200">
-            <div id="emptyPreview" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 z-0 pointer-events-none transition-opacity duration-300">
-                <i data-lucide="image-plus" class="w-10 h-10 text-zinc-300 mb-5 font-light"></i>
-                <p class="text-xs tracking-widest text-zinc-500">将照片拖拽至此处</p>
+    <!-- 主体区域 -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        
+        <!-- 图库列表 -->
+        <aside class="w-full h-[72px] md:w-24 md:h-full border-b md:border-b-0 md:border-r border-zinc-200 bg-zinc-50 flex md:flex-col shrink-0 z-20 overflow-hidden">
+            <div class="hidden md:block p-3 text-[10px] tracking-widest text-zinc-400 text-center uppercase border-b border-zinc-200">
+                Gallery
+            </div>
+            <div id="thumbnailList" class="flex-1 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto custom-scrollbar p-2 md:p-3 flex flex-row md:flex-col gap-2 md:gap-3 items-center md:items-stretch">
+                <!-- 占位符 -->
+            </div>
+        </aside>
+
+        <!-- 预览主舞台 -->
+        <section class="flex-1 preview-area bg-zinc-100 flex flex-col relative overflow-hidden" id="previewSection">
+            <!-- 空状态提示 -->
+            <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 z-10 pointer-events-none transition-opacity duration-300">
+                <div class="w-16 h-24 md:w-20 md:h-28 border border-dashed border-zinc-400 mb-4 md:mb-6 flex items-center justify-center bg-white/50 backdrop-blur-sm shadow-sm rounded-sm">
+                    <i data-lucide="upload-cloud" class="w-6 h-6 text-zinc-400"></i>
+                </div>
+                <h2 class="font-serif text-base md:text-lg text-black mb-1">构建您的虚拟画廊</h2>
+                <p class="text-[11px] md:text-xs text-zinc-500">点击右上角或拖拽多张图片至此处</p>
             </div>
             
-            <div id="canvasContainer" class="flex-1 w-full h-full min-h-0 p-8 md:p-16 flex items-center justify-center overflow-hidden z-10">
-                <canvas id="mainCanvas" class="hidden"></canvas>
-            </div>
-
-            <div id="galleryContainer" class="hidden w-full h-20 shrink-0 bg-white border-t border-zinc-200 items-center px-6 overflow-x-auto hide-scrollbar z-20">
-                <div id="thumbnailList" class="flex gap-4 h-full items-center py-2">
-                </div>
+            <div id="canvasContainer" class="flex-1 w-full h-full min-h-[30vh] p-4 md:p-12 lg:p-16 flex items-center justify-center overflow-hidden z-20">
+                <canvas id="previewCanvas"></canvas>
             </div>
         </section>
 
-        <aside class="order-2 lg:order-1 w-full lg:w-[400px] xl:w-[420px] bg-white overflow-y-auto flex-1 lg:flex-none z-10">
-            <div class="p-6 md:p-8 space-y-8">
+        <!-- 高级控制面板 -->
+        <aside class="w-full h-[45vh] md:h-full md:w-[320px] lg:w-[340px] bg-white border-t md:border-t-0 md:border-l border-zinc-200 flex flex-col shrink-0 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] md:shadow-[-10px_0_20px_rgba(0,0,0,0.02)]">
+            <div class="p-3 md:p-4 border-b border-zinc-200 flex items-center justify-between shrink-0 bg-white">
+                <h2 class="text-[11px] md:text-xs font-semibold tracking-wider uppercase">Inspector / 检查器</h2>
+                <span id="imgDimensions" class="text-[9px] md:text-[10px] text-zinc-400 font-mono">-- x --</span>
+            </div>
+            
+            <div id="controlPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5 space-y-6 md:space-y-8 opacity-40 pointer-events-none transition-opacity duration-300">
                 
+                <!-- 1. 装裱款式 -->
                 <section>
-                    <div id="dropZone" class="border border-dashed border-zinc-300 bg-zinc-50/50 p-8 text-center cursor-pointer hover:bg-zinc-100 transition-colors duration-300 group">
-                        <input type="file" id="fileInput" class="file-input-hidden" multiple accept="image/jpeg, image/png, image/webp, image/heic">
-                        <i data-lucide="plus" class="w-5 h-5 text-zinc-400 mx-auto mb-3 group-hover:text-black transition-colors"></i>
-                        <h3 class="text-xs tracking-wider font-medium text-black mb-1">添加照片</h3>
+                    <h3 class="text-[10px] md:text-[11px] font-medium text-zinc-500 uppercase tracking-widest mb-3">Templates / 版式与装裱</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-2 gap-2" id="styleGroup">
+                        <button class="style-btn active border border-zinc-200 rounded text-[11px] py-2 font-medium" data-style="framed">经典画框</button>
+                        <button class="style-btn border border-zinc-200 rounded text-[11px] py-2 font-medium" data-style="museum">美术馆卡纸</button>
+                        <button class="style-btn border border-zinc-200 rounded text-[11px] py-2 font-medium" data-style="floating">悬浮装裱</button>
+                        <button class="style-btn border border-zinc-200 rounded text-[11px] py-2 font-medium" data-style="polaroid">复古拍立得</button>
+                        <button class="style-btn border border-zinc-200 rounded text-[11px] py-2 font-medium" data-style="exif">EXIF 原生参数</button>
+                        <button class="style-btn border border-zinc-200 rounded text-[11px] py-2 font-medium" data-style="film35mm">35mm 胶片 (新)</button>
+                        <button class="style-btn border border-zinc-200 rounded text-[11px] py-2 font-medium col-span-2" data-style="film120">120 中画幅胶片 (新)</button>
                     </div>
                 </section>
 
-                <div id="settingsPanel" class="space-y-8 opacity-30 pointer-events-none transition-all duration-500">
+                <!-- 2. 环境与参数 -->
+                <section class="space-y-4">
+                    <h3 class="text-[10px] md:text-[11px] font-medium text-zinc-500 uppercase tracking-widest mb-2">Parametrics / 环境微调</h3>
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-[10px] text-zinc-600">Scale Margin / 留白比例</label>
+                            <span class="text-[10px] font-mono text-zinc-400" id="matSizeVal">100%</span>
+                        </div>
+                        <input type="range" id="matSizeSlider" min="0.2" max="2.5" step="0.1" value="1.0">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-[10px] text-zinc-600">Shadow Depth / 阴影深度</label>
+                            <span class="text-[10px] font-mono text-zinc-400" id="shadowVal">100%</span>
+                        </div>
+                        <input type="range" id="shadowSlider" min="0" max="3" step="0.1" value="1.0">
+                    </div>
+                    <div class="pt-2 flex items-center justify-between">
+                        <label class="text-[10px] text-zinc-600">Gallery Spotlight / 展厅射灯</label>
+                        <button id="toggleSpotlight" class="w-8 h-4 bg-black rounded-full relative transition-colors duration-300">
+                            <span class="absolute right-1 top-0.5 w-3 h-3 bg-white rounded-full transition-transform"></span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 3. 材质颜色 -->
+                <section>
+                    <h3 class="text-[10px] md:text-[11px] font-medium text-zinc-500 uppercase tracking-widest mb-3">Materials / 材质颜色</h3>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="block text-[9px] text-zinc-400 mb-2">Wall / 墙面</label>
+                            <div class="flex gap-2">
+                                <button class="wall-btn w-6 h-6 rounded-full border border-zinc-200 ring-2 ring-offset-1 ring-black" style="background-color: #f8f8f8;" data-wall="#f8f8f8"></button>
+                                <button class="wall-btn w-6 h-6 rounded-full border border-zinc-200" style="background-color: #e4e4e7;" data-wall="#e4e4e7"></button>
+                                <button class="wall-btn w-6 h-6 rounded-full border border-zinc-200" style="background-color: #27272a;" data-wall="#27272a"></button>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[9px] text-zinc-400 mb-2">Frame / 画框</label>
+                            <div class="flex gap-2" id="frameColorGroup">
+                                <button class="frame-btn w-6 h-6 rounded-sm border border-zinc-300 ring-2 ring-offset-1 ring-black" style="background: #1c1c1c;" data-frame="#1c1c1c"></button>
+                                <button class="frame-btn w-6 h-6 rounded-sm border border-zinc-300" style="background: #fcfcfc;" data-frame="#fcfcfc"></button>
+                                <button class="frame-btn w-6 h-6 rounded-sm border border-zinc-300" style="background: linear-gradient(135deg, #d4b595, #c1a281);" data-frame="#d4b595"></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. 元数据 (EXIF & Text) -->
+                <section>
+                    <h3 class="text-[10px] md:text-[11px] font-medium text-zinc-500 uppercase tracking-widest mb-3">Metadata / 展签与元数据</h3>
                     
-                    <section class="border-b border-zinc-100 pb-8">
-                        <div class="flex items-center justify-between mb-5">
-                            <h2 class="text-xs tracking-wider text-zinc-400 font-medium">参数信息</h2>
-                            <button id="autoExifBtn" class="text-xs flex items-center gap-1 text-zinc-400 hover:text-black transition-colors">
-                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> 重置
-                            </button>
+                    <div class="space-y-3">
+                        <!-- 常规展签 -->
+                        <div>
+                            <input type="text" id="inputLeft" class="input-elegant text-[11px] font-sans" placeholder="画框展签(左) 如: XIANG COLLECTION">
                         </div>
-                        
-                        <div class="mb-5">
-                            <div class="flex border border-zinc-200 p-0.5 bg-zinc-50">
-                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs tracking-wider font-medium bg-black text-white transition-colors" data-preset="params">专业参数</button>
-                                <button class="segment-btn preset-btn flex-1 py-1.5 text-xs tracking-wider font-medium text-zinc-500 hover:text-black bg-transparent transition-colors" data-preset="coords">地理位置</button>
-                            </div>
+                        <div>
+                            <input type="text" id="inputRight" class="input-elegant text-[11px] font-sans" placeholder="画框展签(右) 如: © CHIXIANG">
                         </div>
-
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-xs tracking-wider text-zinc-500 mb-2">主文本 (设备/标题)</label>
-                                <input type="text" id="mainText" class="w-full px-3 py-2 form-input bg-transparent text-sm text-black placeholder-zinc-300">
-                            </div>
-                            <div>
-                                <label class="block text-xs tracking-wider text-zinc-500 mb-2">副文本 (光学/描述)</label>
-                                <input type="text" id="subText" class="w-full px-3 py-2 form-input bg-transparent text-sm text-black placeholder-zinc-300">
-                            </div>
+                        <!-- 胶片/EXIF 专用 -->
+                        <div class="pt-3 border-t border-zinc-100">
+                            <input type="text" id="inputExifCamera" class="input-elegant text-[11px] font-mono text-blue-800" placeholder="相机 (如: LEICA M11)">
                         </div>
-                    </section>
-
-                    <section class="pb-4">
-                        <h2 class="text-xs tracking-wider text-zinc-400 font-medium mb-5">视觉排版</h2>
-                        
-                        <div class="space-y-7">
-                            <div>
-                                <label class="text-xs tracking-wider text-black mb-2.5 block">相框模版</label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium bg-black text-white transition-colors" data-style="classic">极简留白</button>
-                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="film">真实胶片</button>
-                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="cinematic">宽幅电影</button>
-                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="glass">高级毛玻璃</button>
-                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="palette">色彩卡片</button>
-                                    <button class="segment-btn style-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" data-style="museum">画廊美术馆</button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="text-xs tracking-wider text-black mb-2.5 block">文字布局</label>
-                                <div class="flex border border-zinc-200 p-0.5 bg-zinc-50" id="layoutGroup">
-                                    <button class="segment-btn layout-btn flex-1 py-1.5 text-[11px] tracking-wider font-medium bg-black text-white transition-colors" data-layout="center">居中对齐</button>
-                                    <button class="segment-btn layout-btn flex-1 py-1.5 text-[11px] tracking-wider font-medium text-zinc-500 hover:text-black bg-transparent transition-colors" data-layout="split">两端分布</button>
-                                    <button class="segment-btn layout-btn flex-1 py-1.5 text-[11px] tracking-wider font-medium text-zinc-500 hover:text-black bg-transparent transition-colors" data-layout="inline">紧凑单行</button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between items-center mb-3">
-                                    <label class="text-xs tracking-wider text-black">边距比例</label>
-                                    <span id="borderWidthLabel" class="text-xs font-mono text-zinc-500">6%</span>
-                                </div>
-                                <input type="range" id="borderWidth" min="2" max="25" value="6" class="w-full">
-                            </div>
-
-                            <div>
-                                <label class="text-xs tracking-wider text-black mb-2.5 block">英文字体引擎</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button class="segment-btn font-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium bg-black text-white transition-colors" style="font-family: -apple-system, 'SF Pro Text', sans-serif;" data-font="system">Apple 原生无衬线</button>
-                                    <button class="segment-btn font-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" style="font-family: 'Playfair Display', 'Noto Serif SC', serif;" data-font="serif">优雅衬线体</button>
-                                    <button class="segment-btn font-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" style="font-family: 'Cinzel', 'Noto Serif SC', serif;" data-font="cinzel">Cinzel 罗马字</button>
-                                    <button class="segment-btn font-btn py-2 border border-zinc-200 text-[11px] tracking-wider font-medium text-zinc-500 hover:border-black hover:text-black bg-transparent transition-colors" style="font-family: 'JetBrains Mono', monospace;" data-font="mono">机能等宽</button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="text-xs tracking-wider text-black mb-2.5 block">环境色调</label>
-                                <div class="flex gap-2">
-                                    <label class="flex-1 relative cursor-pointer group">
-                                        <input type="radio" name="theme" value="light" checked class="peer sr-only">
-                                        <div class="flex items-center justify-center py-2.5 border border-zinc-200 bg-white text-black peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-colors text-[11px] tracking-wider font-medium">
-                                            明亮系 (Light)
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 relative cursor-pointer group">
-                                        <input type="radio" name="theme" value="dark" class="peer sr-only">
-                                        <div class="flex items-center justify-center py-2.5 border border-zinc-200 bg-white text-zinc-500 peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-colors text-[11px] tracking-wider font-medium hover:text-black">
-                                            暗黑系 (Dark)
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
+                        <div>
+                            <input type="text" id="inputExifLens" class="input-elegant text-[11px] font-mono text-blue-800" placeholder="镜头 (如: Summilux 50mm)">
                         </div>
-                    </section>
+                        <div>
+                            <input type="text" id="inputExifParams" class="input-elegant text-[11px] font-mono text-blue-800" placeholder="参数 (如: 50mm f/1.4 1/1000s ISO100)">
+                        </div>
+                        <div>
+                            <input type="text" id="inputFilmName" class="input-elegant text-[11px] font-sans font-medium text-orange-600" placeholder="胶片卷标 (如: KODAK PORTRA 400)">
+                        </div>
+                    </div>
+
+                    <button id="btnApplyTextToAll" class="mt-4 w-full py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-[11px] font-medium rounded transition-colors flex items-center justify-center gap-1.5">
+                        <i data-lucide="copy-check" class="w-3 h-3"></i>
+                        应用上述信息至所有图片
+                    </button>
+                </section>
+
+                <div class="pt-6 text-center mt-auto pb-2">
+                    <p class="font-serif font-bold text-xs text-zinc-300 mb-1">XIANG EDITION PRO</p>
+                    <p class="text-[9px] text-zinc-400 tracking-widest uppercase">Parametric Metadata Engine</p>
                 </div>
-                
-                <div class="pt-8 text-center border-t border-zinc-100">
-                    <p class="font-sans font-medium text-xs text-zinc-400 mb-1">XIANG VISUALS.</p>
-                    <p class="text-[10px] text-zinc-400 tracking-widest">
-                        本地浏览器处理，保护隐私 &copy; 2026
-                    </p>
-                </div>
+
             </div>
         </aside>
     </main>
 
-    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 pointer-events-none"></div>
+    <!-- 隐藏文件与全局弹窗 -->
+    <input type="file" id="fileInput" class="hidden" accept="image/jpeg, image/png, image/webp" multiple>
+    <div id="toastContainer" class="fixed top-16 right-1/2 translate-x-1/2 md:translate-x-0 md:top-auto md:bottom-6 md:right-6 z-50 flex flex-col items-center md:items-end gap-2 pointer-events-none w-full md:w-auto px-4"></div>
+
+    <div id="progressModal" class="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="w-80 max-w-[85%]">
+            <h3 class="text-base md:text-lg font-serif mb-2 text-center" id="progressTitle">正在生成批量画册...</h3>
+            <p class="text-[11px] md:text-xs text-zinc-500 mb-6 text-center" id="progressDesc">请勿关闭浏览器或切换标签页</p>
+            <div class="w-full h-1.5 bg-zinc-200 rounded-full overflow-hidden">
+                <div id="progressBar" class="h-full bg-black transition-all duration-300 w-0 rounded-full"></div>
+            </div>
+            <p class="text-[10px] text-zinc-400 mt-3 text-center tracking-widest font-mono" id="progressCount">0 / 0</p>
+        </div>
+    </div>
 
     <script>
         lucide.createIcons();
 
-        window.addEventListener('load', () => {
-            const loader = document.getElementById('initialLoader');
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 1000);
-            }, 1200);
-        });
-
-        class FrameGenerator {
+        class AppController {
             constructor() {
                 this.state = {
-                    images: [],
-                    currentIndex: -1,
-                    config: {
-                        preset: 'params',
-                        borderRatio: 0.06, 
-                        fontFamily: 'system',
-                        theme: 'light',
-                        frameStyle: 'classic',
-                        textLayout: 'center'
-                    }
+                    images: [], 
+                    activeId: null,
+                    settings: {
+                        style: 'framed', 
+                        wallColor: '#f8f8f8',
+                        frameColor: '#1c1c1c',
+                        frameGradient: null,
+                        matMultiplier: 1.0,
+                        shadowMultiplier: 1.0,
+                        spotlight: true
+                    },
+                    isProcessing: false
                 };
-                
+                this.OUTPUT_MAX_DIMENSION = 3000;
                 this.initDOM();
                 this.bindEvents();
+                window.addEventListener('resize', this.debounce(() => this.renderPreview(), 200));
             }
 
             initDOM() {
                 this.dom = {
                     fileInput: document.getElementById('fileInput'),
-                    dropZone: document.getElementById('dropZone'),
-                    processingOverlay: document.getElementById('processingOverlay'),
-                    uploadProgressText: document.getElementById('uploadProgressText'),
-                    settingsPanel: document.getElementById('settingsPanel'),
-                    mainText: document.getElementById('mainText'),
-                    subText: document.getElementById('subText'),
-                    presetBtns: document.querySelectorAll('.preset-btn'),
-                    styleBtns: document.querySelectorAll('.style-btn'),
-                    layoutBtns: document.querySelectorAll('.layout-btn'),
-                    borderWidth: document.getElementById('borderWidth'),
-                    borderWidthLabel: document.getElementById('borderWidthLabel'),
-                    fontBtns: document.querySelectorAll('.font-btn'),
-                    themeRadios: document.querySelectorAll('input[name="theme"]'),
-                    canvasContainer: document.getElementById('canvasContainer'),
-                    canvas: document.getElementById('mainCanvas'),
-                    ctx: document.getElementById('mainCanvas').getContext('2d'),
-                    emptyPreview: document.getElementById('emptyPreview'),
+                    btnAddFiles: document.getElementById('btnAddFiles'),
+                    btnDownloadAll: document.getElementById('btnDownloadAll'),
+                    btnDownloadCurrent: document.getElementById('btnDownloadCurrent'),
+                    btnApplyTextToAll: document.getElementById('btnApplyTextToAll'),
                     
-                    downloadBtn: document.getElementById('downloadBtn'),
-                    batchDownloadBtn: document.getElementById('batchDownloadBtn'),
-                    
-                    autoExifBtn: document.getElementById('autoExifBtn'),
-                    galleryContainer: document.getElementById('galleryContainer'),
                     thumbnailList: document.getElementById('thumbnailList'),
-                    toastContainer: document.getElementById('toastContainer')
+                    previewSection: document.getElementById('previewSection'),
+                    emptyState: document.getElementById('emptyState'),
+                    canvasContainer: document.getElementById('canvasContainer'),
+                    previewCanvas: document.getElementById('previewCanvas'),
+                    controlPanel: document.getElementById('controlPanel'),
+                    imgDimensions: document.getElementById('imgDimensions'),
+                    
+                    inputLeft: document.getElementById('inputLeft'),
+                    inputRight: document.getElementById('inputRight'),
+                    inputExifCamera: document.getElementById('inputExifCamera'),
+                    inputExifLens: document.getElementById('inputExifLens'),
+                    inputExifParams: document.getElementById('inputExifParams'),
+                    inputFilmName: document.getElementById('inputFilmName'),
+                    
+                    matSizeSlider: document.getElementById('matSizeSlider'),
+                    matSizeVal: document.getElementById('matSizeVal'),
+                    shadowSlider: document.getElementById('shadowSlider'),
+                    shadowVal: document.getElementById('shadowVal'),
+                    toggleSpotlight: document.getElementById('toggleSpotlight'),
+                    
+                    styleBtns: document.querySelectorAll('.style-btn'),
+                    wallBtns: document.querySelectorAll('.wall-btn'),
+                    frameBtns: document.querySelectorAll('.frame-btn'),
+                    
+                    toastContainer: document.getElementById('toastContainer'),
+                    progressModal: document.getElementById('progressModal'),
+                    progressBar: document.getElementById('progressBar'),
+                    progressTitle: document.getElementById('progressTitle'),
+                    progressCount: document.getElementById('progressCount')
                 };
-            }
-
-            updateSegmentedUI(buttons, activeDataKey, activeValue) {
-                buttons.forEach(btn => {
-                    if (btn.dataset[activeDataKey] === activeValue) {
-                        btn.classList.remove('text-zinc-500', 'hover:text-black', 'bg-transparent', 'hover:border-black');
-                        btn.classList.add('bg-black', 'text-white');
-                        if (btn.classList.contains('border')) btn.classList.add('border-black');
-                    } else {
-                        btn.classList.remove('bg-black', 'text-white', 'border-black');
-                        btn.classList.add('text-zinc-500', 'hover:text-black', 'bg-transparent');
-                        if (btn.classList.contains('border')) btn.classList.add('border-zinc-200', 'hover:border-black');
-                    }
-                });
+                this.ctx = this.dom.previewCanvas.getContext('2d', { alpha: false });
             }
 
             bindEvents() {
-                this.dom.dropZone.addEventListener('click', () => this.dom.fileInput.click());
+                this.dom.btnAddFiles.addEventListener('click', () => this.dom.fileInput.click());
                 this.dom.fileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
                 
-                ['dragover', 'dragenter'].forEach(evt => {
-                    this.dom.dropZone.addEventListener(evt, (e) => {
-                        e.preventDefault();
-                        this.dom.dropZone.classList.add('drag-active');
-                    });
+                const body = document.body;
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+                    body.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
                 });
-                ['dragleave', 'dragend', 'drop'].forEach(evt => {
-                    this.dom.dropZone.addEventListener(evt, (e) => {
-                        e.preventDefault();
-                        this.dom.dropZone.classList.remove('drag-active');
-                        if (evt === 'drop' && e.dataTransfer.files.length) {
-                            this.handleFiles(e.dataTransfer.files);
-                        }
-                    });
-                });
-
-                const scheduleRender = () => {
-                    if (this.renderTimer) cancelAnimationFrame(this.renderTimer);
-                    this.renderTimer = requestAnimationFrame(() => this.renderCurrentCanvas());
-                };
-
-                this.dom.mainText.addEventListener('input', (e) => { 
-                    if(this.state.currentIndex >= 0) {
-                        this.state.images[this.state.currentIndex].mainText = e.target.value; 
-                        scheduleRender(); 
-                    }
-                });
-                this.dom.subText.addEventListener('input', (e) => { 
-                    if(this.state.currentIndex >= 0) {
-                        this.state.images[this.state.currentIndex].subText = e.target.value; 
-                        scheduleRender(); 
-                    }
-                });
-                
-                this.dom.presetBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const val = e.currentTarget.dataset.preset;
-                        this.updateSegmentedUI(this.dom.presetBtns, 'preset', val);
-                        this.state.config.preset = val;
-                        
-                        if (val === 'coords' || ['palette', 'museum', 'film', 'cinematic'].includes(this.state.config.frameStyle)) {
-                            this.dom.layoutBtns.forEach(b => { b.style.pointerEvents = 'none'; b.style.opacity = '0.3'; });
-                        } else {
-                            this.dom.layoutBtns.forEach(b => { b.style.pointerEvents = 'auto'; b.style.opacity = '1'; });
-                        }
-
-                        this.state.images.forEach(imgData => this.generateTextForImage(imgData));
-                        this.syncInputsWithCurrent();
-                        scheduleRender();
-                    });
+                body.addEventListener('dragenter', () => { if(!this.state.isProcessing) body.classList.add('drag-active'); });
+                body.addEventListener('dragleave', (e) => { if (e.clientX === 0 || e.clientY === 0) body.classList.remove('drag-active'); });
+                body.addEventListener('drop', (e) => {
+                    body.classList.remove('drag-active');
+                    if(!this.state.isProcessing && e.dataTransfer.files.length) this.handleFiles(e.dataTransfer.files);
                 });
 
                 this.dom.styleBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        const val = e.currentTarget.dataset.style;
-                        this.updateSegmentedUI(this.dom.styleBtns, 'style', val);
-                        this.state.config.frameStyle = val;
-                        
-                        if (['palette', 'museum', 'film', 'cinematic'].includes(val) || this.state.config.preset === 'coords') {
-                            this.dom.layoutBtns.forEach(b => { b.style.pointerEvents = 'none'; b.style.opacity = '0.3'; });
-                        } else {
-                            this.dom.layoutBtns.forEach(b => { b.style.pointerEvents = 'auto'; b.style.opacity = '1'; });
-                        }
-                        
-                        scheduleRender();
+                        this.updateSettings({ style: e.target.dataset.style });
+                        this.dom.styleBtns.forEach(b => {
+                            b.classList.remove('active', 'bg-black', 'text-white');
+                            b.classList.add('bg-transparent', 'text-black');
+                        });
+                        e.target.classList.add('active', 'bg-black', 'text-white');
+                        e.target.classList.remove('bg-transparent', 'text-black');
                     });
                 });
 
-                this.dom.layoutBtns.forEach(btn => {
+                this.dom.wallBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        const val = e.currentTarget.dataset.layout;
-                        this.updateSegmentedUI(this.dom.layoutBtns, 'layout', val);
-                        this.state.config.textLayout = val;
-                        scheduleRender();
+                        const color = e.target.dataset.wall;
+                        this.updateSettings({ wallColor: color });
+                        this.dom.wallBtns.forEach(b => b.classList.remove('ring-2', 'ring-offset-1', 'ring-black'));
+                        e.target.classList.add('ring-2', 'ring-offset-1', 'ring-black');
+                        this.dom.previewSection.style.backgroundColor = color;
                     });
                 });
 
-                this.dom.borderWidth.addEventListener('input', (e) => {
-                    const val = e.target.value;
-                    this.dom.borderWidthLabel.textContent = `${val}%`;
-                    this.state.config.borderRatio = parseInt(val) / 100;
-                    scheduleRender();
-                });
-                
-                this.dom.fontBtns.forEach(btn => {
+                this.dom.frameBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        const val = e.currentTarget.dataset.font;
-                        this.updateSegmentedUI(this.dom.fontBtns, 'font', val);
-                        this.state.config.fontFamily = val;
-                        scheduleRender();
-                    });
-                });
-                
-                this.dom.themeRadios.forEach(radio => {
-                    radio.addEventListener('change', (e) => {
-                        this.state.config.theme = e.target.value;
-                        scheduleRender();
+                        const target = e.currentTarget;
+                        this.updateSettings({ 
+                            frameColor: target.dataset.frame,
+                            frameGradient: target.style.background.includes('linear-gradient') ? target.style.background : null
+                        });
+                        this.dom.frameBtns.forEach(b => b.classList.remove('ring-2', 'ring-offset-1', 'ring-black'));
+                        target.classList.add('ring-2', 'ring-offset-1', 'ring-black');
                     });
                 });
 
-                this.dom.autoExifBtn.addEventListener('click', () => {
-                    if(this.state.currentIndex >= 0) {
-                        this.generateTextForImage(this.state.images[this.state.currentIndex]);
-                        this.syncInputsWithCurrent();
-                        scheduleRender();
-                        this.showToast('元数据已重置', 'info');
+                const sliderInputHandler = this.debounce((key, value, displayElem) => {
+                    this.updateSettings({ [key]: parseFloat(value) });
+                    displayElem.textContent = `${Math.round(value * 100)}%`;
+                }, 50);
+
+                this.dom.matSizeSlider.addEventListener('input', (e) => sliderInputHandler('matMultiplier', e.target.value, this.dom.matSizeVal));
+                this.dom.shadowSlider.addEventListener('input', (e) => sliderInputHandler('shadowMultiplier', e.target.value, this.dom.shadowVal));
+                
+                this.dom.toggleSpotlight.addEventListener('click', () => {
+                    const isSpot = !this.state.settings.spotlight;
+                    this.updateSettings({ spotlight: isSpot });
+                    const knob = this.dom.toggleSpotlight.querySelector('span');
+                    if(isSpot) {
+                        this.dom.toggleSpotlight.classList.replace('bg-zinc-300', 'bg-black');
+                        knob.classList.replace('translate-x-[-16px]', 'translate-x-0');
+                    } else {
+                        this.dom.toggleSpotlight.classList.replace('bg-black', 'bg-zinc-300');
+                        knob.classList.replace('translate-x-0', 'translate-x-[-16px]');
                     }
                 });
 
-                this.dom.downloadBtn.addEventListener('click', () => this.downloadCurrentImage());
-                this.dom.batchDownloadBtn.addEventListener('click', () => this.batchDownload());
+                const textInputHandler = this.debounce((key, value) => {
+                    const activeImg = this.getActiveImage();
+                    if(activeImg) {
+                        activeImg[key] = value;
+                        this.renderPreview(); 
+                    }
+                }, 300);
+
+                this.dom.inputLeft.addEventListener('input', (e) => textInputHandler('textLeft', e.target.value));
+                this.dom.inputRight.addEventListener('input', (e) => textInputHandler('textRight', e.target.value));
+                this.dom.inputExifCamera.addEventListener('input', (e) => textInputHandler('exifCamera', e.target.value));
+                this.dom.inputExifLens.addEventListener('input', (e) => textInputHandler('exifLens', e.target.value));
+                this.dom.inputExifParams.addEventListener('input', (e) => textInputHandler('exifParams', e.target.value));
+                this.dom.inputFilmName.addEventListener('input', (e) => textInputHandler('filmName', e.target.value));
+
+                this.dom.btnApplyTextToAll.addEventListener('click', () => {
+                    const activeImg = this.getActiveImage();
+                    if (!activeImg) return;
+                    this.state.images.forEach(img => {
+                        img.textLeft = activeImg.textLeft;
+                        img.textRight = activeImg.textRight;
+                        img.exifCamera = activeImg.exifCamera;
+                        img.exifLens = activeImg.exifLens;
+                        img.exifParams = activeImg.exifParams;
+                        img.filmName = activeImg.filmName;
+                    });
+                    this.showToast('元数据已同步至所有图片', 'success');
+                });
+
+                this.dom.btnDownloadCurrent.addEventListener('click', () => this.downloadCurrent());
+                this.dom.btnDownloadAll.addEventListener('click', () => this.downloadAll());
             }
 
-            extractColors(img, count = 5) {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const maxSize = 100; 
+            debounce(func, wait) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            async handleFiles(fileList) {
+                const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+                if (files.length === 0) { this.showToast('未检测到有效的图片文件', 'error'); return; }
+
+                this.showToast(`正在加载 ${files.length} 张图片...`);
                 
-                let w = img.naturalWidth;
-                let h = img.naturalHeight;
-                if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
-                else { w = Math.round(w * maxSize / h); h = maxSize; }
-
-                canvas.width = w;
-                canvas.height = h;
-                ctx.drawImage(img, 0, 0, w, h);
-                
-                let data;
-                try {
-                    data = ctx.getImageData(0, 0, w, h).data;
-                } catch(e) {
-                    return ['#111111', '#333333', '#555555', '#777777', '#999999'];
+                if (this.state.images.length === 0) {
+                    this.dom.emptyState.classList.add('opacity-0');
+                    setTimeout(() => this.dom.emptyState.style.display = 'none', 300);
+                    this.dom.controlPanel.classList.remove('opacity-40', 'pointer-events-none');
+                    this.dom.btnDownloadCurrent.removeAttribute('disabled');
+                    this.dom.btnDownloadAll.removeAttribute('disabled');
+                    this.dom.btnDownloadCurrent.classList.remove('hidden');
+                    this.dom.btnDownloadAll.classList.remove('hidden');
+                    this.dom.btnDownloadCurrent.classList.add('flex');
+                    this.dom.btnDownloadAll.classList.add('flex');
                 }
 
-                let pixels = [];
-                for(let i=0; i<data.length; i+=4) {
-                    if(data[i+3] >= 200) { 
-                        pixels.push([data[i], data[i+1], data[i+2]]);
-                    }
-                }
-                if (pixels.length === 0) return ['#111111', '#333333', '#555555', '#777777', '#999999'];
+                let firstNewId = null;
 
-                let centroids = [pixels[Math.floor(Math.random() * pixels.length)]];
-                for (let i = 1; i < count; i++) {
-                    let maxDist = -1;
-                    let nextCentroid = pixels[0];
-                    for (let p of pixels) {
-                        let minDist = Infinity;
-                        for (let c of centroids) {
-                            let d = Math.pow(p[0]-c[0], 2) + Math.pow(p[1]-c[1], 2) + Math.pow(p[2]-c[2], 2);
-                            if (d < minDist) minDist = d;
+                for (let file of files) {
+                    try {
+                        const url = URL.createObjectURL(file);
+                        const imgObj = await this.loadImage(url);
+                        
+                        // 自动解析图片 EXIF 数据
+                        let exifData = null;
+                        try {
+                            if (typeof exifr !== 'undefined') {
+                                exifData = await exifr.parse(file);
+                            }
+                        } catch (err) {
+                            console.warn("EXIF 解析跳过或失败:", err);
                         }
-                        if (minDist > maxDist) {
-                            maxDist = minDist;
-                            nextCentroid = p;
-                        }
-                    }
-                    centroids.push(nextCentroid);
-                }
 
-                for(let iter=0; iter<10; iter++) {
-                    let clusters = Array.from({length: count}, () => []);
-                    for(let p of pixels) {
-                        let minDist = Infinity;
-                        let bestIdx = 0;
-                        for(let i=0; i<count; i++) {
-                            let c = centroids[i];
-                            let d = Math.pow(p[0]-c[0], 2) + Math.pow(p[1]-c[1], 2) + Math.pow(p[2]-c[2], 2);
-                            if(d < minDist) { minDist = d; bestIdx = i; }
-                        }
-                        clusters[bestIdx].push(p);
-                    }
-                    
-                    let moved = false;
-                    for(let i=0; i<count; i++) {
-                        if(clusters[i].length > 0) {
-                            let r=0, g=0, b=0;
-                            for(let p of clusters[i]) { r+=p[0]; g+=p[1]; b+=p[2]; }
-                            let newC = [Math.round(r/clusters[i].length), Math.round(g/clusters[i].length), Math.round(b/clusters[i].length)];
-                            if (newC[0]!==centroids[i][0] || newC[1]!==centroids[i][1] || newC[2]!==centroids[i][2]) {
-                                moved = true;
-                                centroids[i] = newC;
+                        // 格式化相机型号
+                        let camera = 'DIGITAL CAMERA';
+                        if (exifData?.Make || exifData?.Model) {
+                            let make = exifData.Make || '';
+                            let model = exifData.Model || '';
+                            if (model.toUpperCase().startsWith(make.toUpperCase())) {
+                                camera = model.toUpperCase();
+                            } else {
+                                camera = `${make} ${model}`.trim().toUpperCase();
                             }
                         }
-                    }
-                    if (!moved) break;
-                }
 
-                centroids.sort((a,b) => {
-                    let lumaA = 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
-                    let lumaB = 0.2126 * b[0] + 0.7152 * b[1] + 0.0722 * b[2];
-                    return lumaA - lumaB; 
-                });
+                        // 格式化镜头
+                        let lens = exifData?.LensModel ? exifData.LensModel.toUpperCase() : 'STANDARD LENS';
 
-                const rgbToHex = (c) => '#' + c.map(x => {
-                    const hex = x.toString(16);
-                    return hex.length === 1 ? '0' + hex : hex;
-                }).join('');
-
-                return centroids.map(rgbToHex);
-            }
-
-            async handleFiles(filesList) {
-                if (!filesList || filesList.length === 0) return;
-                
-                const validFiles = Array.from(filesList).filter(f => 
-                    f.type.startsWith('image/') || f.name.toLowerCase().match(/\.(jpg|jpeg|png|webp|heic)$/)
-                );
-
-                if (validFiles.length === 0) {
-                    this.showToast('不支持的图片格式', 'error');
-                    return;
-                }
-
-                this.setLoading(true, `正在准备 ${validFiles.length} 张照片...`);
-
-                let successCount = 0;
-                for (let i = 0; i < validFiles.length; i++) {
-                    const file = validFiles[i];
-                    this.setLoading(true, `正在分析 (${i+1}/${validFiles.length})`);
-                    try {
-                        const [imgElement, exifData] = await Promise.all([
-                            this.loadImage(file),
-                            this.readExif(file)
-                        ]);
+                        // 格式化参数 (焦距 光圈 快门 ISO) - 修复浮点数精度溢出
+                        let focal = exifData?.FocalLength ? `${parseFloat(Number(exifData.FocalLength).toFixed(1))}mm` : '';
+                        let fnumber = exifData?.FNumber ? `f/${parseFloat(Number(exifData.FNumber).toFixed(1))}` : '';
+                        let exposure = '';
+                        if (exifData?.ExposureTime) {
+                            exposure = exifData.ExposureTime >= 1 ? `${exifData.ExposureTime}s` : `1/${Math.round(1/exifData.ExposureTime)}s`;
+                        }
+                        let iso = exifData?.ISO ? `ISO${exifData.ISO}` : '';
                         
-                        const colors = this.extractColors(imgElement, 5);
-                        const gpsStr = this.formatGPS(e => exifData.lat, e => exifData.latRef, e => exifData.lng, e => exifData.lngRef);
-                        const dateTimeStr = this.formatExifDate(exifData.dateTime);
+                        let params = [focal, fnumber, exposure, iso].filter(Boolean).join(' ');
+                        if (!params) params = '50mm f/2.8 1/500s ISO100';
 
-                        const imgData = {
-                            id: Date.now() + Math.random().toString(36).substr(2, 5),
-                            file: file,
-                            objectUrl: imgElement.src,
-                            img: imgElement,
-                            exifData: exifData,
-                            mainText: '',
-                            subText: '',
-                            colors: colors,
-                            gpsStr: gpsStr,
-                            dateTimeStr: dateTimeStr
+                        const newImg = {
+                            id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                            file: file, url: url, imgObj: imgObj,
+                            width: imgObj.width, height: imgObj.height,
+                            textLeft: 'XIANG COLLECTION',
+                            textRight: '© ' + (file.name.split('.')[0].toUpperCase() || 'ARTWORK'),
+                            exifCamera: camera,
+                            exifLens: lens,
+                            exifParams: params,
+                            filmName: 'KODAK PORTRA 400'
                         };
                         
-                        this.generateTextForImage(imgData);
-                        this.state.images.push(imgData);
-                        successCount++;
-                    } catch (error) {
-                        console.error(`解析失败: ${file.name}`, error);
+                        this.state.images.push(newImg);
+                        this.addThumbnail(newImg);
+                        if (!firstNewId) firstNewId = newImg.id;
+                    } catch (e) {
+                        console.error("加载失败:", file.name, e);
                     }
                 }
-
-                this.setLoading(false);
-                this.dom.fileInput.value = '';
-
-                if (successCount > 0) {
-                    this.dom.settingsPanel.classList.remove('opacity-30', 'pointer-events-none');
-                    this.dom.emptyPreview.classList.add('hidden');
-                    this.dom.canvas.classList.remove('hidden');
-                    
-                    this.dom.downloadBtn.classList.remove('hidden');
-                    this.dom.downloadBtn.classList.add('flex');
-                    
-                    if (this.state.images.length > 1) {
-                        this.dom.batchDownloadBtn.classList.remove('hidden');
-                        this.dom.batchDownloadBtn.classList.add('flex');
-                        
-                        this.dom.galleryContainer.classList.remove('hidden');
-                        this.dom.galleryContainer.classList.add('flex');
-                    } else {
-                        this.dom.galleryContainer.classList.add('hidden');
-                        this.dom.galleryContainer.classList.remove('flex');
-                    }
-
-                    this.renderGallery();
-                    this.selectImage(this.state.images.length - successCount);
-                    this.showToast(`成功载入 ${successCount} 张照片`, 'success');
-                } else {
-                    this.showToast('导入失败', 'error');
-                }
+                if (firstNewId) this.setActiveImage(firstNewId);
             }
 
-            loadImage(file) {
+            loadImage(url) {
                 return new Promise((resolve, reject) => {
-                    const url = URL.createObjectURL(file);
                     const img = new Image();
                     img.onload = () => resolve(img);
-                    img.onerror = () => { URL.revokeObjectURL(url); reject(); };
+                    img.onerror = reject;
                     img.src = url;
                 });
             }
 
-            readExif(file) {
-                return new Promise((resolve) => {
-                    EXIF.getData(file, function() {
-                        const data = {
-                            make: EXIF.getTag(this, "Make"),
-                            model: EXIF.getTag(this, "Model"),
-                            focalLength: EXIF.getTag(this, "FocalLength"),
-                            focalLength35mm: EXIF.getTag(this, "FocalLengthIn35mmFilm"), 
-                            fNumber: EXIF.getTag(this, "FNumber"),
-                            exposureTime: EXIF.getTag(this, "ExposureTime"),
-                            iso: EXIF.getTag(this, "ISOSpeedRatings"),
-                            lat: EXIF.getTag(this, "GPSLatitude"),
-                            latRef: EXIF.getTag(this, "GPSLatitudeRef"),
-                            lng: EXIF.getTag(this, "GPSLongitude"),
-                            lngRef: EXIF.getTag(this, "GPSLongitudeRef"),
-                            dateTime: EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime")
-                        };
-                        resolve(data);
-                    });
+            addThumbnail(imgData) {
+                const div = document.createElement('div');
+                div.className = 'thumb-item relative shrink-0 w-12 h-12 md:w-full md:h-auto aspect-square rounded cursor-pointer overflow-hidden bg-zinc-200 border-2 border-transparent';
+                div.dataset.id = imgData.id;
+                div.innerHTML = `<img src="${imgData.url}" class="w-full h-full object-cover">`;
+                
+                const delBtn = document.createElement('button');
+                delBtn.className = 'absolute top-0.5 right-0.5 md:top-1 md:right-1 w-4 h-4 md:w-5 md:h-5 bg-black/60 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 transition-opacity';
+                delBtn.innerHTML = '<i data-lucide="x" class="w-2.5 h-2.5"></i>';
+                
+                div.addEventListener('mouseenter', () => delBtn.style.opacity = '1');
+                div.addEventListener('mouseleave', () => delBtn.style.opacity = '0');
+                delBtn.addEventListener('click', (e) => { e.stopPropagation(); this.removeImage(imgData.id); });
+                
+                div.appendChild(delBtn);
+                div.addEventListener('click', () => this.setActiveImage(imgData.id));
+                this.dom.thumbnailList.appendChild(div);
+                lucide.createIcons({ root: div });
+            }
+
+            removeImage(id) {
+                const index = this.state.images.findIndex(img => img.id === id);
+                if (index > -1) {
+                    URL.revokeObjectURL(this.state.images[index].url);
+                    this.state.images.splice(index, 1);
+                    const thumb = document.querySelector(`.thumb-item[data-id="${id}"]`);
+                    if(thumb) thumb.remove();
+
+                    if (this.state.images.length === 0) {
+                        this.resetUI();
+                    } else if (this.state.activeId === id) {
+                        const nextIndex = Math.min(index, this.state.images.length - 1);
+                        this.setActiveImage(this.state.images[nextIndex].id);
+                    }
+                }
+            }
+            
+            resetUI() {
+                this.state.activeId = null;
+                this.dom.emptyState.style.display = 'flex';
+                this.dom.emptyState.classList.remove('opacity-0');
+                this.dom.controlPanel.classList.add('opacity-40', 'pointer-events-none');
+                this.dom.btnDownloadCurrent.setAttribute('disabled', 'true');
+                this.dom.btnDownloadAll.setAttribute('disabled', 'true');
+                this.dom.previewCanvas.classList.remove('loaded');
+                this.ctx.clearRect(0, 0, this.dom.previewCanvas.width, this.dom.previewCanvas.height);
+                this.dom.imgDimensions.textContent = '-- x --';
+            }
+
+            getActiveImage() { return this.state.images.find(img => img.id === this.state.activeId); }
+
+            setActiveImage(id) {
+                this.state.activeId = id;
+                const imgData = this.getActiveImage();
+                if (!imgData) return;
+
+                document.querySelectorAll('.thumb-item').forEach(el => {
+                    el.classList.remove('active');
+                    if (el.dataset.id === id) el.classList.add('active');
                 });
+
+                this.dom.inputLeft.value = imgData.textLeft;
+                this.dom.inputRight.value = imgData.textRight;
+                this.dom.inputExifCamera.value = imgData.exifCamera;
+                this.dom.inputExifLens.value = imgData.exifLens;
+                this.dom.inputExifParams.value = imgData.exifParams;
+                this.dom.inputFilmName.value = imgData.filmName;
+                this.dom.imgDimensions.textContent = `${imgData.width} × ${imgData.height}`;
+
+                this.renderPreview();
             }
 
-            formatExifDate(str) {
-                if(!str) return '';
-                const parts = str.split(' ');
-                if(parts.length < 1) return str;
-                
-                const dateParts = parts[0].split(':');
-                if(dateParts.length === 3) {
-                    const y = dateParts[0];
-                    const m = dateParts[1];
-                    const d = dateParts[2];
-                    const timePart = parts[1] ? parts[1] : '';
-                    return timePart ? `${y}-${m}-${d} ${timePart}` : `${y}-${m}-${d}`;
-                }
-                return str;
+            updateSettings(newSettings) {
+                this.state.settings = { ...this.state.settings, ...newSettings };
+                this.renderPreview();
             }
 
-            generateTextForImage(imgData) {
-                const e = imgData.exifData;
-                if (!e) return;
+            renderScene(ctx, imgData, targetWidth, targetHeight) {
+                const { style, wallColor, frameColor, frameGradient, matMultiplier, shadowMultiplier, spotlight } = this.state.settings;
+                const { imgObj, width: imgW, height: imgH, textLeft, textRight, exifCamera, exifLens, exifParams, filmName } = imgData;
+
+                const shortEdge = Math.min(imgW, imgH);
                 
-                let main = '';
-                let sub = '';
+                // 基础环境留白
+                const wallPaddingX = imgW * 0.25;
+                const wallPaddingY = imgH * 0.25;
+                
+                let sceneW, sceneH;
+                let drawLogic = () => {};
 
-                if (this.state.config.preset === 'coords') {
-                    if (e.lat && e.lng) {
-                        main = this.formatGPS(e.lat, e.latRef, e.lng, e.lngRef);
-                    } else {
-                        main = 'XIANG VISUALS';
+                const drawBackground = (sc) => {
+                    ctx.fillStyle = wallColor;
+                    ctx.fillRect(0, 0, sceneW * sc, sceneH * sc);
+                    if (spotlight) {
+                        ctx.save();
+                        const cx = sceneW * sc / 2;
+                        const cy = sceneH * sc / 2;
+                        const r = Math.max(sceneW, sceneH) * sc * 0.7;
+                        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+                        grad.addColorStop(0, 'rgba(255,255,255,0.15)');
+                        grad.addColorStop(1, 'rgba(0,0,0,0.05)');
+                        ctx.fillStyle = grad;
+                        ctx.globalCompositeOperation = 'overlay';
+                        ctx.fillRect(0, 0, sceneW * sc, sceneH * sc);
+                        ctx.restore();
                     }
-                    sub = '';
-                } else {
-                    if (e.model) {
-                        main = e.make && e.model.indexOf(e.make) === -1 ? `${e.make} ${e.model}` : e.model;
-                    } else if (e.lat && e.lng) {
-                        main = this.formatGPS(e.lat, e.latRef, e.lng, e.lngRef);
-                    } else {
-                        main = 'XIANG VISUALS';
-                    }
+                };
 
-                    const params = [];
-                    if (e.focalLength35mm) {
-                        params.push(`${Math.round(e.focalLength35mm)}mm`);
-                    } else if (e.focalLength) {
-                        const fl = e.focalLength.numerator ? e.focalLength.numerator / e.focalLength.denominator : e.focalLength;
-                        params.push(`${Math.round(fl)}mm`);
-                    }
-                    
-                    if (e.fNumber) {
-                        const fn = e.fNumber.numerator ? e.fNumber.numerator / e.fNumber.denominator : e.fNumber;
-                        params.push(`f/${fn.toFixed(1)}`);
-                    }
-                    if (e.exposureTime) {
-                        let etVal = e.exposureTime;
-                        if (e.exposureTime.numerator) {
-                            etVal = e.exposureTime.numerator / e.exposureTime.denominator;
-                        }
-                        if(typeof etVal === 'number' && etVal > 0 && etVal < 1) {
-                            params.push(`1/${Math.round(1/etVal)}s`);
-                        } else {
-                            params.push(`${etVal}s`);
-                        }
-                    }
-                    if (e.iso) params.push(`ISO${e.iso}`);
-                    sub = params.join('   ');
+                const applyFrameMaterial = (fX, fY, fW, fH) => {
+                    if (frameGradient) {
+                        const grad = ctx.createLinearGradient(fX, fY, fX+fW, fY+fH);
+                        const colors = frameGradient.match(/#[a-f0-9]{6}/gi) || ['#000', '#333'];
+                        grad.addColorStop(0, colors[0]);
+                        grad.addColorStop(1, colors[1] || colors[0]);
+                        ctx.fillStyle = grad;
+                    } else { ctx.fillStyle = frameColor; }
                 }
 
-                imgData.mainText = main;
-                imgData.subText = sub;
-            }
+                if (style === 'unframed') {
+                    const pad = imgW * 0.1 * matMultiplier;
+                    const paperW = imgW + pad * 2;
+                    const paperH = imgH + pad * 2;
+                    sceneW = paperW + wallPaddingX * 2;
+                    sceneH = paperH + wallPaddingY * 2;
 
-            formatGPS(lat, latRef, lng, lngRef) {
-                try {
-                    const formatDMS = (dms) => {
-                        const d = dms[0].numerator ? dms[0].numerator / dms[0].denominator : dms[0];
-                        const m = dms[1].numerator ? dms[1].numerator / dms[1].denominator : dms[1];
-                        const s = dms[2].numerator ? dms[2].numerator / dms[2].denominator : dms[2];
-                        return `${Math.floor(d)}°${Math.floor(m)}'${s.toFixed(2)}"`; 
+                    drawLogic = (scale) => {
+                        drawBackground(scale);
+                        const pX = wallPaddingX * scale, pY = wallPaddingY * scale, pW = paperW * scale, pH = paperH * scale;
+                        ctx.save();
+                        ctx.shadowColor = `rgba(0, 0, 0, ${0.1 * shadowMultiplier})`;
+                        ctx.shadowBlur = shortEdge * 0.05 * scale * shadowMultiplier;
+                        ctx.shadowOffsetY = shortEdge * 0.02 * scale * shadowMultiplier;
+                        ctx.fillStyle = '#ffffff'; ctx.fillRect(pX, pY, pW, pH);
+                        ctx.restore();
+                        ctx.drawImage(imgObj, pX + pad * scale, pY + pad * scale, imgW * scale, imgH * scale);
                     };
-                    return `${formatDMS(lat)}${latRef || 'N'}, ${formatDMS(lng)}${lngRef || 'E'}`;
-                } catch(err) { return ''; }
-            }
 
-            renderGallery() {
-                this.dom.thumbnailList.innerHTML = '';
-                this.state.images.forEach((imgData, index) => {
-                    const wrap = document.createElement('div');
-                    wrap.className = `w-12 h-12 shrink-0 overflow-hidden cursor-pointer transition-all ${index === this.state.currentIndex ? 'border-2 border-black opacity-100' : 'border border-transparent opacity-40 hover:opacity-100'}`;
-                    wrap.onclick = () => this.selectImage(index);
-                    const img = document.createElement('img');
-                    img.src = imgData.objectUrl;
-                    img.className = 'w-full h-full object-cover';
-                    wrap.appendChild(img);
-                    this.dom.thumbnailList.appendChild(wrap);
-                });
-            }
+                } else if (style === 'framed' || style === 'museum') {
+                    const isMuseum = style === 'museum';
+                    const frameT = shortEdge * (isMuseum ? 0.015 : 0.035);
+                    const matX = shortEdge * (isMuseum ? 0.25 : 0.12) * matMultiplier; 
+                    const matTop = shortEdge * (isMuseum ? 0.25 : 0.12) * matMultiplier;
+                    const matBot = shortEdge * (isMuseum ? 0.35 : 0.18) * matMultiplier; 
 
-            selectImage(index) {
-                if (index < 0 || index >= this.state.images.length) return;
-                this.state.currentIndex = index;
-                this.renderGallery();
-                this.syncInputsWithCurrent();
-                this.renderCurrentCanvas();
-                const activeThumb = this.dom.thumbnailList.children[index];
-                if (activeThumb) {
-                    activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }
-            }
+                    const frameW = imgW + (matX * 2) + (frameT * 2);
+                    const frameH = imgH + (matTop + matBot) + (frameT * 2);
+                    sceneW = frameW + wallPaddingX * 2;
+                    sceneH = frameH + wallPaddingY * 2;
 
-            syncInputsWithCurrent() {
-                const cur = this.state.images[this.state.currentIndex];
-                if(cur) {
-                    this.dom.mainText.value = cur.mainText;
-                    this.dom.subText.value = cur.subText;
-                }
-            }
+                    drawLogic = (scale) => {
+                        drawBackground(scale);
+                        const fX = wallPaddingX * scale, fY = wallPaddingY * scale, fW = frameW * scale, fH = frameH * scale, fTs = frameT * scale;
+                        ctx.save();
+                        ctx.shadowColor = `rgba(0, 0, 0, ${0.18 * shadowMultiplier})`;
+                        ctx.shadowBlur = shortEdge * 0.08 * scale * shadowMultiplier;
+                        ctx.shadowOffsetY = shortEdge * 0.03 * scale * shadowMultiplier;
+                        applyFrameMaterial(fX, fY, fW, fH); ctx.fillRect(fX, fY, fW, fH);
+                        ctx.restore();
 
-            renderCurrentCanvas() {
-                if(this.state.currentIndex < 0) return;
-                const imgData = this.state.images[this.state.currentIndex];
-                this.drawCanvas(imgData, this.dom.canvas, this.dom.ctx);
-            }
+                        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(fX + fTs*0.8, fY + fTs*0.8, fW - fTs*1.6, fH - fTs*1.6);
+                        const mX = fX + fTs, mY = fY + fTs, mW = fW - fTs * 2, mH = fH - fTs * 2;
+                        ctx.fillStyle = '#fafafa'; ctx.fillRect(mX, mY, mW, mH);
 
-            drawCanvas(imgData, canvas, ctx) {
-                const img = imgData.img;
-                const { config } = this.state;
+                        ctx.save();
+                        const iX = mX + (matX * scale), iY = mY + (matTop * scale), iW = imgW * scale, iH = imgH * scale;
+                        ctx.drawImage(imgObj, iX, iY, iW, iH);
+                        ctx.strokeStyle = `rgba(0,0,0,${0.15 * shadowMultiplier})`; ctx.lineWidth = shortEdge * 0.005 * scale; ctx.strokeRect(iX, iY, iW, iH);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = shortEdge * 0.002 * scale; ctx.strokeRect(iX - ctx.lineWidth, iY - ctx.lineWidth, iW + ctx.lineWidth*2, iH + ctx.lineWidth*2);
+                        ctx.restore();
 
-                const MAX_SIZE = 4096;
-                let drawW = img.naturalWidth;
-                let drawH = img.naturalHeight;
-                if (drawW > MAX_SIZE || drawH > MAX_SIZE) {
-                    const ratio = Math.min(MAX_SIZE / drawW, MAX_SIZE / drawH);
-                    drawW = Math.floor(drawW * ratio);
-                    drawH = Math.floor(drawH * ratio);
-                }
+                        if(matMultiplier > 0.3) {
+                            const fontSize = shortEdge * 0.016 * scale;
+                            ctx.font = `500 ${fontSize}px "Inter", "Noto Serif SC", sans-serif`;
+                            ctx.fillStyle = '#1a1a1a'; ctx.textBaseline = 'middle';
+                            const textY = mY + mH - ((matBot * scale) * 0.45);
+                            if (textLeft) { ctx.textAlign = 'left'; ctx.fillText(textLeft.toUpperCase(), mX + (matX * scale), textY); }
+                            if (textRight) { ctx.textAlign = 'right'; ctx.fillText(textRight, mX + mW - (matX * scale), textY); }
+                        }
+                    };
 
-                const shortSide = Math.min(drawW, drawH);
-                const hasText = imgData.mainText || imgData.subText;
-                const basePadding = shortSide * config.borderRatio;
-                
-                let padTop = 0, padBottom = 0, padLeft = 0, padRight = 0;
-                let outerMargin = 0; 
-                let finalCanvasWidth = 0, finalCanvasHeight = 0;
+                } else if (style === 'floating') {
+                    const frameT = shortEdge * 0.025, matPad = shortEdge * 0.15 * matMultiplier;
+                    const frameW = imgW + (matPad * 2) + (frameT * 2), frameH = imgH + (matPad * 2) + (frameT * 2);
+                    sceneW = frameW + wallPaddingX * 2; sceneH = frameH + wallPaddingY * 2;
 
-                // --- 修改后的宽幅电影裁剪逻辑 ---
-                if (config.frameStyle === 'cinematic') {
-                    // 1. 设置最终画布为 2.35:1 比例
-                    finalCanvasWidth = drawW; // 以图片宽度作为画布宽度基准
-                    finalCanvasHeight = finalCanvasWidth / 2.35;
+                    drawLogic = (scale) => {
+                        drawBackground(scale);
+                        const fX = wallPaddingX * scale, fY = wallPaddingY * scale, fW = frameW * scale, fH = frameH * scale, fTs = frameT * scale;
+                        ctx.save();
+                        ctx.shadowColor = `rgba(0, 0, 0, ${0.15 * shadowMultiplier})`;
+                        ctx.shadowBlur = shortEdge * 0.06 * scale * shadowMultiplier;
+                        ctx.shadowOffsetY = shortEdge * 0.03 * scale * shadowMultiplier;
+                        applyFrameMaterial(fX, fY, fW, fH); ctx.fillRect(fX, fY, fW, fH);
+                        ctx.restore();
 
-                    // 2. 设定内边距（用于放置文字和留白）
-                    const tempPadTop = basePadding * 1.2;
-                    const tempPadBottom = hasText ? basePadding * 3.2 : basePadding * 1.2;
-                    const tempPadSide = basePadding * 0.8;
+                        const mX = fX + fTs, mY = fY + fTs, mW = fW - fTs * 2, mH = fH - fTs * 2;
+                        ctx.fillStyle = '#f5f5f5'; ctx.fillRect(mX, mY, mW, mH);
+                        ctx.strokeStyle = `rgba(0,0,0,${0.15 * shadowMultiplier})`; ctx.lineWidth = fTs * 0.6;
+                        ctx.strokeRect(mX + ctx.lineWidth/2, mY + ctx.lineWidth/2, mW - ctx.lineWidth, mH - ctx.lineWidth);
 
-                    // 3. 计算图片在画布中实际占据的区域尺寸
-                    const targetDrawW = finalCanvasWidth - (tempPadSide * 2);
-                    const targetDrawH = finalCanvasHeight - (tempPadTop + tempPadBottom);
+                        const iX = mX + (matPad * scale), iY = mY + (matPad * scale), iW = imgW * scale, iH = imgH * scale;
+                        ctx.save();
+                        ctx.shadowColor = `rgba(0, 0, 0, ${0.3 * shadowMultiplier})`;
+                        ctx.shadowBlur = shortEdge * 0.05 * scale * shadowMultiplier;
+                        ctx.shadowOffsetY = shortEdge * 0.02 * scale * shadowMultiplier;
+                        ctx.fillStyle = '#ffffff'; ctx.fillRect(iX, iY, iW, iH);
+                        ctx.restore();
+                        ctx.drawImage(imgObj, iX, iY, iW, iH);
+                    };
 
-                    // 4. 应用这些参数
-                    padTop = tempPadTop;
-                    padBottom = tempPadBottom;
-                    padLeft = tempPadSide;
-                    padRight = tempPadSide;
+                } else if (style === 'polaroid') {
+                    const matX = shortEdge * 0.08 * matMultiplier, matTop = shortEdge * 0.08 * matMultiplier, matBot = shortEdge * 0.3 * matMultiplier;
+                    const paperW = imgW + (matX * 2), paperH = imgH + matTop + matBot;
+                    sceneW = paperW + wallPaddingX * 2; sceneH = paperH + wallPaddingY * 2;
+
+                    drawLogic = (scale) => {
+                        drawBackground(scale);
+                        const pX = wallPaddingX * scale, pY = wallPaddingY * scale, pW = paperW * scale, pH = paperH * scale;
+                        ctx.save();
+                        ctx.shadowColor = `rgba(0, 0, 0, ${0.12 * shadowMultiplier})`;
+                        ctx.shadowBlur = shortEdge * 0.04 * scale * shadowMultiplier;
+                        ctx.shadowOffsetY = shortEdge * 0.02 * scale * shadowMultiplier;
+                        ctx.fillStyle = '#fffff8'; ctx.fillRect(pX, pY, pW, pH);
+                        ctx.strokeStyle = 'rgba(255,255,255,1)'; ctx.lineWidth = 2; ctx.strokeRect(pX+1, pY+1, pW-2, pH-2);
+                        ctx.restore();
+
+                        const iX = pX + (matX * scale), iY = pY + (matTop * scale);
+                        ctx.drawImage(imgObj, iX, iY, imgW * scale, imgH * scale);
+                        ctx.strokeStyle = `rgba(0,0,0,${0.05 * shadowMultiplier})`; ctx.lineWidth = shortEdge * 0.002 * scale; ctx.strokeRect(iX, iY, imgW * scale, imgH * scale);
+                    };
+
+                } else if (style === 'exif') {
+                    const padX = shortEdge * 0.08 * matMultiplier;
+                    const padTop = shortEdge * 0.1 * matMultiplier;
+                    const padBot = shortEdge * 0.35 * matMultiplier; 
+
+                    const paperW = imgW + padX * 2;
+                    const paperH = imgH + padTop + padBot;
+                    sceneW = paperW + wallPaddingX * 2; 
+                    sceneH = paperH + wallPaddingY * 2;
+
+                    drawLogic = (scale) => {
+                        drawBackground(scale);
+                        
+                        const pX = wallPaddingX * scale, pY = wallPaddingY * scale, pW = paperW * scale, pH = paperH * scale;
+                        
+                        ctx.save();
+                        ctx.shadowColor = `rgba(0, 0, 0, ${0.08 * shadowMultiplier})`;
+                        ctx.shadowBlur = shortEdge * 0.04 * scale * shadowMultiplier;
+                        ctx.shadowOffsetY = shortEdge * 0.015 * scale * shadowMultiplier;
+                        ctx.fillStyle = '#ffffff'; 
+                        ctx.fillRect(pX, pY, pW, pH);
+                        ctx.restore();
+
+                        const iX = pX + padX * scale;
+                        const iY = pY + padTop * scale;
+                        const iW = imgW * scale;
+                        const iH = imgH * scale;
+                        ctx.drawImage(imgObj, iX, iY, iW, iH);
+                        
+                        ctx.strokeStyle = '#000000';
+                        ctx.lineWidth = Math.max(1, shortEdge * 0.002 * scale);
+                        ctx.strokeRect(iX, iY, iW, iH);
+
+                        if (matMultiplier > 0.4) {
+                            const textX = iX;
+                            const textY = iY + iH + (shortEdge * 0.06 * scale * matMultiplier);
+                            const baseFontSize = shortEdge * 0.016 * scale;
+
+                            ctx.fillStyle = '#000000';
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'top';
+
+                            ctx.font = `600 ${baseFontSize * 1.3}px "JetBrains Mono", monospace`;
+                            ctx.fillText((exifCamera || 'DIGITAL CAMERA').toUpperCase(), textX, textY);
+
+                            ctx.font = `400 ${baseFontSize}px "JetBrains Mono", monospace`;
+                            ctx.fillText((exifLens || 'STANDARD LENS').toUpperCase(), textX, textY + baseFontSize * 2.5);
+
+                            ctx.font = `400 ${baseFontSize}px "JetBrains Mono", monospace`;
+                            ctx.fillText((exifParams || '50mm f/2.8 1/500s ISO100'), textX, textY + baseFontSize * 4);
+                        }
+                    };
+
+                } else if (style === 'film35mm' || style === 'film120') {
+                    const is120 = style === 'film120';
                     
-                    // 保存当前的 drawW/drawH 给 drawImage 使用
-                    drawW = targetDrawW;
-                    drawH = targetDrawH;
-                } 
-                else if (config.frameStyle === 'palette') {
-                    padTop = basePadding * 1.8;
-                    padBottom = basePadding * 3.0;
-                    padLeft = padRight = basePadding * 1.2;
-                } 
-                else if (config.frameStyle === 'museum') {
-                    padTop = padLeft = padRight = basePadding * 1.2;
-                    padBottom = basePadding * 4.0; 
-                } 
-                else if (config.frameStyle === 'film') {
-                    padTop = padBottom = basePadding * 3.0;
-                    padLeft = padRight = basePadding * 1.5;
-                } 
-                else {
-                    padTop = padLeft = padRight = basePadding;
-                    padBottom = hasText ? basePadding * 2.8 : basePadding;
-                }
+                    const filmPadX = shortEdge * (is120 ? 0.06 : 0.04) * matMultiplier;
+                    const filmPadY = shortEdge * (is120 ? 0.25 : 0.18) * matMultiplier;
+                    
+                    const filmW = imgW + filmPadX * 2;
+                    const filmH = imgH + filmPadY * 2;
+                    sceneW = filmW + wallPaddingX * 2; 
+                    sceneH = filmH + wallPaddingY * 2;
 
-                if (config.frameStyle !== 'cinematic') {
-                    finalCanvasWidth = drawW + padLeft + padRight + outerMargin * 2;
-                    finalCanvasHeight = drawH + padTop + padBottom + outerMargin * 2;
-                }
-                
-                canvas.width = finalCanvasWidth;
-                canvas.height = finalCanvasHeight;
+                    drawLogic = (scale) => {
+                        drawBackground(scale);
 
-                const isDark = config.theme === 'dark';
-                let bgColor = isDark ? '#0a0a0a' : '#ffffff';
-                let textColor = isDark ? '#ffffff' : '#000000';
-                let subTextColor = isDark ? '#888888' : '#777777';
+                        const fX = wallPaddingX * scale, fY = wallPaddingY * scale, fW = filmW * scale, fH = filmH * scale;
 
-                if (config.frameStyle === 'film') {
-                    bgColor = '#0f0f0f'; 
-                    textColor = '#f39c12'; 
-                    subTextColor = '#b9770e';
-                } else if (config.frameStyle === 'cinematic') {
-                    bgColor = '#000000'; 
-                    textColor = '#ffffff';
-                    subTextColor = '#888888';
-                } else if (config.frameStyle === 'museum') {
-                    bgColor = isDark ? '#141414' : '#fdfdfd';
-                }
+                        ctx.save();
+                        ctx.shadowColor = `rgba(0, 0, 0, ${0.15 * shadowMultiplier})`;
+                        ctx.shadowBlur = shortEdge * 0.04 * scale * shadowMultiplier;
+                        ctx.shadowOffsetY = shortEdge * 0.02 * scale * shadowMultiplier;
+                        ctx.fillStyle = '#0f0f0f'; 
+                        ctx.fillRect(fX, fY, fW, fH);
+                        ctx.restore();
 
-                // 渲染底图背景
-                if (config.frameStyle === 'glass') {
-                    ctx.save();
-                    const MINI_SIZE = 120; 
-                    const downScale = Math.min(1, MINI_SIZE / Math.max(canvas.width, canvas.height));
-                    const w = Math.max(1, Math.floor(canvas.width * downScale));
-                    const h = Math.max(1, Math.floor(canvas.height * downScale));
-                    const miniCanvas = document.createElement('canvas');
-                    miniCanvas.width = w;
-                    miniCanvas.height = h;
-                    const miniCtx = miniCanvas.getContext('2d');
-                    const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight) * 1.1; 
-                    const bgW = img.naturalWidth * scale;
-                    const bgH = img.naturalHeight * scale;
-                    const bgX = (w - bgW) / 2;
-                    const bgY = (h - bgH) / 2;
-                    miniCtx.drawImage(img, bgX, bgY, bgW, bgH);
-                    const imgDataObj = miniCtx.getImageData(0, 0, w, h);
-                    const data = imgDataObj.data;
-                    const temp = new Uint8ClampedArray(data.length);
-                    const radius = 6;
-                    for (let pass = 0; pass < 2; pass++) {
-                        for (let y = 0; y < h; y++) {
-                            for (let x = 0; x < w; x++) {
-                                let r = 0, g = 0, b = 0, count = 0;
-                                for (let k = -radius; k <= radius; k++) {
-                                    let nx = x + k;
-                                    if (nx < 0) nx = 0; else if (nx >= w) nx = w - 1;
-                                    const idx = (y * w + nx) * 4;
-                                    r += data[idx]; g += data[idx+1]; b += data[idx+2];
-                                    count++;
-                                }
-                                const outIdx = (y * w + x) * 4;
-                                temp[outIdx] = r / count; temp[outIdx+1] = g / count; temp[outIdx+2] = b / count; temp[outIdx+3] = 255;
+                        const iX = fX + filmPadX * scale;
+                        const iY = fY + filmPadY * scale;
+                        const iW = imgW * scale;
+                        const iH = imgH * scale;
+                        ctx.drawImage(imgObj, iX, iY, iW, iH);
+
+                        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                        ctx.lineWidth = Math.max(1, shortEdge * 0.002 * scale);
+                        ctx.strokeRect(iX, iY, iW, iH);
+
+                        if(matMultiplier > 0.4) {
+                            const fontSize = shortEdge * (is120 ? 0.018 : 0.015) * scale;
+                            ctx.fillStyle = is120 ? '#e5e5e5' : '#facc15'; 
+                            ctx.font = `600 ${fontSize}px "Inter", sans-serif`;
+                            ctx.textBaseline = 'middle';
+
+                            const topTextY = fY + (filmPadY * scale) * 0.5;
+                            const botTextY = fY + fH - (filmPadY * scale) * 0.5;
+                            
+                            const filmText = (filmName || (is120 ? 'FUJIFILM PRO 400H' : 'KODAK PORTRA 400')).toUpperCase();
+
+                            ctx.textAlign = 'left';
+                            ctx.fillText(is120 ? '1' : '22', iX, topTextY);
+                            
+                            ctx.textAlign = 'center';
+                            ctx.letterSpacing = `${fontSize * 0.2}px`;
+                            ctx.fillText(`FRAME ${filmText}`, fX + fW/2, topTextY);
+                            ctx.letterSpacing = '0px'; 
+                            
+                            ctx.textAlign = 'right';
+                            ctx.fillText(is120 ? '2' : '23', iX + iW, topTextY);
+
+                            ctx.fillStyle = is120 ? '#e5e5e5' : '#facc15';
+                            ctx.beginPath();
+                            const triSize = fontSize * 0.6;
+                            
+                            if (!is120) {
+                                ctx.moveTo(iX + triSize, botTextY - triSize/2);
+                                ctx.lineTo(iX + triSize*2, botTextY);
+                                ctx.lineTo(iX + triSize, botTextY + triSize/2);
+                                ctx.fill();
+                            } else {
+                                ctx.moveTo(fX + fW/2, botTextY - triSize);
+                                ctx.lineTo(fX + fW/2 + triSize, botTextY + triSize);
+                                ctx.lineTo(fX + fW/2 - triSize, botTextY + triSize);
+                                ctx.fill();
                             }
                         }
-                        for (let x = 0; x < w; x++) {
-                            for (let y = 0; y < h; y++) {
-                                let r = 0, g = 0, b = 0, count = 0;
-                                for (let k = -radius; k <= radius; k++) {
-                                    let ny = y + k;
-                                    if (ny < 0) ny = 0; else if (ny >= h) ny = h - 1;
-                                    const idx = (ny * w + x) * 4;
-                                    r += temp[idx]; g += temp[idx+1]; b += temp[idx+2];
-                                    count++;
-                                }
-                                const outIdx = (y * w + x) * 4;
-                                data[outIdx] = r / count; data[outIdx+1] = g / count; data[outIdx+2] = b / count;
-                            }
-                        }
-                    }
-                    miniCtx.putImageData(imgDataObj, 0, 0);
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
-                    const coverScale = Math.max(canvas.width / w, canvas.height / h) * 1.05;
-                    const bgWW = w * coverScale;
-                    const bgHH = h * coverScale;
-                    const bgXX = (canvas.width - bgWW) / 2;
-                    const bgYY = (canvas.height - bgHH) / 2;
-                    ctx.drawImage(miniCanvas, bgXX, bgYY, bgWW, bgHH);
-                    ctx.restore();
-                    const glassGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                    if (isDark) {
-                        glassGradient.addColorStop(0, 'rgba(10, 10, 10, 0.4)');
-                        glassGradient.addColorStop(1, 'rgba(10, 10, 10, 0.95)');
-                    } else {
-                        glassGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-                        glassGradient.addColorStop(1, 'rgba(255, 255, 255, 0.95)');
-                    }
-                    ctx.fillStyle = glassGradient;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    };
+                }
+
+                let finalScale = 1;
+                let outW, outH;
+
+                if (targetWidth && targetHeight) {
+                    finalScale = Math.min(targetWidth / sceneW, targetHeight / sceneH);
+                    outW = sceneW * finalScale; outH = sceneH * finalScale;
                 } else {
-                    ctx.fillStyle = bgColor;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    finalScale = this.OUTPUT_MAX_DIMENSION / Math.max(sceneW, sceneH);
+                    outW = sceneW * finalScale; outH = sceneH * finalScale;
                 }
 
-                if (config.frameStyle === 'film') {
-                    ctx.save();
-                    const holeW = shortSide * 0.012;
-                    const holeH = shortSide * 0.018;
-                    const holeSpacing = shortSide * 0.032;
-                    const holeRadius = holeW * 0.15;
-                    const topY = (padTop - holeH) * 0.4;
-                    const botY = canvas.height - (padBottom * 0.6) - holeH;
-                    ctx.fillStyle = isDark ? '#000000' : '#ffffff'; 
-                    ctx.beginPath();
-                    for(let x = padLeft * 0.5; x < canvas.width - (padRight * 0.5); x += holeSpacing) {
-                        if (ctx.roundRect) {
-                            ctx.roundRect(x, topY, holeW, holeH, holeRadius);
-                            ctx.roundRect(x, botY, holeW, holeH, holeRadius);
-                        } else {
-                            ctx.rect(x, topY, holeW, holeH);
-                            ctx.rect(x, botY, holeW, holeH);
-                        }
-                    }
-                    ctx.fill();
-                    ctx.restore();
-                }
-
-                // 照片渲染 (包含宽幅电影的裁剪逻辑)
-                ctx.save();
-                if (config.frameStyle === 'glass') {
-                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.15)';
-                    ctx.shadowBlur = basePadding * 0.4;
-                    ctx.shadowOffsetY = basePadding * 0.15;
-                } else if (config.frameStyle === 'classic' || config.frameStyle === 'palette' || config.frameStyle === 'museum') {
-                    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.05)';
-                    ctx.shadowBlur = basePadding * 0.3;
-                    ctx.shadowOffsetY = basePadding * 0.1;
-                }
-
+                ctx.canvas.width = outW;
+                ctx.canvas.height = outH;
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-
-                if (config.frameStyle === 'cinematic') {
-                    // 计算原图中心裁剪区域
-                    const imgAspect = img.naturalWidth / img.naturalHeight;
-                    const targetAspect = drawW / drawH;
-                    let sx, sy, sw, sh;
-                    if (imgAspect > targetAspect) {
-                        sh = img.naturalHeight;
-                        sw = sh * targetAspect;
-                        sx = (img.naturalWidth - sw) / 2;
-                        sy = 0;
-                    } else {
-                        sw = img.naturalWidth;
-                        sh = sw / targetAspect;
-                        sx = 0;
-                        sy = (img.naturalHeight - sh) / 2;
-                    }
-                    ctx.drawImage(img, sx, sy, sw, sh, padLeft + outerMargin, padTop + outerMargin, drawW, drawH);
-                } else {
-                    ctx.drawImage(img, padLeft + outerMargin, padTop + outerMargin, drawW, drawH);
-                }
-                ctx.restore();
-
-                let fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", sans-serif';
-                if (config.fontFamily === 'serif') fontStack = '"Playfair Display", "Noto Serif SC", "Songti SC", serif';
-                else if (config.fontFamily === 'mono') fontStack = '"JetBrains Mono", "Courier New", monospace';
-                else if (config.fontFamily === 'cinzel') fontStack = '"Cinzel", "Noto Serif SC", serif';
-
-                const baseFontSize = shortSide * 0.024;
-                ctx.letterSpacing = "0px";
-
-                if (config.frameStyle === 'cinematic') {
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    const textY = padTop + drawH + (padBottom / 2);
-                    ctx.fillStyle = textColor;
-                    ctx.font = `400 ${baseFontSize * 0.8}px ${fontStack}`;
-                    let combinedText = '';
-                    if(imgData.mainText && imgData.subText) {
-                        combinedText = `${imgData.mainText}   /   ${imgData.subText}`;
-                    } else {
-                        combinedText = imgData.mainText || imgData.subText;
-                    }
-                    if (combinedText) {
-                        ctx.letterSpacing = "1.5px"; 
-                        ctx.fillText(combinedText.toUpperCase(), canvas.width / 2, textY);
-                        ctx.letterSpacing = "0px";
-                    }
-                }
-                else if (config.frameStyle === 'palette') {
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillStyle = subTextColor; 
-                    ctx.font = `400 ${baseFontSize * 0.55}px ${fontStack}`;
-                    const topLeftX = padLeft + outerMargin;
-                    const topLeftY = padTop + outerMargin - baseFontSize * 0.8;
-                    let leftLines = [];
-                    if (imgData.dateTimeStr) leftLines.push(`${imgData.dateTimeStr}`);
-                    if (imgData.gpsStr) leftLines.push(`${imgData.gpsStr}`);
-                    let currY = topLeftY;
-                    for (let i = leftLines.length - 1; i >= 0; i--) {
-                        ctx.fillText(leftLines[i], topLeftX, currY);
-                        currY -= baseFontSize * 1.0;
-                    }
-                    const photoBotY = padTop + drawH + outerMargin;
-                    const colorBlockW = drawW * 0.08; 
-                    const colorBlockH = basePadding * 0.4;
-                    const colorBlockY = photoBotY + basePadding * 0.9;
-                    if (imgData.colors && imgData.colors.length > 0) {
-                        for(let i=0; i<imgData.colors.length; i++) {
-                            ctx.fillStyle = imgData.colors[i];
-                            ctx.fillRect(padLeft + outerMargin + i * colorBlockW, colorBlockY, colorBlockW, colorBlockH);
-                        }
-                    }
-                    ctx.textAlign = 'right';
-                    ctx.textBaseline = 'top';
-                    ctx.fillStyle = textColor;
-                    ctx.font = `500 ${baseFontSize * 1.3}px ${fontStack}`;
-                    const deviceY = photoBotY + basePadding * 0.7;
-                    ctx.fillText(imgData.mainText || '', padLeft + outerMargin + drawW, deviceY);
-                    ctx.fillStyle = subTextColor;
-                    ctx.font = `400 ${baseFontSize * 0.6}px ${fontStack}`;
-                    ctx.fillText(imgData.subText || '', padLeft + outerMargin + drawW, deviceY + baseFontSize * 1.8);
-                } 
-                else if (config.frameStyle === 'museum') {
-                    const lineY = padTop + drawH + basePadding * 1.5;
-                    ctx.beginPath();
-                    ctx.moveTo(padLeft, lineY);
-                    ctx.lineTo(padLeft + drawW, lineY);
-                    ctx.lineWidth = Math.max(1, shortSide * 0.001);
-                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)';
-                    ctx.stroke();
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'top';
-                    ctx.fillStyle = textColor;
-                    ctx.font = `500 ${baseFontSize * 1.2}px ${fontStack}`;
-                    ctx.fillText(imgData.mainText || '', padLeft, lineY + basePadding * 0.8);
-                    ctx.fillStyle = subTextColor;
-                    ctx.font = `400 ${baseFontSize * 0.6}px ${fontStack}`;
-                    ctx.fillText(imgData.subText || '', padLeft, lineY + basePadding * 0.8 + baseFontSize * 1.8);
-                }
-                else if (config.frameStyle === 'film') {
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = textColor; 
-                    const filmFont = '"JetBrains Mono", "Courier New", monospace';
-                    ctx.font = `400 ${baseFontSize * 0.6}px ${filmFont}`;
-                    ctx.letterSpacing = "2px";
-                    const textYBot = canvas.height - (padBottom * 0.35);
-                    ctx.textAlign = 'left';
-                    if (imgData.mainText) {
-                        ctx.fillText(`KODAK 400TX  •  ${imgData.mainText.toUpperCase()}`, padLeft, textYBot);
-                    } else {
-                        ctx.fillText(`KODAK 400TX`, padLeft, textYBot);
-                    }
-                    ctx.textAlign = 'right';
-                    if (imgData.subText) {
-                        ctx.fillText(`${imgData.subText.toUpperCase()}  •  [ 36A ]`, canvas.width - padRight, textYBot);
-                    } else {
-                        ctx.fillText(`[ 36A ]`, canvas.width - padRight, textYBot);
-                    }
-                    ctx.letterSpacing = "0px";
-                }
-                else if (hasText) {
-                    const mainFont = `500 ${baseFontSize * 0.95}px ${fontStack}`; 
-                    const subFont = `400 ${baseFontSize * 0.6}px ${fontStack}`;
-                    const textYCenter = padTop + drawH + (padBottom / 2) + outerMargin;
-                    ctx.font = mainFont; const mainW = ctx.measureText(imgData.mainText).width;
-                    ctx.font = subFont; const subW = ctx.measureText(imgData.subText).width;
-                    let currentLayout = config.textLayout;
-                    if (config.preset === 'coords') currentLayout = 'center'; 
-                    ctx.textBaseline = 'middle';
-                    if (currentLayout === 'center') {
-                        ctx.textAlign = 'center'; 
-                        if (imgData.mainText && imgData.subText) {
-                            ctx.fillStyle = textColor; ctx.font = mainFont;
-                            ctx.fillText(imgData.mainText, canvas.width / 2, textYCenter - (baseFontSize * 0.45));
-                            ctx.fillStyle = subTextColor; ctx.font = subFont;
-                            ctx.fillText(imgData.subText, canvas.width / 2, textYCenter + (baseFontSize * 0.65));
-                        } else {
-                            const text = imgData.mainText || imgData.subText;
-                            ctx.fillStyle = imgData.mainText ? textColor : subTextColor; 
-                            ctx.font = imgData.mainText ? mainFont : subFont;
-                            ctx.fillText(text, canvas.width / 2, textYCenter);
-                        }
-                    } else if (currentLayout === 'split') {
-                        if (imgData.mainText) {
-                            ctx.textAlign = 'left';
-                            ctx.fillStyle = textColor; ctx.font = mainFont;
-                            ctx.fillText(imgData.mainText, padLeft + outerMargin, textYCenter);
-                        }
-                        if (imgData.subText) {
-                            ctx.textAlign = 'right';
-                            ctx.fillStyle = subTextColor; ctx.font = subFont;
-                            ctx.fillText(imgData.subText, canvas.width - padRight - outerMargin, textYCenter);
-                        }
-                    } else if (currentLayout === 'inline') {
-                        ctx.textAlign = 'left';
-                        const spacer = baseFontSize * 1.5;
-                        const totalInlineW = mainW + (imgData.mainText && imgData.subText ? spacer : 0) + subW;
-                        let inlineX = (canvas.width - totalInlineW) / 2;
-                        if (imgData.mainText) {
-                            ctx.fillStyle = textColor; ctx.font = mainFont;
-                            ctx.fillText(imgData.mainText, inlineX, textYCenter);
-                            inlineX += mainW + spacer;
-                        }
-                        if (imgData.subText) {
-                            ctx.fillStyle = subTextColor; ctx.font = subFont;
-                            ctx.fillText(imgData.subText, inlineX, textYCenter);
-                        }
-                    }
-                }
+                
+                drawLogic(finalScale);
             }
 
-            downloadCurrentImage() {
-                if (this.state.currentIndex < 0) return;
+            renderPreview() {
+                const imgData = this.getActiveImage();
+                if (!imgData) return;
+
+                this.dom.previewCanvas.classList.remove('loaded');
+                const dpr = window.devicePixelRatio || 1;
+                const containerW = this.dom.canvasContainer.clientWidth;
+                const containerH = this.dom.canvasContainer.clientHeight;
+                const safeDpr = Math.min(dpr, 2);
+                
+                this.renderScene(this.ctx, imgData, containerW * safeDpr, containerH * safeDpr);
+                
+                this.dom.previewCanvas.style.width = 'auto';
+                this.dom.previewCanvas.style.height = 'auto';
+                this.dom.previewCanvas.style.maxWidth = '100%';
+                this.dom.previewCanvas.style.maxHeight = '100%';
+
+                requestAnimationFrame(() => {
+                    this.dom.previewCanvas.classList.add('loaded');
+                });
+            }
+
+            renderHighResBlob(imgData, styleOverride = null) {
+                return new Promise((resolve) => {
+                    const originalStyle = this.state.settings.style;
+                    if (styleOverride) this.state.settings.style = styleOverride;
+
+                    const offscreenCanvas = document.createElement('canvas');
+                    const offCtx = offscreenCanvas.getContext('2d', { alpha: false });
+                    
+                    this.renderScene(offCtx, imgData, null, null);
+                    
+                    offscreenCanvas.toBlob((blob) => {
+                        if (styleOverride) this.state.settings.style = originalStyle;
+                        resolve(blob);
+                    }, 'image/jpeg', 0.95);
+                });
+            }
+
+            async downloadCurrent() {
+                const imgData = this.getActiveImage();
+                if (!imgData || this.state.isProcessing) return;
+
+                this.state.isProcessing = true;
+                const originalText = this.dom.btnDownloadCurrent.innerHTML;
+                this.dom.btnDownloadCurrent.innerHTML = '<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span class="hidden sm:inline">渲染中</span>';
+                lucide.createIcons({ root: this.dom.btnDownloadCurrent });
+                
                 try {
-                    const dataUrl = this.dom.canvas.toDataURL('image/jpeg', 0.95);
+                    await new Promise(r => setTimeout(r, 50)); 
+                    const blob = await this.renderHighResBlob(imgData);
+                    const url = URL.createObjectURL(blob);
+                    
                     const link = document.createElement('a');
-                    const imgData = this.state.images[this.state.currentIndex];
-                    const originalName = imgData.file.name.split('.')[0];
-                    link.download = `Xiang_${originalName}_${new Date().getTime()}.jpg`;
-                    link.href = dataUrl;
+                    const styleName = this.state.settings.style.toUpperCase();
+                    link.download = `XiangEdition_${styleName}_${Date.now()}.jpg`;
+                    link.href = url;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    this.showToast('保存成功', 'success');
+                    
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    this.showToast('高清展示图已保存', 'success');
                 } catch (e) {
-                    console.error("导出失败:", e);
-                    this.showToast('导出失败，可能是图片尺寸超出了浏览器限制', 'error');
+                    console.error(e);
+                    this.showToast('导出失败', 'error');
+                } finally {
+                    this.state.isProcessing = false;
+                    this.dom.btnDownloadCurrent.innerHTML = originalText;
+                    lucide.createIcons({ root: this.dom.btnDownloadCurrent });
                 }
             }
 
-            async batchDownload() {
-                if (this.state.images.length === 0) return;
-                if (typeof JSZip === 'undefined') {
-                    this.showToast('环境出错：需要 JSZIP 库支持', 'error');
-                    return;
-                }
-                this.setLoading(true, '正在打包高画质照片，请耐心等待...');
+            async downloadAll() {
+                if (this.state.images.length === 0 || this.state.isProcessing) return;
+
+                this.state.isProcessing = true;
+                this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
+                
+                // 打包核心推荐款式，包含最新的 EXIF
+                const stylesToGen = ['museum', 'framed', 'exif', 'film35mm']; 
+                const totalTasks = this.state.images.length * stylesToGen.length; 
+                let currentTask = 0;
+                
+                this.dom.progressTitle.textContent = '正在生成全套画册...';
+                this.updateProgress(0, totalTasks);
+
                 try {
                     const zip = new JSZip();
-                    const offscreenCanvas = document.createElement('canvas');
-                    const offscreenCtx = offscreenCanvas.getContext('2d');
+                    
                     for (let i = 0; i < this.state.images.length; i++) {
-                        const imgData = this.state.images[i];
-                        this.dom.uploadProgressText.innerText = `处理中 (${i+1}/${this.state.images.length})...`;
-                        this.drawCanvas(imgData, offscreenCanvas, offscreenCtx);
-                        const blob = await new Promise(resolve => offscreenCanvas.toBlob(resolve, 'image/jpeg', 0.92));
-                        const originalName = imgData.file.name.split('.')[0];
-                        zip.file(`Xiang_${originalName}_${i+1}.jpg`, blob);
+                        const img = this.state.images[i];
+                        const baseName = img.file.name.substring(0, img.file.name.lastIndexOf('.')) || `Image_${i+1}`;
+                        const folder = zip.folder(baseName);
+                        
+                        for (let style of stylesToGen) {
+                            const blob = await this.renderHighResBlob(img, style);
+                            folder.file(`${baseName}_${style.toUpperCase()}.jpg`, blob);
+                            
+                            currentTask++;
+                            this.updateProgress(currentTask, totalTasks);
+                            await new Promise(r => requestAnimationFrame(r));
+                        }
                     }
-                    this.dom.uploadProgressText.innerText = `正在生成 ZIP 压缩包...`;
+
+                    this.dom.progressTitle.textContent = '正在压缩打包 ZIP...';
+                    this.dom.progressBar.classList.add('animate-pulse');
+
                     const zipContent = await zip.generateAsync({ type: "blob" });
+                    
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(zipContent);
-                    link.download = `Xiang_Archive_${new Date().getTime()}.zip`;
+                    link.download = `XiangEdition_Pro_Gallery_${Date.now()}.zip`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    this.showToast(`成功导出 ${this.state.images.length} 张照片`, 'success');
-                } catch (error) {
-                    console.error("Batch failed:", error);
-                    this.showToast('批量导出失败', 'error');
+                    
+                    this.showToast('批量全套展示图已导出！', 'success');
+                } catch (e) {
+                    console.error(e);
+                    this.showToast('打包失败，请检查内存或稍后重试', 'error');
                 } finally {
-                    this.setLoading(false);
+                    this.dom.progressBar.classList.remove('animate-pulse');
+                    this.dom.progressModal.classList.add('opacity-0', 'pointer-events-none');
+                    this.state.isProcessing = false;
                 }
             }
-
-            setLoading(isLoading, text = '处理中...') {
-                if (isLoading) {
-                    this.dom.processingOverlay.classList.remove('opacity-0', 'pointer-events-none');
-                    this.dom.uploadProgressText.innerText = text;
-                } else {
-                    this.dom.processingOverlay.classList.add('opacity-0', 'pointer-events-none');
-                }
+            
+            updateProgress(current, total) {
+                const percent = Math.floor((current / total) * 100);
+                this.dom.progressBar.style.width = `${percent}%`;
+                this.dom.progressCount.textContent = `${current} / ${total} TICKET`;
             }
 
             showToast(message, type = 'info') {
                 const toast = document.createElement('div');
-                const bgColor = type === 'error' ? 'bg-red-600' : 'bg-black';
-                toast.className = `toast-enter flex items-center justify-center gap-3 px-5 py-3 ${bgColor} text-white shadow-xl max-w-sm border border-white/10`;
+                const bgColor = type === 'error' ? 'bg-red-600' : 'bg-[#1a1a1a]';
+                toast.className = `toast flex items-center gap-3 px-5 py-3 ${bgColor} text-white shadow-2xl rounded max-w-sm pointer-events-auto`;
+                
                 let icon = 'info';
-                if (type === 'success') icon = 'check';
+                if (type === 'success') icon = 'check-circle-2';
                 if (type === 'error') icon = 'alert-triangle';
+                
                 toast.innerHTML = `
-                    <i data-lucide="${icon}" class="w-3.5 h-3.5 shrink-0 opacity-70"></i>
-                    <span class="text-[11px] tracking-wider font-medium">${message}</span>
+                    <i data-lucide="${icon}" class="w-4 h-4 shrink-0 text-white/90"></i>
+                    <span class="text-xs font-medium tracking-wide">${message}</span>
                 `;
+                
                 this.dom.toastContainer.appendChild(toast);
                 lucide.createIcons({ root: toast });
+                
                 setTimeout(() => {
-                    toast.classList.replace('toast-enter', 'toast-leave');
-                    toast.addEventListener('animationend', () => toast.remove());
+                    toast.style.transform = 'translateY(120%)';
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+                    setTimeout(() => toast.remove(), 300);
                 }, 3000);
             }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            new FrameGenerator();
-        });
-    </script>
-
-    <!-- ==========================================
-         Microsoft Clarity 性能优化加载方案 
-    ========================================== -->
-    <script type="text/javascript">
-        // 核心优化思路：完全不阻塞主渲染线程和首屏图片加载
-        window.addEventListener('load', function() {
-            // 定义 Clarity 的初始化函数
-            var initClarity = function() {
-                (function(c,l,a,r,i,t,y){
-                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-                })(window, document, "clarity", "script", "qt6tim5n2h");
-            };
-
-            // 使用 requestIdleCallback 确保在浏览器空闲时再执行脚本加载
-            if ('requestIdleCallback' in window) {
-                requestIdleCallback(initClarity);
-            } else {
-                // 如果浏览器不支持，则在页面加载完毕后再延迟1秒执行，确保绝对不抢网速
-                setTimeout(initClarity, 1000);
-            }
+            new AppController();
         });
     </script>
 </body>
