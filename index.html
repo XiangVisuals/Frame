@@ -15,7 +15,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -187,14 +187,6 @@
         @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .toast { animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
-
-    <script type="text/javascript">
-        (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "wzl6io0uws");
-    </script>
 </head>
 <body class="text-black h-[100dvh] flex flex-col font-sans">
 
@@ -321,11 +313,16 @@
                             <span class="subtext pointer-events-none">Diagonal Min</span>
                         </button>
 
-                        <!-- NEW AVANT-GARDE SECTION -->
+                        <!-- AVANT-GARDE SECTION -->
                         <div class="col-span-2 mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between">
                             <span class="text-[9px] text-zinc-400 uppercase tracking-widest font-semibold">Avant-Garde</span>
                         </div>
-                        <!-- NEW GRID MOSAIC TEMPLATE -->
+                        <button class="style-btn col-span-2 relative overflow-hidden" data-style="immersive_color">
+                            <div class="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 opacity-50 z-0"></div>
+                            <i data-lucide="droplet" class="w-4 h-4 icon-wrapper pointer-events-none relative z-10 text-slate-800"></i>
+                            <span class="title pointer-events-none relative z-10">沉浸主色卡 (Pantone色系)</span>
+                            <span class="subtext pointer-events-none relative z-10">Immersive Color Palette</span>
+                        </button>
                         <button class="style-btn col-span-2 relative overflow-hidden" data-style="grid_mosaic">
                             <div class="absolute inset-0 bg-gradient-to-br from-zinc-50 to-zinc-100 opacity-50 z-0"></div>
                             <i data-lucide="layout-grid" class="w-4 h-4 icon-wrapper pointer-events-none relative z-10 text-zinc-800"></i>
@@ -457,7 +454,11 @@
                             <input type="text" id="inputRight" class="input-elegant text-[11px] font-sans" placeholder="版权/展签 如: © XIANG">
                         </div>
                         <div class="pt-3 border-t border-zinc-100 relative group">
-                            <i data-lucide="camera" class="w-3.5 h-3.5 absolute right-2.5 top-6 text-zinc-300 transition-colors group-hover:text-black"></i>
+                            <i data-lucide="clock" class="w-3.5 h-3.5 absolute right-2.5 top-6 text-zinc-300 transition-colors group-hover:text-black"></i>
+                            <input type="text" id="inputExifTime" class="input-elegant text-[11px] font-mono text-zinc-800 pr-8" placeholder="时间 (如: 8:40 PM)">
+                        </div>
+                        <div class="relative group">
+                            <i data-lucide="camera" class="w-3.5 h-3.5 absolute right-2.5 top-3 text-zinc-300 transition-colors group-hover:text-black"></i>
                             <input type="text" id="inputExifCamera" class="input-elegant text-[11px] font-mono text-zinc-800 pr-8" placeholder="相机与型号 (如: SONY ILCE-7RM3A)">
                         </div>
                         <div class="relative group">
@@ -554,6 +555,7 @@
                     
                     inputLeft: document.getElementById('inputLeft'),
                     inputRight: document.getElementById('inputRight'),
+                    inputExifTime: document.getElementById('inputExifTime'),
                     inputExifCamera: document.getElementById('inputExifCamera'),
                     inputExifLens: document.getElementById('inputExifLens'),
                     inputExifParams: document.getElementById('inputExifParams'),
@@ -741,6 +743,7 @@
 
                 this.dom.inputLeft.addEventListener('input', (e) => textInputHandler('textLeft', e.target.value));
                 this.dom.inputRight.addEventListener('input', (e) => textInputHandler('textRight', e.target.value));
+                this.dom.inputExifTime.addEventListener('input', (e) => textInputHandler('exifTime', e.target.value));
                 this.dom.inputExifCamera.addEventListener('input', (e) => textInputHandler('exifCamera', e.target.value));
                 this.dom.inputExifLens.addEventListener('input', (e) => textInputHandler('exifLens', e.target.value));
                 this.dom.inputExifParams.addEventListener('input', (e) => textInputHandler('exifParams', e.target.value));
@@ -752,6 +755,7 @@
                     this.state.images.forEach(img => {
                         img.textLeft = activeImg.textLeft;
                         img.textRight = activeImg.textRight;
+                        img.exifTime = activeImg.exifTime;
                         img.exifCamera = activeImg.exifCamera;
                         img.exifLens = activeImg.exifLens;
                         img.exifParams = activeImg.exifParams;
@@ -882,22 +886,59 @@
                 try {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                    canvas.width = 16; canvas.height = 16;
-                    ctx.drawImage(imgObj, 0, 0, 16, 16);
-                    const data = ctx.getImageData(0, 0, 16, 16).data;
+                    // 1. 扩大采样范围以获得更准确的占比统计
+                    canvas.width = 64; canvas.height = 64;
+                    ctx.drawImage(imgObj, 0, 0, 64, 64);
+                    const data = ctx.getImageData(0, 0, 64, 64).data;
                     
-                    let colorPool = [];
-                    const dist = (c1, c2) => Math.pow(c1.r-c2.r,2) + Math.pow(c1.g-c2.g,2) + Math.pow(c1.b-c2.b,2);
+                    const colorCounts = {};
+                    let maxCount = 0;
+                    let dominantBin = null;
+                    const colorPool = [];
+                    const binSize = 32; // 色彩量化步长：将相近的颜色归为一个“桶”进行频次统计
 
                     for(let i=0; i<data.length; i+=4) {
                         if (data[i+3] > 128) {
-                            colorPool.push({r: data[i], g: data[i+1], b: data[i+2]});
+                            const r = data[i], g = data[i+1], b = data[i+2];
+                            colorPool.push({r, g, b});
+
+                            // 2. 将相近颜色分箱统计
+                            const binKey = `${Math.floor(r/binSize)},${Math.floor(g/binSize)},${Math.floor(b/binSize)}`;
+                            if (!colorCounts[binKey]) {
+                                colorCounts[binKey] = { count: 0, rSum: 0, gSum: 0, bSum: 0 };
+                            }
+                            colorCounts[binKey].count++;
+                            colorCounts[binKey].rSum += r;
+                            colorCounts[binKey].gSum += g;
+                            colorCounts[binKey].bSum += b;
+
+                            // 记录拥有最多像素点的色彩桶
+                            if (colorCounts[binKey].count > maxCount) {
+                                maxCount = colorCounts[binKey].count;
+                                dominantBin = colorCounts[binKey];
+                            }
                         }
                     }
 
-                    if (colorPool.length === 0) return ['#d4d4d8', '#a1a1aa', '#71717a', '#3f3f46'];
+                    const defaultPalette = [
+                        { rgbStr: '#d4d4d8', hex: '#d4d4d8', r: 212, g: 212, b: 216 },
+                        { rgbStr: '#a1a1aa', hex: '#a1a1aa', r: 161, g: 161, b: 170 },
+                        { rgbStr: '#71717a', hex: '#71717a', r: 113, g: 113, b: 122 },
+                        { rgbStr: '#3f3f46', hex: '#3f3f46', r: 63, g: 63, b: 70 }
+                    ];
 
-                    let picked = [colorPool[0]];
+                    if (colorPool.length === 0 || !dominantBin) return defaultPalette;
+
+                    // 3. 计算占比最大桶的真实平均颜色 (Dominant Color)
+                    const domR = Math.round(dominantBin.rSum / dominantBin.count);
+                    const domG = Math.round(dominantBin.gSum / dominantBin.count);
+                    const domB = Math.round(dominantBin.bSum / dominantBin.count);
+                    const dominantColor = { r: domR, g: domG, b: domB };
+
+                    // 4. 将主颜色放在第一位，其余寻找对比色填充，保持其余模板的多样性
+                    let picked = [dominantColor];
+                    const dist = (c1, c2) => Math.pow(c1.r-c2.r,2) + Math.pow(c1.g-c2.g,2) + Math.pow(c1.b-c2.b,2);
+
                     while(picked.length < 4) {
                         let maxDist = -1;
                         let furthestColor = colorPool[0];
@@ -911,15 +952,27 @@
                         picked.push(furthestColor);
                     }
 
-                    picked.sort((a,b) => {
-                        let lumA = 0.299*a.r + 0.587*a.g + 0.114*a.b;
-                        let lumB = 0.299*b.r + 0.587*b.g + 0.114*b.b;
-                        return lumB - lumA;
-                    });
+                    // 取消基于亮度的重排序，严格保持 picked[0] 是我们统计出的面积最大主颜色
+                    
+                    const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
+                        const hex = x.toString(16);
+                        return hex.length === 1 ? '0' + hex : hex;
+                    }).join('');
 
-                    return picked.map(c => `rgba(${c.r}, ${c.g}, ${c.b}, 0.85)`);
+                    return picked.map(c => ({
+                        rgbStr: `rgba(${c.r}, ${c.g}, ${c.b}, 0.85)`,
+                        hex: rgbToHex(c.r, c.g, c.b),
+                        r: c.r,
+                        g: c.g,
+                        b: c.b
+                    }));
                 } catch(e) {
-                    return ['#d4d4d8', '#a1a1aa', '#71717a', '#3f3f46'];
+                    return [
+                        { rgbStr: '#d4d4d8', hex: '#d4d4d8', r: 212, g: 212, b: 216 },
+                        { rgbStr: '#a1a1aa', hex: '#a1a1aa', r: 161, g: 161, b: 170 },
+                        { rgbStr: '#71717a', hex: '#71717a', r: 113, g: 113, b: 122 },
+                        { rgbStr: '#3f3f46', hex: '#3f3f46', r: 63, g: 63, b: 70 }
+                    ];
                 }
             }
 
@@ -980,11 +1033,13 @@
                         if (!params) params = '50MM F2.8 1/100S ISO250';
 
                         let dateStr = 'PHOTOGRAPHED IN : JUN 20, 2026';
+                        let timeStr = '8:40 PM';
                         if (exifData?.DateTimeOriginal) {
                             try {
                                 const d = new Date(exifData.DateTimeOriginal);
                                 const options = { month: 'short', day: 'numeric', year: 'numeric' };
                                 dateStr = 'PHOTOGRAPHED IN : ' + d.toLocaleDateString('en-US', options).toUpperCase();
+                                timeStr = d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}).toUpperCase();
                             } catch(e) {}
                         }
 
@@ -997,6 +1052,7 @@
                             width: imgObj.width, height: imgObj.height,
                             textLeft: defaultTitle,
                             textRight: '© XIANG EDITION',
+                            exifTime: timeStr,
                             exifCamera: camera,
                             exifLens: lens,
                             exifParams: params,
@@ -1092,6 +1148,7 @@
 
                 this.dom.inputLeft.value = imgData.textLeft;
                 this.dom.inputRight.value = imgData.textRight;
+                this.dom.inputExifTime.value = imgData.exifTime || '';
                 this.dom.inputExifCamera.value = imgData.exifCamera;
                 this.dom.inputExifLens.value = imgData.exifLens;
                 this.dom.inputExifParams.value = imgData.exifParams;
@@ -1115,7 +1172,7 @@
             updateControlsVisibility(style) {
                 const isFilm = style.startsWith('film');
                 const isGallery = ['framed', 'museum', 'floating', 'polaroid'].includes(style);
-                const isArtist = ['exif', 'exif_palette', 'exif_minimal', 'grid_mosaic'].includes(style);
+                const isArtist = ['exif', 'exif_palette', 'exif_minimal', 'grid_mosaic', 'immersive_color'].includes(style);
 
                 const secLayout = document.getElementById('section-layout');
                 const ctrlMargin = document.getElementById('ctrl-margin');
@@ -1239,7 +1296,7 @@
 
             renderScene(ctx, imgData, targetWidth, targetHeight) {
                 const { style, wallColor, frameColor, frameGradient, matMultiplier, shadowMultiplier, invertAmount, grainAmount, bwAmount } = this.state.settings;
-                const { imgObj, width: imgW, height: imgH, textLeft, textRight, exifCamera, exifLens, exifParams, filmName } = imgData;
+                const { imgObj, width: imgW, height: imgH, textLeft, textRight, exifTime, exifCamera, exifLens, exifParams, filmName } = imgData;
 
                 const shortEdge = Math.min(imgW, imgH);
                 
@@ -1279,6 +1336,120 @@
                         
                         const fImg = this.getFilteredImage(imgData, imgW * scale, imgH * scale, bwAmount, invertAmount);
                         ctx.drawImage(fImg, pX + pad * scale, pY + pad * scale, imgW * scale, imgH * scale);
+                    };
+
+                } else if (style === 'immersive_color') {
+                    wallPaddingX = 0; wallPaddingY = 0;
+                    
+                    // 设计师微调：色块占据 75% 比例，整体画幅更匀称
+                    const topBlockH = imgH * 0.75; 
+                    
+                    sceneW = imgW;
+                    sceneH = topBlockH + imgH;
+
+                    drawLogic = (scale) => {
+                        const sW = sceneW * scale;
+                        const sH = sceneH * scale;
+                        const sTopH = topBlockH * scale;
+                        
+                        // 1. 提取颜色
+                        let mainColorHex = '#2c3e50'; 
+                        let mainColorRgb = {r: 44, g: 62, b: 80};
+                        
+                        if (imgData.palette && imgData.palette.length > 0) {
+                            mainColorHex = imgData.palette[0].hex;
+                            mainColorRgb = { r: imgData.palette[0].r, g: imgData.palette[0].g, b: imgData.palette[0].b };
+                        }
+
+                        // 2. 亮度计算与色彩对比
+                        const luminance = (0.299*mainColorRgb.r + 0.587*mainColorRgb.g + 0.114*mainColorRgb.b)/255;
+                        const isLightBg = luminance > 0.6;
+                        
+                        const mainTextColor = isLightBg ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)';
+                        const subTextColor = isLightBg ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.6)';
+                        const accentTextColor = isLightBg ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.3)';
+
+                        // 3. 绘制背景与图像
+                        ctx.fillStyle = mainColorHex;
+                        ctx.fillRect(0, 0, sW, sTopH);
+                        const fImg = this.getFilteredImage(imgData, imgW * scale, imgH * scale, bwAmount, invertAmount);
+                        ctx.drawImage(fImg, 0, sTopH, imgW * scale, imgH * scale);
+
+                        // 4. 设计师级精细排版 (Pantone Swatch Style)
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle'; // 使用 middle 基线，完美居中计算
+                        
+                        const textCenterX = sW / 2;
+                        
+                        // 字体大小定义
+                        const hexFontSize = sW * 0.045;   // 强化 HEX，作为核心视觉锚点
+                        const detailFontSize = sW * 0.012;
+                        const titleFontSize = sW * 0.018; 
+                        const timeFontSize = sW * 0.011;
+                        const metaFontSize = sW * 0.009;
+
+                        // 间距动态计算
+                        const gapHexDetail = hexFontSize * 1.0;
+                        const gapDetailTitle = sTopH * 0.12; // 颜色档案与照片信息之间的优雅留白
+                        const gapTitleTime = titleFontSize * 1.6;
+
+                        // 汇总文本块总高度
+                        const totalBlockHeight = gapHexDetail + gapDetailTitle + gapTitleTime;
+                        
+                        // ✨ 视觉重心平衡魔法：将整个文本块定在 47% 的黄金视觉中心点 ✨
+                        const startY = (sTopH * 0.47) - (totalBlockHeight / 2);
+                        
+                        const hexY = startY;
+                        const detailY = hexY + gapHexDetail;
+                        const titleY = detailY + gapDetailTitle;
+                        const timeY = titleY + gapTitleTime;
+
+                        // --- 核心：HEX 色值 ---
+                        ctx.font = `700 ${hexFontSize}px "JetBrains Mono", monospace`;
+                        ctx.fillStyle = mainTextColor;
+                        try { ctx.letterSpacing = `${hexFontSize * 0.02}px`; } catch(e){}
+                        ctx.fillText(mainColorHex.toUpperCase(), textCenterX, hexY);
+                        try { ctx.letterSpacing = '0px'; } catch(e){}
+
+                        // --- 细节：RGB & CMYK ---
+                        const rNorm = mainColorRgb.r / 255; const gNorm = mainColorRgb.g / 255; const bNorm = mainColorRgb.b / 255;
+                        const kValue = Math.min(1 - rNorm, 1 - gNorm, 1 - bNorm);
+                        const cValue = kValue === 1 ? 0 : (1 - rNorm - kValue) / (1 - kValue);
+                        const mValue = kValue === 1 ? 0 : (1 - gNorm - kValue) / (1 - kValue);
+                        const yValue = kValue === 1 ? 0 : (1 - bNorm - kValue) / (1 - kValue);
+                        
+                        const cmykStr = `C${Math.round(cValue*100)} M${Math.round(mValue*100)} Y${Math.round(yValue*100)} K${Math.round(kValue*100)}`;
+                        const rgbStr = `R${mainColorRgb.r} G${mainColorRgb.g} B${mainColorRgb.b}`;
+                        
+                        ctx.font = `500 ${detailFontSize}px "JetBrains Mono", monospace`;
+                        ctx.fillStyle = subTextColor;
+                        try { ctx.letterSpacing = `${detailFontSize * 0.15}px`; } catch(e){}
+                        ctx.fillText(`${rgbStr}   |   ${cmykStr}`, textCenterX, detailY);
+                        try { ctx.letterSpacing = '0px'; } catch(e){}
+
+                        // --- 标题 ---
+                        ctx.font = `500 ${titleFontSize}px "Inter", -apple-system, "PingFang SC", sans-serif`;
+                        ctx.fillStyle = mainTextColor;
+                        const titleText = (textLeft || 'UNTITLED ARTWORK').toUpperCase();
+                        try { ctx.letterSpacing = `${titleFontSize * 0.25}px`; } catch(e){} // 极宽字距，增加呼吸感
+                        ctx.fillText(titleText, textCenterX, titleY);
+                        try { ctx.letterSpacing = '0px'; } catch(e){}
+
+                        // --- 时间 ---
+                        ctx.font = `400 ${timeFontSize}px "JetBrains Mono", "Inter", monospace`;
+                        ctx.fillStyle = subTextColor;
+                        try { ctx.letterSpacing = `${timeFontSize * 0.15}px`; } catch(e){}
+                        ctx.fillText(exifTime || '8:40 PM', textCenterX, timeY);
+                        try { ctx.letterSpacing = '0px'; } catch(e){}
+                        
+                        // --- 底部极简修饰水印 ---
+                        if (matMultiplier > 0.4) {
+                            ctx.font = `400 ${metaFontSize}px "JetBrains Mono", monospace`;
+                            ctx.fillStyle = accentTextColor;
+                            try { ctx.letterSpacing = `${metaFontSize * 0.25}px`; } catch(e){}
+                            ctx.fillText(`COLOR ARCHIVE INDEX: ${imgData.id.split('_')[1] || '001'}`, textCenterX, sTopH - (metaFontSize * 3));
+                            try { ctx.letterSpacing = '0px'; } catch(e){}
+                        }
                     };
 
                 } else if (style === 'framed' || style === 'museum') {
@@ -1357,8 +1528,7 @@
                 } else if (style === 'grid_mosaic') {
                     wallPaddingX = 0; wallPaddingY = 0;
                     
-                    // 根据图片比例动态计算网格数量
-                    const targetShortCells = 10; // 固定短边为10格
+                    const targetShortCells = 10; 
                     let cols, rows;
                     if (imgW < imgH) {
                         cols = targetShortCells;
@@ -1368,11 +1538,10 @@
                         cols = Math.max(1, Math.round(rows * (imgW / imgH)));
                     }
 
-                    const baseCellSize = 200; // 网格基础内部渲染分辨率
+                    const baseCellSize = 200; 
                     const gridW = cols * baseCellSize;
                     const gridH = rows * baseCellSize;
 
-                    // 边缘纸张留白 (依据短边长度固定留白比例，适应全景图)
                     const referenceEdge = targetShortCells * baseCellSize; 
                     const padX = referenceEdge * 0.12 * matMultiplier;
                     const padTop = referenceEdge * 0.12 * matMultiplier;
@@ -1381,7 +1550,6 @@
                     sceneW = gridW + padX * 2;
                     sceneH = gridH + padTop + padBot;
 
-                    // 为了确保方形网格，进行极细微的裁切匹配
                     const targetRatio = cols / rows;
                     const imgRatio = imgW / imgH;
                     let sCropX = 0, sCropY = 0, sCropW = imgW, sCropH = imgH;
@@ -1397,7 +1565,6 @@
                     const sCellW = sCropW / cols;
                     const sCellH = sCropH / rows;
 
-                    // 生成稳定的随机种子并筛选随机替换的方块
                     let seed = 0;
                     for (let i = 0; i < imgData.id.length; i++) seed += imgData.id.charCodeAt(i);
                     const random = () => { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
@@ -1407,7 +1574,6 @@
                     for (let r = 0; r < rows; r++) {
                         for (let c = 0; c < cols; c++) {
                             cellMap.push({ c, r, sc: c, sr: r });
-                            // 随机抽取大约 30% 的格子进行互换打散
                             if (random() > 0.7) {
                                 swapCandidates.push({ c, r });
                             }
@@ -1427,7 +1593,6 @@
                     });
 
                     drawLogic = (scale) => {
-                        // 1. 绘制白色相纸底色
                         ctx.fillStyle = '#ffffff';
                         ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
 
@@ -1437,17 +1602,15 @@
 
                         const fImg = this.getFilteredImage(imgData, imgW, imgH, bwAmount, invertAmount);
 
-                        // 2. 绘制打散的图片切块
                         cellMap.forEach(cell => {
                             const srcX = sCropX + cell.sc * sCellW;
                             const srcY = sCropY + cell.sr * sCellH;
                             const destX = gridStartX + cell.c * dCellSize;
                             const destY = gridStartY + cell.r * dCellSize;
 
-                            ctx.drawImage(fImg, srcX, srcY, sCellW, sCellH, destX, destY, dCellSize + 1, dCellSize + 1); // +1 防止抗锯齿缝隙
+                            ctx.drawImage(fImg, srcX, srcY, sCellW, sCellH, destX, destY, dCellSize + 1, dCellSize + 1);
                         });
 
-                        // 3. 绘制清晰的白色网格线
                         ctx.strokeStyle = '#ffffff';
                         ctx.lineWidth = Math.max(1.5, 3 * scale);
                         ctx.beginPath();
@@ -1461,33 +1624,28 @@
                         }
                         ctx.stroke();
 
-                        // 4. 海报文字排版 (基于网格实际大小做自适应比例)
                         if (matMultiplier > 0.3) {
                             const bY = gridStartY + gridH * scale + (padBot * scale * 0.2);
-                            const bFont = dCellSize * 0.25; // 根据单格尺寸定义基准字体大小
+                            const bFont = dCellSize * 0.25; 
 
                             ctx.fillStyle = '#2d2d2d';
                             ctx.textAlign = 'left';
                             ctx.textBaseline = 'top';
 
-                            // 标题
                             ctx.font = `800 ${bFont * 2.5}px "Inter", sans-serif`;
                             try { ctx.letterSpacing = '-0.02em'; } catch(e){}
                             ctx.fillText((textLeft || 'GRID MOSAIC ART').toUpperCase(), gridStartX, bY);
                             try { ctx.letterSpacing = '0px'; } catch(e){}
 
-                            // 相机/胶卷等小字细节
                             ctx.font = `500 ${bFont * 0.65}px "JetBrains Mono", monospace`;
                             ctx.fillStyle = '#737373';
                             ctx.fillText(`C:${cols} R:${rows} / RETRO COLLAGE / ${exifParams || 'ANALOG PROCESS'}`, gridStartX, bY + bFont * 3.2);
 
-                            // 右侧版权
                             ctx.textAlign = 'right';
                             ctx.font = `500 ${bFont * 0.8}px "Inter", sans-serif`;
                             ctx.fillStyle = '#404040';
                             ctx.fillText(textRight || '© XIANGEDITION', gridStartX + gridW * scale, bY + bFont * 2.8);
                             
-                            // 装饰细线
                             ctx.strokeStyle = '#d4d4d8';
                             ctx.lineWidth = 1 * scale;
                             ctx.beginPath();
@@ -2009,7 +2167,7 @@
                                 const pH = sEdge * 0.025;
                                 let startX = iX + iW - (pW * imgData.palette.length);
                                 imgData.palette.forEach((color, idx) => {
-                                    ctx.fillStyle = color;
+                                    ctx.fillStyle = color.rgbStr ? color.rgbStr : color; 
                                     ctx.fillRect(startX + (idx * pW), bY + bFont * 0.2, pW, pH);
                                 });
                             }
@@ -2183,8 +2341,7 @@
                 this.state.isProcessing = true;
                 this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
                 
-                // You can add grid_mosaic to batch export if preferred. Keeping it lightweight for now.
-                const stylesToGen = ['museum', 'framed', 'exif_palette', 'exif_minimal']; 
+                const stylesToGen = ['museum', 'framed', 'exif_palette', 'exif_minimal', 'immersive_color']; 
                 const totalTasks = this.state.images.length * stylesToGen.length; 
                 let currentTask = 0;
                 
