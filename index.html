@@ -7,17 +7,15 @@
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='1.5' stroke-linecap='square' stroke-linejoin='miter'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3C/svg%3E">
 
-    <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -58,7 +56,7 @@
             transition: background-color 0.5s ease;
         }
 
-        /* Canvas Animation (Subtle Opacity Fade Only, No Scale/Blur Flashing) */
+        /* Canvas Animation */
         #previewCanvas {
             max-width: 100%;
             max-height: 100%;
@@ -162,54 +160,34 @@
         /* Negative Invert Button Custom Style */
         .btn-invert {
             background-color: #ffffff;
-            color: #52525b; /* Default gray */
+            color: #52525b;
             border-color: #e5e7eb;
         }
         .btn-invert:hover {
             background-color: #111;
-            color: #ea580c; /* Orange tint simulating negative mask */
+            color: #ea580c;
             border-color: #111;
         }
         .btn-invert.active-invert {
             background-color: #111;
-            color: #facc15; /* Kodak yellow for active state */
+            color: #facc15;
             border-color: #111;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* Drag Overlay */
-        .drag-overlay {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(8px);
+        /* Overlays & Loaders */
+        .drag-overlay, .global-loader {
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-        body.drag-active .drag-overlay {
-            opacity: 1;
-            pointer-events: all;
-            z-index: 100;
-        }
-
-        /* Global Loader */
-        .global-loader {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(4px);
-        }
-        .global-loader.active {
-            opacity: 1;
-            pointer-events: all;
-            z-index: 90;
-        }
+        .drag-overlay { background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); }
+        body.drag-active .drag-overlay { opacity: 1; pointer-events: all; z-index: 100; }
+        .global-loader { background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); }
+        .global-loader.active { opacity: 1; pointer-events: all; z-index: 90; }
 
         @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .toast { animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 
-    <!-- Microsoft Clarity Tracking (异步加载，不阻塞页面渲染) -->
     <script type="text/javascript">
         (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -239,7 +217,7 @@
         </div>
     </div>
 
-    <!-- Header (Thinner on mobile) -->
+    <!-- Header -->
     <header class="bg-white border-b border-zinc-200 h-12 md:h-14 flex items-center justify-between px-3 md:px-6 shrink-0 z-30">
         <div class="flex items-center gap-2 md:gap-3">
             <div class="w-5 h-5 md:w-6 md:h-6 bg-black text-white flex items-center justify-center rounded-sm shadow-sm">
@@ -269,7 +247,7 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
         
-        <!-- Sidebar Gallery (Thinner on mobile) -->
+        <!-- Sidebar Gallery -->
         <aside class="w-full h-[64px] md:w-24 md:h-full border-b md:border-b-0 md:border-r border-zinc-200 bg-zinc-50 flex md:flex-col shrink-0 z-20 overflow-hidden relative">
             <div class="hidden md:block p-3 text-[10px] tracking-widest text-zinc-400 text-center uppercase border-b border-zinc-200 bg-zinc-50 z-10 shadow-sm">
                 Gallery
@@ -299,7 +277,7 @@
             </div>
         </section>
 
-        <!-- Control Panel (Tabbed UI for Mobile Optimization) -->
+        <!-- Control Panel -->
         <aside class="w-full h-[40vh] md:h-full md:w-[320px] lg:w-[340px] bg-white border-t md:border-t-0 md:border-l border-zinc-200 flex flex-col shrink-0 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] md:shadow-[-10px_0_20px_rgba(0,0,0,0.02)]">
             
             <!-- Panel Header & Tabs -->
@@ -327,7 +305,6 @@
                         <span class="text-[9px] text-zinc-400 uppercase tracking-widest font-semibold">Artist Series</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2" id="styleGroup">
-                        <!-- EXIF Default -->
                         <button class="style-btn active" data-style="exif">
                             <i data-lucide="align-left" class="w-4 h-4 icon-wrapper pointer-events-none"></i>
                             <span class="title pointer-events-none">EXIF 原生</span>
@@ -342,6 +319,18 @@
                             <i data-lucide="minimize" class="w-4 h-4 icon-wrapper pointer-events-none"></i>
                             <span class="title pointer-events-none">极简对角</span>
                             <span class="subtext pointer-events-none">Diagonal Min</span>
+                        </button>
+
+                        <!-- NEW AVANT-GARDE SECTION -->
+                        <div class="col-span-2 mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between">
+                            <span class="text-[9px] text-zinc-400 uppercase tracking-widest font-semibold">Avant-Garde</span>
+                        </div>
+                        <!-- NEW GRID MOSAIC TEMPLATE -->
+                        <button class="style-btn col-span-2 relative overflow-hidden" data-style="grid_mosaic">
+                            <div class="absolute inset-0 bg-gradient-to-br from-zinc-50 to-zinc-100 opacity-50 z-0"></div>
+                            <i data-lucide="layout-grid" class="w-4 h-4 icon-wrapper pointer-events-none relative z-10 text-zinc-800"></i>
+                            <span class="title pointer-events-none relative z-10">复古网格拼贴</span>
+                            <span class="subtext pointer-events-none relative z-10">Retro Grid Mosaic Poster</span>
                         </button>
 
                         <div class="col-span-2 mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between">
@@ -398,7 +387,6 @@
                 <!-- TAB 2: ADJUSTMENTS -->
                 <div id="tab-adjust" class="tab-pane hidden p-4 space-y-6">
                     
-                    <!-- Parametrics (Margin, Shadow) -->
                     <section id="section-layout" class="space-y-4">
                         <div id="ctrl-margin">
                             <div class="flex justify-between items-center mb-1.5">
@@ -416,11 +404,9 @@
                         </div>
                     </section>
 
-                    <!-- Film Laboratory (Toggles & Grain) -->
                     <section id="section-film" class="space-y-4 bg-orange-50/50 p-3 rounded-lg border border-orange-100" style="display: none;">
                         <h3 class="text-[10px] md:text-[11px] font-medium text-orange-700 uppercase tracking-widest mb-1">Film Laboratory</h3>
                         
-                        <!-- Filter Buttons (Replaces previous sliders) -->
                         <div class="flex gap-2">
                             <button id="btnToggleBW" class="filter-btn flex-1 py-2.5 rounded-md border border-zinc-200 text-[11px] font-medium flex items-center justify-center gap-1.5 text-zinc-600 bg-white hover:bg-zinc-50 shadow-sm">
                                 <i data-lucide="contrast" class="w-3.5 h-3.5"></i> 黑白滤镜
@@ -439,7 +425,6 @@
                         </div>
                     </section>
 
-                    <!-- Materials -->
                     <section id="section-materials">
                         <div class="flex gap-4 p-3 bg-zinc-50 rounded-lg border border-zinc-100">
                             <div class="flex-1" id="ctrl-wall">
@@ -466,10 +451,10 @@
                 <div id="tab-metadata" class="tab-pane hidden p-4 space-y-4">
                     <div class="space-y-3">
                         <div>
-                            <input type="text" id="inputLeft" class="input-elegant text-[11px] font-sans" placeholder="画框展签(左) / 作品标题">
+                            <input type="text" id="inputLeft" class="input-elegant text-[11px] font-sans" placeholder="作品标题 (用于排版)">
                         </div>
                         <div>
-                            <input type="text" id="inputRight" class="input-elegant text-[11px] font-sans" placeholder="画框展签(右) 如: © CHIXIANG">
+                            <input type="text" id="inputRight" class="input-elegant text-[11px] font-sans" placeholder="版权/展签 如: © CHIXIANG">
                         </div>
                         <div class="pt-3 border-t border-zinc-100 relative group">
                             <i data-lucide="camera" class="w-3.5 h-3.5 absolute right-2.5 top-6 text-zinc-300 transition-colors group-hover:text-black"></i>
@@ -538,9 +523,8 @@
                 };
                 this.OUTPUT_MAX_DIMENSION = 4500; 
                 this.isRendering = false; 
-                this.animationFrames = {}; // For tween animations
+                this.animationFrames = {}; 
                 
-                // Track hitboxes for canvas drag and drop
                 this.hitboxes = [];
                 this.dragInfo = { active: false, id: null, offsetX: 0, offsetY: 0, currX: 0, currY: 0 };
 
@@ -620,13 +604,12 @@
                 });
             }
 
-            // --- 精密动画引擎：无闪烁渐变 ---
             animateFilter(key, targetValue) {
                 if (this.animationFrames[key]) cancelAnimationFrame(this.animationFrames[key]);
                 
                 const startValue = this.state.settings[key];
                 const startTime = performance.now();
-                const duration = 250; // 250ms fade
+                const duration = 250; 
 
                 const animate = (now) => {
                     const elapsed = now - startTime;
@@ -634,7 +617,7 @@
                     const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
                     
                     this.state.settings[key] = startValue + (targetValue - startValue) * ease;
-                    this.renderPreview(false); // NO FLICKER
+                    this.renderPreview(false); 
 
                     if (progress < 1) {
                         this.animationFrames[key] = requestAnimationFrame(animate);
@@ -649,7 +632,6 @@
                 
                 const body = document.body;
                 
-                // DRAG & DROP FOR FILE IMPORT (Isolating from thumbnail dragging)
                 body.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     if (e.dataTransfer.types.includes('Files')) {
@@ -719,7 +701,7 @@
                     });
                 });
 
-                // Toggles (Smooth Transition)
+                // Toggles
                 this.dom.btnToggleBW.addEventListener('click', () => {
                     const isBW = this.state.settings.bwAmount === 1;
                     this.animateFilter('bwAmount', isBW ? 0 : 1);
@@ -781,7 +763,7 @@
                 this.dom.btnDownloadCurrent.addEventListener('click', () => this.downloadCurrent());
                 this.dom.btnDownloadAll.addEventListener('click', () => this.downloadAll());
 
-                // --- CANVAS DRAG & DROP ---
+                // --- CANVAS DRAG & DROP (for film strip) ---
                 const cvs = this.dom.previewCanvas;
                 
                 const getCoords = (e) => {
@@ -997,11 +979,11 @@
                         let params = [focal, fnumber, exposure, iso].filter(Boolean).join(' ');
                         if (!params) params = '50MM F2.8 1/100S ISO250';
 
-                        let dateStr = 'PHOTOGRAPHED IN : JUN 20, 2026, 3:39 PM';
+                        let dateStr = 'PHOTOGRAPHED IN : JUN 20, 2026';
                         if (exifData?.DateTimeOriginal) {
                             try {
                                 const d = new Date(exifData.DateTimeOriginal);
-                                const options = { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+                                const options = { month: 'short', day: 'numeric', year: 'numeric' };
                                 dateStr = 'PHOTOGRAPHED IN : ' + d.toLocaleDateString('en-US', options).toUpperCase();
                             } catch(e) {}
                         }
@@ -1130,11 +1112,10 @@
                 this.renderPreview(animate);
             }
 
-            // Contextual UI Visibility Logic
             updateControlsVisibility(style) {
                 const isFilm = style.startsWith('film');
                 const isGallery = ['framed', 'museum', 'floating', 'polaroid'].includes(style);
-                const isArtist = ['exif', 'exif_palette', 'exif_minimal'].includes(style);
+                const isArtist = ['exif', 'exif_palette', 'exif_minimal', 'grid_mosaic'].includes(style);
 
                 const secLayout = document.getElementById('section-layout');
                 const ctrlMargin = document.getElementById('ctrl-margin');
@@ -1205,11 +1186,9 @@
                 }
             }
 
-            // --- ULTRA FAST PIXEL MANIPULATION (SAFARI FIX) ---
             getFilteredImage(imgDataObj, w, h, bwAmount, invertAmount) {
                 if (bwAmount === 0 && invertAmount === 0) return imgDataObj.imgObj;
 
-                // Use exactly the required render size for hyper-speed processing
                 const rw = Math.max(1, Math.round(w));
                 const rh = Math.max(1, Math.round(h));
                 
@@ -1223,7 +1202,6 @@
                 canvas.height = rh;
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
                 
-                // Draw downscaled or exact sized
                 ctx.drawImage(imgDataObj.imgObj, 0, 0, rw, rh);
 
                 const imgPixels = ctx.getImageData(0, 0, rw, rh);
@@ -1250,7 +1228,6 @@
 
                 ctx.putImageData(imgPixels, 0, 0);
 
-                // Free up previous cache memory to assist GC
                 if (imgDataObj.filterCache && imgDataObj.filterCache.canvas) {
                     imgDataObj.filterCache.canvas.width = 0;
                     imgDataObj.filterCache.canvas.height = 0;
@@ -1290,6 +1267,7 @@
                 }
 
                 if (style === 'unframed') {
+                    // (Logic preserved from original unframed)
                     const pad = imgW * 0.1 * matMultiplier;
                     sceneW = imgW + pad * 2 + wallPaddingX * 2;
                     sceneH = imgH + pad * 2 + wallPaddingY * 2;
@@ -1374,6 +1352,149 @@
                         ctx.drawImage(fImg, iX, iY, iW, iH);
                         
                         ctx.strokeStyle = `rgba(0,0,0,${0.05 * shadowMultiplier})`; ctx.lineWidth = shortEdge * 0.002 * scale; ctx.strokeRect(iX, iY, imgW * scale, imgH * scale);
+                    };
+
+                } else if (style === 'grid_mosaic') {
+                    wallPaddingX = 0; wallPaddingY = 0;
+                    
+                    // 根据图片比例动态计算网格数量
+                    const targetShortCells = 10; // 固定短边为10格
+                    let cols, rows;
+                    if (imgW < imgH) {
+                        cols = targetShortCells;
+                        rows = Math.max(1, Math.round(cols * (imgH / imgW)));
+                    } else {
+                        rows = targetShortCells;
+                        cols = Math.max(1, Math.round(rows * (imgW / imgH)));
+                    }
+
+                    const baseCellSize = 200; // 网格基础内部渲染分辨率
+                    const gridW = cols * baseCellSize;
+                    const gridH = rows * baseCellSize;
+
+                    // 边缘纸张留白 (依据短边长度固定留白比例，适应全景图)
+                    const referenceEdge = targetShortCells * baseCellSize; 
+                    const padX = referenceEdge * 0.12 * matMultiplier;
+                    const padTop = referenceEdge * 0.12 * matMultiplier;
+                    const padBot = referenceEdge * 0.35 * matMultiplier;
+
+                    sceneW = gridW + padX * 2;
+                    sceneH = gridH + padTop + padBot;
+
+                    // 为了确保方形网格，进行极细微的裁切匹配
+                    const targetRatio = cols / rows;
+                    const imgRatio = imgW / imgH;
+                    let sCropX = 0, sCropY = 0, sCropW = imgW, sCropH = imgH;
+
+                    if (imgRatio > targetRatio) {
+                        sCropW = imgH * targetRatio;
+                        sCropX = (imgW - sCropW) / 2;
+                    } else {
+                        sCropH = imgW / targetRatio;
+                        sCropY = (imgH - sCropH) / 2;
+                    }
+
+                    const sCellW = sCropW / cols;
+                    const sCellH = sCropH / rows;
+
+                    // 生成稳定的随机种子并筛选随机替换的方块
+                    let seed = 0;
+                    for (let i = 0; i < imgData.id.length; i++) seed += imgData.id.charCodeAt(i);
+                    const random = () => { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
+
+                    const cellMap = [];
+                    const swapCandidates = [];
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            cellMap.push({ c, r, sc: c, sr: r });
+                            // 随机抽取大约 30% 的格子进行互换打散
+                            if (random() > 0.7) {
+                                swapCandidates.push({ c, r });
+                            }
+                        }
+                    }
+
+                    const shuffledSources = [...swapCandidates];
+                    for (let i = shuffledSources.length - 1; i > 0; i--) {
+                        const j = Math.floor(random() * (i + 1));
+                        [shuffledSources[i], shuffledSources[j]] = [shuffledSources[j], shuffledSources[i]];
+                    }
+
+                    swapCandidates.forEach((cell, index) => {
+                        const mapIndex = cell.r * cols + cell.c;
+                        cellMap[mapIndex].sc = shuffledSources[index].c;
+                        cellMap[mapIndex].sr = shuffledSources[index].r;
+                    });
+
+                    drawLogic = (scale) => {
+                        // 1. 绘制白色相纸底色
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
+
+                        const gridStartX = padX * scale;
+                        const gridStartY = padTop * scale;
+                        const dCellSize = baseCellSize * scale;
+
+                        const fImg = this.getFilteredImage(imgData, imgW, imgH, bwAmount, invertAmount);
+
+                        // 2. 绘制打散的图片切块
+                        cellMap.forEach(cell => {
+                            const srcX = sCropX + cell.sc * sCellW;
+                            const srcY = sCropY + cell.sr * sCellH;
+                            const destX = gridStartX + cell.c * dCellSize;
+                            const destY = gridStartY + cell.r * dCellSize;
+
+                            ctx.drawImage(fImg, srcX, srcY, sCellW, sCellH, destX, destY, dCellSize + 1, dCellSize + 1); // +1 防止抗锯齿缝隙
+                        });
+
+                        // 3. 绘制清晰的白色网格线
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = Math.max(1.5, 3 * scale);
+                        ctx.beginPath();
+                        for (let c = 0; c <= cols; c++) {
+                            ctx.moveTo(gridStartX + c * dCellSize, gridStartY);
+                            ctx.lineTo(gridStartX + c * dCellSize, gridStartY + gridH * scale);
+                        }
+                        for (let r = 0; r <= rows; r++) {
+                            ctx.moveTo(gridStartX, gridStartY + r * dCellSize);
+                            ctx.lineTo(gridStartX + gridW * scale, gridStartY + r * dCellSize);
+                        }
+                        ctx.stroke();
+
+                        // 4. 海报文字排版 (基于网格实际大小做自适应比例)
+                        if (matMultiplier > 0.3) {
+                            const bY = gridStartY + gridH * scale + (padBot * scale * 0.2);
+                            const bFont = dCellSize * 0.25; // 根据单格尺寸定义基准字体大小
+
+                            ctx.fillStyle = '#2d2d2d';
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'top';
+
+                            // 标题
+                            ctx.font = `800 ${bFont * 2.5}px "Inter", sans-serif`;
+                            try { ctx.letterSpacing = '-0.02em'; } catch(e){}
+                            ctx.fillText((textLeft || 'GRID MOSAIC ART').toUpperCase(), gridStartX, bY);
+                            try { ctx.letterSpacing = '0px'; } catch(e){}
+
+                            // 相机/胶卷等小字细节
+                            ctx.font = `500 ${bFont * 0.65}px "JetBrains Mono", monospace`;
+                            ctx.fillStyle = '#737373';
+                            ctx.fillText(`C:${cols} R:${rows} / RETRO COLLAGE / ${exifParams || 'ANALOG PROCESS'}`, gridStartX, bY + bFont * 3.2);
+
+                            // 右侧版权
+                            ctx.textAlign = 'right';
+                            ctx.font = `500 ${bFont * 0.8}px "Inter", sans-serif`;
+                            ctx.fillStyle = '#404040';
+                            ctx.fillText(textRight || '© CHIXIANG EDITION', gridStartX + gridW * scale, bY + bFont * 2.8);
+                            
+                            // 装饰细线
+                            ctx.strokeStyle = '#d4d4d8';
+                            ctx.lineWidth = 1 * scale;
+                            ctx.beginPath();
+                            ctx.moveTo(gridStartX, bY - (padBot * scale * 0.12));
+                            ctx.lineTo(gridStartX + gridW * scale, bY - (padBot * scale * 0.12));
+                            ctx.stroke();
+                        }
                     };
 
                 } else if (style === 'exif') {
@@ -1500,7 +1621,6 @@
                     const whitePadX = baseH * 0.1 * matMultiplier;
                     const whitePadY = baseH * 0.1 * matMultiplier;
 
-                    // 彻底移除外层墙面背景留白
                     sceneW = blackW + whitePadX * 2;
                     sceneH = baseH + whitePadY * 2;
 
@@ -1510,7 +1630,6 @@
                         const sBlackW = blackW * scale;
                         const sBaseH = baseH * scale;
 
-                        // 1. 直接绘制白色扫描纸底，不再调用 drawBackground()
                         ctx.fillStyle = '#f9f9f9'; 
                         ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
 
@@ -1581,7 +1700,6 @@
                     const whitePadX = baseH * 0.1 * matMultiplier;
                     const whitePadY = baseH * 0.12 * matMultiplier;
 
-                    // 彻底移除外层墙面背景留白
                     sceneW = targetImgW + blackBorderT * 2 + whitePadX * 2;
                     sceneH = targetImgH + blackBorderT * 2 + whitePadY * 2;
 
@@ -1593,7 +1711,6 @@
                         const sImgW = targetImgW * scale;
                         const sImgH = targetImgH * scale;
 
-                        // 1. 直接绘制宽大白色相纸，不再调用 drawBackground()
                         ctx.fillStyle = '#fcfcfc'; 
                         ctx.fillRect(pX, pY, pW, pH);
 
@@ -2066,6 +2183,7 @@
                 this.state.isProcessing = true;
                 this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
                 
+                // You can add grid_mosaic to batch export if preferred. Keeping it lightweight for now.
                 const stylesToGen = ['museum', 'framed', 'exif_palette', 'exif_minimal']; 
                 const totalTasks = this.state.images.length * stylesToGen.length; 
                 let currentTask = 0;
