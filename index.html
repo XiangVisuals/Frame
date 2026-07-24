@@ -248,11 +248,18 @@
                                 <div class="col-span-2 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
                                     <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Gallery Formats</span>
                                 </div>
+                                
+                                <button class="style-btn" data-style="minimal_line">
+                                    <i class="fa-regular fa-square w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
+                                    <span class="title pointer-events-none">极简细线留白</span>
+                                    <span class="subtext pointer-events-none">Fine Art Line</span>
+                                </button>
                                 <button class="style-btn" data-style="framed">
                                     <i class="fa-solid fa-image-portrait w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
                                     <span class="title pointer-events-none">经典画框</span>
                                     <span class="subtext pointer-events-none">Classic</span>
                                 </button>
+                                
                                 <button class="style-btn" data-style="museum">
                                     <i class="fa-solid fa-chess-board w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
                                     <span class="title pointer-events-none">美术馆卡纸</span>
@@ -263,7 +270,7 @@
                                     <span class="title pointer-events-none">悬浮装裱</span>
                                     <span class="subtext pointer-events-none">Floating</span>
                                 </button>
-                                <button class="style-btn" data-style="polaroid">
+                                <button class="style-btn col-span-2" data-style="polaroid">
                                     <i class="fa-solid fa-camera w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
                                     <span class="title pointer-events-none">复古拍立得</span>
                                     <span class="subtext pointer-events-none">Polaroid</span>
@@ -1068,7 +1075,8 @@
             updateControlsVisibility(style) {
                 const isFilm = style.startsWith('film');
                 const isGallery = ['framed', 'museum', 'floating', 'polaroid'].includes(style);
-                const isArtist = ['exif', 'exif_palette', 'exif_minimal', 'grid_mosaic', 'immersive_color'].includes(style);
+                // Added minimal_line to isArtist so it has margin controls but no shadow/frame materials
+                const isArtist = ['exif', 'exif_palette', 'exif_minimal', 'grid_mosaic', 'immersive_color', 'minimal_line'].includes(style); 
 
                 const secLayout = document.getElementById('section-layout');
                 const ctrlMargin = document.getElementById('ctrl-margin');
@@ -1175,7 +1183,40 @@
                     } else { ctx.fillStyle = frameColor; }
                 }
 
-                if (style === 'unframed') {
+                if (style === 'minimal_line') {
+                    wallPaddingX = 0; wallPaddingY = 0;
+                    
+                    // Reference image has large top/bottom margins, smaller side margins to create a fine art print vibe
+                    const padX = shortEdge * 0.15 * matMultiplier;
+                    const padTop = shortEdge * 0.25 * matMultiplier;
+                    const padBot = shortEdge * 0.35 * matMultiplier; // Bottom is slightly heavier
+
+                    sceneW = imgW + padX * 2;
+                    sceneH = imgH + padTop + padBot;
+
+                    drawLogic = (scale) => {
+                        // 1. Pristine White Background
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
+
+                        const iX = padX * scale;
+                        const iY = padTop * scale;
+                        const iW = imgW * scale;
+                        const iH = imgH * scale;
+
+                        // 2. Image
+                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
+                        ctx.drawImage(fImg, iX, iY, iW, iH);
+
+                        // 3. Ultra-thin elegant black border hugging the image
+                        ctx.strokeStyle = '#000000';
+                        ctx.lineWidth = Math.max(1.5, shortEdge * 0.002 * scale);
+                        ctx.strokeRect(iX, iY, iW, iH);
+                        
+                        // Note: Deliberately omitted text rendering to perfectly match the reference image's purity.
+                    };
+
+                } else if (style === 'unframed') {
                     const pad = imgW * 0.1 * matMultiplier;
                     sceneW = imgW + pad * 2 + wallPaddingX * 2; sceneH = imgH + pad * 2 + wallPaddingY * 2;
                     drawLogic = (scale) => {
@@ -1787,7 +1828,8 @@
                 this.state.isProcessing = true;
                 this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
                 
-                const stylesToGen = ['museum', 'framed', 'exif_palette', 'exif_minimal', 'immersive_color']; 
+                // Added 'minimal_line' to batch generation
+                const stylesToGen = ['minimal_line', 'museum', 'framed', 'exif_palette', 'exif_minimal', 'immersive_color']; 
                 const totalTasks = this.state.images.length * stylesToGen.length; 
                 let currentTask = 0;
                 
