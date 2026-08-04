@@ -15,7 +15,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -25,6 +25,7 @@
                         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
                         serif: ['"Noto Serif SC"', 'Georgia', 'serif'],
                         mono: ['"JetBrains Mono"', 'monospace'],
+                        courier: ['"Courier Prime"', 'monospace']
                     },
                     colors: {
                         brand: { 50: '#eef2ff', 100: '#e0e7ff', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
@@ -210,8 +211,8 @@
                                 <button class="style-btn col-span-2 relative overflow-hidden" data-style="immersive_color">
                                     <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-blue-50 opacity-50 z-0"></div>
                                     <i class="fa-solid fa-droplet w-4 h-4 icon-wrapper pointer-events-none relative z-10 text-indigo-500"></i>
-                                    <span class="title pointer-events-none relative z-10">沉浸主色卡 (Pantone色系)</span>
-                                    <span class="subtext pointer-events-none relative z-10">Immersive Color Palette</span>
+                                    <span class="title pointer-events-none relative z-10">沉浸主色卡 (渐变背景)</span>
+                                    <span class="subtext pointer-events-none relative z-10">Immersive Color Gradient</span>
                                 </button>
                                 <button class="style-btn col-span-2 relative overflow-hidden" data-style="grid_mosaic">
                                     <div class="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 opacity-50 z-0"></div>
@@ -352,16 +353,24 @@
                                     <input type="text" id="inputExifTime" class="input-elegant text-[11px] font-mono pr-8" placeholder="时间 (如: 8:40 PM)">
                                 </div>
                                 <div class="relative group">
+                                    <i class="fa-solid fa-location-dot w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
+                                    <input type="text" id="inputLocation" class="input-elegant text-[11px] font-mono pr-8" placeholder="坐标 (如: 35°39'10&quot;N 139°42'55&quot;E)">
+                                </div>
+                                <div class="relative group">
                                     <i class="fa-solid fa-camera w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
                                     <input type="text" id="inputExifCamera" class="input-elegant text-[11px] font-mono pr-8" placeholder="相机与型号 (如: SONY ILCE-7RM3A)">
                                 </div>
                                 <div class="relative group">
+                                    <i class="fa-solid fa-camera w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
+                                    <input type="text" id="inputExifCamera" class="input-elegant text-[11px] font-mono pr-8" placeholder="设备 (如: NORITSU KOKI EZ Controller)">
+                                </div>
+                                <div class="relative group">
                                     <i class="fa-solid fa-camera-retro w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
-                                    <input type="text" id="inputExifLens" class="input-elegant text-[11px] font-mono pr-8" placeholder="镜头 (如: E 50-400MM F4.5-6.3)">
+                                    <input type="text" id="inputExifLens" class="input-elegant text-[11px] font-mono pr-8" placeholder="焦距 (如: 24mm)">
                                 </div>
                                 <div class="relative group">
                                     <i class="fa-solid fa-sliders w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
-                                    <input type="text" id="inputExifParams" class="input-elegant text-[11px] font-mono pr-8" placeholder="参数 (如: 16MM F2.8 1/100S ISO250)">
+                                    <input type="text" id="inputExifParams" class="input-elegant text-[11px] font-mono pr-8" placeholder="参数 (如: f/2.8 1/125s ISO 400)">
                                 </div>
                                 <div class="relative group">
                                     <i class="fa-solid fa-film w-3.5 h-3.5 absolute right-3 top-3 text-orange-400"></i>
@@ -503,6 +512,7 @@
                     inputLeft: document.getElementById('inputLeft'),
                     inputRight: document.getElementById('inputRight'),
                     inputExifTime: document.getElementById('inputExifTime'),
+                    inputLocation: document.getElementById('inputLocation'),
                     inputExifCamera: document.getElementById('inputExifCamera'),
                     inputExifLens: document.getElementById('inputExifLens'),
                     inputExifParams: document.getElementById('inputExifParams'),
@@ -742,6 +752,7 @@
                 this.dom.inputLeft.addEventListener('input', (e) => textInputHandler('textLeft', e.target.value));
                 this.dom.inputRight.addEventListener('input', (e) => textInputHandler('textRight', e.target.value));
                 this.dom.inputExifTime.addEventListener('input', (e) => textInputHandler('exifTime', e.target.value));
+                this.dom.inputLocation.addEventListener('input', (e) => textInputHandler('location', e.target.value));
                 this.dom.inputExifCamera.addEventListener('input', (e) => textInputHandler('exifCamera', e.target.value));
                 this.dom.inputExifLens.addEventListener('input', (e) => textInputHandler('exifLens', e.target.value));
                 this.dom.inputExifParams.addEventListener('input', (e) => textInputHandler('exifParams', e.target.value));
@@ -753,7 +764,7 @@
                     if (!activeImg) return;
                     this.state.images.forEach(img => {
                         img.textLeft = activeImg.textLeft; img.textRight = activeImg.textRight;
-                        img.exifTime = activeImg.exifTime; img.exifCamera = activeImg.exifCamera;
+                        img.exifTime = activeImg.exifTime; img.location = activeImg.location; img.exifCamera = activeImg.exifCamera;
                         img.exifLens = activeImg.exifLens; img.exifParams = activeImg.exifParams; img.filmName = activeImg.filmName;
                     });
                     this.showToast('元数据已同步至所有图片', 'success');
@@ -932,25 +943,38 @@
                             let make = exifData.Make || ''; let model = exifData.Model || '';
                             if (model.toUpperCase().startsWith(make.toUpperCase())) { camera = model.toUpperCase(); } 
                             else { camera = `${make} ${model}`.trim().toUpperCase(); }
-                        }
+                        } // 修复：补充缺失的闭合括号
 
-                        let lens = exifData?.LensModel ? exifData.LensModel.toUpperCase() : 'STANDARD LENS';
-                        let focal = exifData?.FocalLength ? `${parseFloat(Number(exifData.FocalLength).toFixed(1))}MM` : '';
-                        let fnumber = exifData?.FNumber ? `F${parseFloat(Number(exifData.FNumber).toFixed(1))}` : '';
+                        // 修复：确保所有摄影参数变量正确初始化
+                        let lens = exifData?.LensModel ? exifData.LensModel.toUpperCase() : '24MM';
+                        let focal = exifData?.FocalLength ? `${parseFloat(Number(exifData.FocalLength).toFixed(1))}mm` : '24mm';
+                        let fnumber = exifData?.FNumber ? `f/${parseFloat(Number(exifData.FNumber).toFixed(1))}` : 'f/2.8';
                         let exposure = '';
-                        if (exifData?.ExposureTime) { exposure = exifData.ExposureTime >= 1 ? `${exifData.ExposureTime}S` : `1/${Math.round(1/exifData.ExposureTime)}S`; }
-                        let iso = exifData?.ISO ? `ISO${exifData.ISO}` : '';
-                        let params = [focal, fnumber, exposure, iso].filter(Boolean).join(' ');
-                        if (!params) params = '50MM F2.8 1/100S ISO250';
+                        if (exifData?.ExposureTime) { exposure = exifData.ExposureTime >= 1 ? `${exifData.ExposureTime}s` : `1/${Math.round(1/exifData.ExposureTime)}s`; }
+                        else { exposure = '1/125s'; }
+                        let iso = exifData?.ISO ? `ISO ${exifData.ISO}` : 'ISO 400';
+                        let params = [focal, fnumber, exposure, iso].filter(Boolean).join('   ');
+                        if (!params || params.trim() === '') params = '24mm   f/2.8   1/125s   ISO 400';
 
-                        let dateStr = 'PHOTOGRAPHED IN : JUN 20, 2026'; let timeStr = '8:40 PM';
+                        let dateStr = 'PHOTOGRAPHED IN : JUN 20, 2026'; let timeStr = '12 Feb 2026';
                         if (exifData?.DateTimeOriginal) {
                             try {
                                 const d = new Date(exifData.DateTimeOriginal);
                                 const options = { month: 'short', day: 'numeric', year: 'numeric' };
                                 dateStr = 'PHOTOGRAPHED IN : ' + d.toLocaleDateString('en-US', options).toUpperCase();
-                                timeStr = d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}).toUpperCase();
+                                timeStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase();
                             } catch(e) {}
+                        }
+
+                        let locationStr = "35° 39' 10\" N    139° 42' 55\" E";
+                        if (exifData?.latitude && exifData?.longitude) {
+                            const formatDMS = (deg, isLat) => {
+                                const d = Math.abs(deg); const degInt = Math.floor(d); const minFloat = (d - degInt) * 60;
+                                const minInt = Math.floor(minFloat); const secInt = Math.round((minFloat - minInt) * 60);
+                                const dir = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W');
+                                return `${degInt}° ${minInt}' ${secInt}" ${dir}`;
+                            };
+                            locationStr = `${formatDMS(exifData.latitude, true)}    ${formatDMS(exifData.longitude, false)}`;
                         }
 
                         const defaultTitle = file.name.split('.')[0].replace(/[-_]/g, ' ').toUpperCase() || 'UNTITLED ARTWORK';
@@ -959,7 +983,7 @@
                         const newImg = {
                             id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
                             file: file, url: url, imgObj: imgObj, width: imgObj.width, height: imgObj.height,
-                            textLeft: defaultTitle, textRight: '© XIANG EDITION', exifTime: timeStr, exifCamera: camera,
+                            textLeft: defaultTitle, textRight: '© XIANG EDITION', exifTime: timeStr, location: locationStr, exifCamera: camera,
                             exifLens: lens, exifParams: params, exifDate: dateStr, filmName: 'FUJIFILM RVP50', palette: palette 
                         };
                         
@@ -1054,7 +1078,7 @@
                 });
 
                 this.dom.inputLeft.value = imgData.textLeft; this.dom.inputRight.value = imgData.textRight;
-                this.dom.inputExifTime.value = imgData.exifTime || ''; this.dom.inputExifCamera.value = imgData.exifCamera;
+                this.dom.inputExifTime.value = imgData.exifTime || ''; this.dom.inputLocation.value = imgData.location || ''; this.dom.inputExifCamera.value = imgData.exifCamera;
                 this.dom.inputExifLens.value = imgData.exifLens; this.dom.inputExifParams.value = imgData.exifParams;
                 this.dom.inputFilmName.value = imgData.filmName;
                 this.dom.imgDimensions.textContent = `${imgData.width} × ${imgData.height}`;
@@ -1186,16 +1210,14 @@
                 if (style === 'minimal_line') {
                     wallPaddingX = 0; wallPaddingY = 0;
                     
-                    // Reference image has large top/bottom margins, smaller side margins to create a fine art print vibe
                     const padX = shortEdge * 0.15 * matMultiplier;
                     const padTop = shortEdge * 0.25 * matMultiplier;
-                    const padBot = shortEdge * 0.35 * matMultiplier; // Bottom is slightly heavier
+                    const padBot = shortEdge * 0.35 * matMultiplier; 
 
                     sceneW = imgW + padX * 2;
                     sceneH = imgH + padTop + padBot;
 
                     drawLogic = (scale) => {
-                        // 1. Pristine White Background
                         ctx.fillStyle = '#ffffff';
                         ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
 
@@ -1204,16 +1226,12 @@
                         const iW = imgW * scale;
                         const iH = imgH * scale;
 
-                        // 2. Image
                         const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
                         ctx.drawImage(fImg, iX, iY, iW, iH);
 
-                        // 3. Ultra-thin elegant black border hugging the image
                         ctx.strokeStyle = '#000000';
                         ctx.lineWidth = Math.max(1.5, shortEdge * 0.002 * scale);
                         ctx.strokeRect(iX, iY, iW, iH);
-                        
-                        // Note: Deliberately omitted text rendering to perfectly match the reference image's purity.
                     };
 
                 } else if (style === 'unframed') {
@@ -1230,59 +1248,70 @@
 
                 } else if (style === 'immersive_color') {
                     wallPaddingX = 0; wallPaddingY = 0;
-                    const topBlockH = imgH * 0.75; 
-                    sceneW = imgW; sceneH = topBlockH + imgH;
+                    const botBlockH = imgH * 0.85; 
+                    sceneW = imgW; sceneH = imgH + botBlockH;
 
                     drawLogic = (scale) => {
-                        const sW = sceneW * scale; const sH = sceneH * scale; const sTopH = topBlockH * scale;
-                        let mainColorHex = '#2c3e50'; let mainColorRgb = {r: 44, g: 62, b: 80};
+                        const sW = sceneW * scale; const sH = sceneH * scale; const sBotH = botBlockH * scale; const sImgH = imgH * scale;
                         
+                        let mainColorRgb = {r: 70, g: 80, b: 70}; 
                         if (imgData.palette && imgData.palette.length > 0) {
-                            mainColorHex = imgData.palette[0].hex; mainColorRgb = { r: imgData.palette[0].r, g: imgData.palette[0].g, b: imgData.palette[0].b };
+                            mainColorRgb = { r: imgData.palette[0].r, g: imgData.palette[0].g, b: imgData.palette[0].b };
                         }
 
-                        const luminance = (0.299*mainColorRgb.r + 0.587*mainColorRgb.g + 0.114*mainColorRgb.b)/255;
-                        const isLightBg = luminance > 0.6;
-                        const mainTextColor = isLightBg ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)';
-                        const subTextColor = isLightBg ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.6)';
-                        const accentTextColor = isLightBg ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.3)';
-
-                        ctx.fillStyle = mainColorHex; ctx.fillRect(0, 0, sW, sTopH);
-                        const fImg = this.getFilteredImage(imgData, imgW * scale, imgH * scale, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, 0, sTopH, imgW * scale, imgH * scale);
-
-                        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
-                        const textCenterX = sW / 2;
-                        const hexFontSize = sW * 0.045; const detailFontSize = sW * 0.012;
-                        const titleFontSize = sW * 0.018; const timeFontSize = sW * 0.011; const metaFontSize = sW * 0.009;
-
-                        const gapHexDetail = hexFontSize * 1.0; const gapDetailTitle = sTopH * 0.12; const gapTitleTime = titleFontSize * 1.6;
-                        const totalBlockHeight = gapHexDetail + gapDetailTitle + gapTitleTime;
-                        const startY = (sTopH * 0.47) - (totalBlockHeight / 2);
-                        const hexY = startY; const detailY = hexY + gapHexDetail; const titleY = detailY + gapDetailTitle; const timeY = titleY + gapTitleTime;
-
-                        ctx.font = `700 ${hexFontSize}px "JetBrains Mono", monospace`; ctx.fillStyle = mainTextColor;
-                        try { ctx.letterSpacing = `${hexFontSize * 0.02}px`; } catch(e){} ctx.fillText(mainColorHex.toUpperCase(), textCenterX, hexY); try { ctx.letterSpacing = '0px'; } catch(e){}
-
-                        const rNorm = mainColorRgb.r / 255; const gNorm = mainColorRgb.g / 255; const bNorm = mainColorRgb.b / 255;
-                        const kValue = Math.min(1 - rNorm, 1 - gNorm, 1 - bNorm);
-                        const cValue = kValue === 1 ? 0 : (1 - rNorm - kValue) / (1 - kValue); const mValue = kValue === 1 ? 0 : (1 - gNorm - kValue) / (1 - kValue); const yValue = kValue === 1 ? 0 : (1 - bNorm - kValue) / (1 - kValue);
-                        const cmykStr = `C${Math.round(cValue*100)} M${Math.round(mValue*100)} Y${Math.round(yValue*100)} K${Math.round(kValue*100)}`;
-                        const rgbStr = `R${mainColorRgb.r} G${mainColorRgb.g} B${mainColorRgb.b}`;
+                        // 调校出更低饱和、稍暗的高级质感底色
+                        const adjustColor = (c, factor) => Math.max(0, Math.min(255, Math.floor(c * factor)));
+                        const r = adjustColor(mainColorRgb.r, 0.65);
+                        const g = adjustColor(mainColorRgb.g, 0.65);
+                        const b = adjustColor(mainColorRgb.b, 0.65);
                         
-                        ctx.font = `500 ${detailFontSize}px "JetBrains Mono", monospace`; ctx.fillStyle = subTextColor;
-                        try { ctx.letterSpacing = `${detailFontSize * 0.15}px`; } catch(e){} ctx.fillText(`${rgbStr}   |   ${cmykStr}`, textCenterX, detailY); try { ctx.letterSpacing = '0px'; } catch(e){}
-
-                        ctx.font = `500 ${titleFontSize}px "Inter", -apple-system, sans-serif`; ctx.fillStyle = mainTextColor;
-                        const titleText = (textLeft || 'UNTITLED ARTWORK').toUpperCase();
-                        try { ctx.letterSpacing = `${titleFontSize * 0.25}px`; } catch(e){} ctx.fillText(titleText, textCenterX, titleY); try { ctx.letterSpacing = '0px'; } catch(e){}
-
-                        ctx.font = `400 ${timeFontSize}px "JetBrains Mono", "Inter", monospace`; ctx.fillStyle = subTextColor;
-                        try { ctx.letterSpacing = `${timeFontSize * 0.15}px`; } catch(e){} ctx.fillText(exifTime || '8:40 PM', textCenterX, timeY); try { ctx.letterSpacing = '0px'; } catch(e){}
+                        // 【核心修复】：先画渐变背景，并使其向上延伸 2 像素至图片下方，消除像素黑边缝隙
+                        const gradient = ctx.createLinearGradient(0, sImgH - 2, 0, sH);
+                        gradient.addColorStop(0, `rgb(${r+20}, ${g+20}, ${b+20})`);
+                        gradient.addColorStop(0.4, `rgb(${r}, ${g}, ${b})`);
+                        gradient.addColorStop(1, `rgb(${Math.max(0, r-15)}, ${Math.max(0, g-15)}, ${Math.max(0, b-15)})`);
                         
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(0, sImgH - 2, sW, sBotH + 2); 
+
+                        // 再绘制图片覆盖上去，确保无缝衔接
+                        const fImg = this.getFilteredImage(imgData, sW, sImgH, bwAmount, invertAmount);
+                        ctx.drawImage(fImg, 0, 0, sW, sImgH);
+
                         if (matMultiplier > 0.4) {
-                            ctx.font = `400 ${metaFontSize}px "JetBrains Mono", monospace`; ctx.fillStyle = accentTextColor;
-                            try { ctx.letterSpacing = `${metaFontSize * 0.25}px`; } catch(e){} ctx.fillText(`COLOR ARCHIVE INDEX: ${imgData.id.split('_')[1] || '001'}`, textCenterX, sTopH - (metaFontSize * 3)); try { ctx.letterSpacing = '0px'; } catch(e){}
+                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
+                            const textCenterX = sW / 2;
+                            
+                            // 极简字号比例
+                            const primaryFontSize = sW * 0.013; 
+                            const secondaryFontSize = sW * 0.011;
+                            
+                            const textCenterY = sImgH + (sBotH * 0.45);
+                            const gap = primaryFontSize * 2.8; // 增加行距提供呼吸感
+
+                            const textColor = 'rgba(255, 255, 255, 0.85)';
+                            const subTextColor = 'rgba(255, 255, 255, 0.6)';
+
+                            // 第一行：坐标 & 日期 (使用无衬线字体，字距拉开)
+                            ctx.font = `400 ${primaryFontSize}px "Inter", sans-serif`; 
+                            ctx.fillStyle = textColor;
+                            const coordStr = imgData.location || "35° 39' 10\" N    139° 42' 55\" E";
+                            const dateStr = imgData.exifTime ? imgData.exifTime : '12 Feb 2026';
+                            
+                            const mainText = `${coordStr}      ${dateStr}`;
+                            
+                            try { ctx.letterSpacing = `${primaryFontSize * 0.15}px`; } catch(e){}
+                            ctx.fillText(mainText, textCenterX, textCenterY - (gap/2)); 
+
+                            // 第二行：精简的拍摄参数 (如 24mm  f/2.8  1/125s  ISO 400)
+                            ctx.font = `400 ${secondaryFontSize}px "Inter", sans-serif`; 
+                            ctx.fillStyle = subTextColor;
+                            
+                            const paramsStr = imgData.exifParams || '24mm   f/2.8   1/125s   ISO 400';
+                            
+                            try { ctx.letterSpacing = `${secondaryFontSize * 0.2}px`; } catch(e){}
+                            ctx.fillText(paramsStr, textCenterX, textCenterY + (gap/2));
+                            try { ctx.letterSpacing = '0px'; } catch(e){}
                         }
                     };
 
