@@ -1,75 +1,76 @@
-# Frame&+框 - 高级排版与相片加框工具 🖼️✨
+<div align="center">
+  
+# 🖼️ XIANG FRAME 2.0
 
-> 一款基于纯前端技术的轻量级、高颜值相片加框与 EXIF 参数排版工具。无需上传任何数据到服务器，保护隐私，瞬间提升你的照片质感。
+**高级画廊与胶片展示生成器**
 
-<!-- 在这里插入项目的 Banner 或主视觉图 -->
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)]()
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)]()
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)]()
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)]()
 
-## 🌟 核心特性 (Features)
+[English](#) | [简体中文](#)
 
-Frame&+框 致力于用最简单的操作，赋予照片最具质感的画廊级展示效果。
+</div>
 
-* **🔒 绝对隐私安全**：所有照片解析、模糊渲染、压缩导出**100% 在本地浏览器完成**，绝不上传云端。
+## 📖 项目简介
 
-* **📷 智能 EXIF 提取**：拖拽照片即可秒速提取设备型号、焦段、光圈、快门速度、ISO 以及 GPS 地理坐标。
+**XIANG FRAME 2.0** 是一款纯前端的高级摄影作品排版与胶片展示生成工具。无需上传任何图片至服务器，所有图像渲染、EXIF 数据解析及色卡提取均在浏览器本地完成，极致保护用户隐私。
 
-* **🎨 三大相框美学**：
+无论您是想要为摄影作品添加极简的画廊级留白，还是想要复刻经典的 35mm / 4x5 大画幅胶片边框，亦或是生成带有动态提取主色调的沉浸式海报，**XIANG FRAME 2.0** 都能一键为您实现。
 
-  * **极简纯白 (Classic)**：经典画廊风格，高级留白。
-
-  * **光学毛玻璃 (Frosted Glass)**：自研「纯数学级像素模糊引擎」，突破移动端性能瓶颈，模拟极致深邃的大光圈弥散光斑。
-
-  * **复古拍立得 (Polaroid)**：拟物化光影与渐变，还原真实相纸质感。
-
-* **📐 黄金比例排版**：支持「居中对称」、「两端对齐」、「紧凑单行」三大排版引擎，无缝匹配各种社交平台（如小红书、Instagram）的爆款风格。
-
-* **🔤 免费商用字体库**：内置 Apple SF Pro、Montserrat、Cinzel、Nothing 点阵风等高级字体，一键切换照片气质。
-
-* **⚡ 极速批量处理**：支持一次性拖拽数十张照片，提供沉浸式缩略图长廊。一键全自动处理并打包为 ZIP 下载。
-
-## 📸 效果预览 (Preview)
-
-<!-- 在这里插入几张对比图或不同风格的生成结果图 -->
-
-| 极简纯白 + 居中对齐 | 光学毛玻璃 + 居中对称 | 复古拍立得 + 点阵风 |  简约色卡 + 拍摄参数 | 
-| :---: | :---: | :---: | :---: |
-| ![Preview 1](img/1.jpg) | ![Preview 2](img/2.jpg) | ![Preview 3](img/3.jpg) | ![Preview 3](img/4.jpg) | 
-
-## 🚀 快速开始 (Getting Started)
-
-Frame&+框 是一个**零依赖**的单文件纯前端项目。你只需要拥有一个现代浏览器。
-
-1. 克隆或下载本项目。
-2. 直接在浏览器中双击打开 `index.html` 文件。
-3. 将你的照片拖拽到左侧（移动端为上方）的上传区域。
-4. 在控制面板调整你喜欢的样式、字体和排版。
-5. 点击「保存照片」或「批量打包」即可导出高清原图。
-
-## 🛠️ 技术栈 (Tech Stack)
-
-本项目追求极简主义，摒弃了繁重的现代框架（如 React/Vue），仅使用基础化工具，保证了代码的轻量与极致性能：
-
-* **HTML5 / CSS3 / ES6+ JavaScript**：原生三剑客构建核心逻辑。
-* [**Tailwind CSS**](https://tailwindcss.com/)：通过 CDN 引入，用于原子化的现代 UI 样式构建。
-* **Canvas API**：用于底层的高性能图像渲染、像素级光学模糊处理及排版绘制。
-* [**exif-js**](https://github.com/exif-js/exif-js)：用于精准提取 JPEG/HEIC 图片的 EXIF 元数据。
-* [**JSZip**](https://stuk.github.io/jszip/)：实现纯前端的多图打包下载。
-* [**Lucide Icons**](https://lucide.dev/)：提供一致且美观的矢量图标。
-
-## 💡 核心算法亮点
-
-### 移动端级“光学毛玻璃” (Pure JS Box Blur)
-
-针对 iOS/Safari 等移动端浏览器在处理 4K 级别 Canvas 时 `filter: blur()` 硬件加速失效或产生马赛克的问题，FramePro 采用了一种降维打击的方案：
-
-1. **极限降采样**：在内存中创建仅 120px 大小的微缩画布。
-2. **纯数学重算**：不依赖浏览器滤镜，使用自定义的 `Box Blur` 算法直接操作 `ImageData`，强行揉碎像素。
-3. **原生插值拉伸**：利用浏览器极强的硬件拉伸能力，将模糊后的像素块铺满原图，生成顺滑、深邃、兼容 100% 设备的完美弥散光斑。
-
-## 📄 版权与许可 (License)
-
-* 本项目界面设计及核心代码版权归 **© 2026 XIANG** 所有。
-* 内置的字体均为 Google Fonts 提供的免费且可商用字体（如 OFL 协议）。
+<!-- 建议在这里放一张项目的预览图 -->
+> 📸 **预览图**: *(将此处替换为您的实际项目截图，例如 `![UI Preview](./assets/preview.png)`)*
 
 ---
 
-*Made with ❤️ by XIANG*
+## ✨ 核心特性
+
+*   🔒 **纯本地隐私计算**：基于 HTML5 `<canvas>` 渲染，无需后端，图片零上传。
+*   📸 **智能 EXIF 提取**：自动读取相机的品牌、型号、镜头、焦距、光圈、快门、ISO、时间及 GPS 坐标（基于 `exifr`）。
+*   🎨 **动态色卡引擎**：智能分析图片像素，提取主色调并生成对应的色卡（Color Palette）或沉浸式背景。
+*   🖼️ **多维度艺术版式**：内置十余种专业排版风格，涵盖从极简画廊到复古胶片的多种需求。
+*   🎛️ **丰富的细节调节**：
+    *   自由调整画幅留白比例与阴影深度。
+    *   Film Lab 滤镜：支持一键黑白（B&W）、色彩反转（Invert）以及添加逼真的胶片颗粒（Film Grain）。
+    *   画廊墙面材质（背景色）切换。
+*   📱 **完美适配移动端**：响应式布局，支持移动端手势拖拽排序（基于 `SortableJS`）与触觉反馈（Haptic Feedback）。
+*   📦 **超清渲染与批量打包**：支持最高 4500px 级超清导出，并支持一键生成全套画册的 ZIP 压缩包（基于 `jszip`）。
+
+---
+
+## 🎨 内置版式 (Templates)
+
+系统将版式分为三大美学系列：
+
+### 1. 经典信息 (Raw Info)
+*   **EXIF 原生**：经典的底部参数留白排版。
+*   **色卡档案 (Color Archive)**：自动提取照片中的 4 种主色调并展示在底部。
+*   **极简对角 (Diagonal Min)**：将文字信息分布在对角，现代且克制。
+
+### 2. 前卫海报 (Avant-Garde)
+*   **沉浸主色卡 (Immersive Solid Color)**：提取画面最高饱和度的色彩作为背景，打造强烈的视觉冲击。
+*   **三联水印 (Triptych Poster)**：自动将单张图片智能裁剪/排版为三联画卷。
+
+### 3. 胶片暗房 (Film Editions)
+*   **35mm 单张**：带 DX 码和齿孔的标准 35mm 胶片边框。
+*   **4x5 大画幅**：大画幅底片扫描边框。
+*   **XPan 超宽全景**：致敬哈苏 XPan 的宽幅电影感排版。
+*   **长卷相册 (Multi-image Contact Sheet)**：可自由拖拽多张图片，生成印样长条（Contact Sheet）。
+
+### 4. 画廊展览 (Gallery Formats)
+*   **极简细线留白 (Fine Art Line)**：极细边框加大量留白的艺术微喷风格。
+*   **复古拍立得 (Polaroid)**：拍立得相纸质感加浮雕阴影。
+
+---
+
+## 🚀 快速开始
+
+本项目为完全基于浏览器的静态单文件应用（Single File Application），无需任何构建工具或复杂的 Node.js 环境。
+
+### 本地运行
+
+1. 克隆本项目到本地：
+   
+```bash
+   git clone [https://github.com/your-username/xiang-frame.git](https://github.com/your-username/xiang-frame.git)
