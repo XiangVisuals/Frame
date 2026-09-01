@@ -15,7 +15,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@300;400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -211,14 +211,14 @@
                                 <button class="style-btn col-span-2 relative overflow-hidden" data-style="immersive_color">
                                     <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-blue-50 opacity-50 z-0"></div>
                                     <i class="fa-solid fa-droplet w-4 h-4 icon-wrapper pointer-events-none relative z-10 text-indigo-500"></i>
-                                    <span class="title pointer-events-none relative z-10">沉浸主色卡 (渐变背景)</span>
-                                    <span class="subtext pointer-events-none relative z-10">Immersive Color Gradient</span>
+                                    <span class="title pointer-events-none relative z-10">沉浸主色卡 (高饱和纯色)</span>
+                                    <span class="subtext pointer-events-none relative z-10">Immersive Solid Color</span>
                                 </button>
-                                <button class="style-btn col-span-2 relative overflow-hidden" data-style="grid_mosaic">
-                                    <div class="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 opacity-50 z-0"></div>
-                                    <i class="fa-solid fa-table-cells-large w-4 h-4 icon-wrapper pointer-events-none relative z-10 text-slate-800"></i>
-                                    <span class="title pointer-events-none relative z-10">复古网格拼贴</span>
-                                    <span class="subtext pointer-events-none relative z-10">Retro Grid Mosaic Poster</span>
+                                <button class="style-btn col-span-2 relative overflow-hidden" data-style="triptych_watermark">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-stone-50 to-stone-100 opacity-50 z-0"></div>
+                                    <i class="fa-solid fa-columns w-4 h-4 icon-wrapper pointer-events-none relative z-10 text-stone-800"></i>
+                                    <span class="title pointer-events-none relative z-10">三联水印</span>
+                                    <span class="subtext pointer-events-none relative z-10">Triptych Poster</span>
                                 </button>
 
                                 <div class="col-span-2 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
@@ -254,22 +254,6 @@
                                     <i class="fa-regular fa-square w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
                                     <span class="title pointer-events-none">极简细线留白</span>
                                     <span class="subtext pointer-events-none">Fine Art Line</span>
-                                </button>
-                                <button class="style-btn" data-style="framed">
-                                    <i class="fa-solid fa-image-portrait w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
-                                    <span class="title pointer-events-none">经典画框</span>
-                                    <span class="subtext pointer-events-none">Classic</span>
-                                </button>
-                                
-                                <button class="style-btn" data-style="museum">
-                                    <i class="fa-solid fa-chess-board w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
-                                    <span class="title pointer-events-none">美术馆卡纸</span>
-                                    <span class="subtext pointer-events-none">Museum Mat</span>
-                                </button>
-                                <button class="style-btn" data-style="floating">
-                                    <i class="fa-solid fa-box w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
-                                    <span class="title pointer-events-none">悬浮装裱</span>
-                                    <span class="subtext pointer-events-none">Floating</span>
                                 </button>
                                 <button class="style-btn col-span-2" data-style="polaroid">
                                     <i class="fa-solid fa-camera w-4 h-4 icon-wrapper pointer-events-none text-center"></i>
@@ -316,8 +300,8 @@
                                     <input type="range" id="grainSlider" min="0" max="1" step="0.05" value="0.15">
                                 </div>
                             </section>
-
-                            <section id="section-materials">
+                            
+                            <section id="section-materials" style="display: none;">
                                 <div class="flex gap-4 p-3.5 bg-slate-50 rounded-md border border-slate-200">
                                     <div class="flex-1" id="ctrl-wall">
                                         <label class="block text-[10px] text-slate-500 mb-2 font-bold uppercase tracking-wide">Wall / 墙面</label>
@@ -325,14 +309,6 @@
                                             <button class="wall-btn w-6 h-6 rounded-full border border-slate-300 ring-2 ring-offset-2 ring-slate-800 transition-transform hover:scale-110" style="background-color: #f8f8f8;" data-wall="#f8f8f8"></button>
                                             <button class="wall-btn w-6 h-6 rounded-full border border-slate-300 transition-transform hover:scale-110" style="background-color: #e2e8f0;" data-wall="#e2e8f0"></button>
                                             <button class="wall-btn w-6 h-6 rounded-full border border-slate-300 transition-transform hover:scale-110" style="background-color: #1e293b;" data-wall="#1e293b"></button>
-                                        </div>
-                                    </div>
-                                    <div class="flex-1" id="ctrl-frame">
-                                        <label class="block text-[10px] text-slate-500 mb-2 font-bold uppercase tracking-wide">Frame / 画框</label>
-                                        <div class="flex gap-2" id="frameColorGroup">
-                                            <button class="frame-btn w-6 h-6 rounded border border-slate-300 ring-2 ring-offset-2 ring-slate-800 transition-transform hover:scale-110" style="background: #1c1c1c;" data-frame="#1c1c1c"></button>
-                                            <button class="frame-btn w-6 h-6 rounded border border-slate-300 transition-transform hover:scale-110" style="background: #fcfcfc;" data-frame="#fcfcfc"></button>
-                                            <button class="frame-btn w-6 h-6 rounded border border-slate-300 transition-transform hover:scale-110" style="background: linear-gradient(135deg, #d4b595, #c1a281);" data-frame="#d4b595"></button>
                                         </div>
                                     </div>
                                 </div>
@@ -359,10 +335,6 @@
                                 <div class="relative group">
                                     <i class="fa-solid fa-camera w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
                                     <input type="text" id="inputExifCamera" class="input-elegant text-[11px] font-mono pr-8" placeholder="相机与型号 (如: SONY ILCE-7RM3A)">
-                                </div>
-                                <div class="relative group">
-                                    <i class="fa-solid fa-camera w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
-                                    <input type="text" id="inputExifCamera" class="input-elegant text-[11px] font-mono pr-8" placeholder="设备 (如: NORITSU KOKI EZ Controller)">
                                 </div>
                                 <div class="relative group">
                                     <i class="fa-solid fa-camera-retro w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
@@ -457,9 +429,7 @@
                     activeId: null,
                     settings: {
                         style: 'exif', 
-                        wallColor: '#f8f8f8',
-                        frameColor: '#1c1c1c',
-                        frameGradient: null,
+                        wallColor: '#ffffff',
                         matMultiplier: 1.0,
                         shadowMultiplier: 1.0,
                         invertAmount: 0,
@@ -533,7 +503,6 @@
                     tabPanes: document.querySelectorAll('.tab-pane'), // The 3 content panes
                     styleBtns: document.querySelectorAll('.style-btn'),
                     wallBtns: document.querySelectorAll('.wall-btn'),
-                    frameBtns: document.querySelectorAll('.frame-btn'),
                     
                     toastContainer: document.getElementById('toastContainer'),
                     progressModal: document.getElementById('progressModal'),
@@ -698,19 +667,6 @@
                     });
                 });
 
-                this.dom.frameBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        triggerHaptic('light');
-                        const target = e.currentTarget;
-                        this.updateSettings({ 
-                            frameColor: target.dataset.frame,
-                            frameGradient: target.style.background.includes('linear-gradient') ? target.style.background : null
-                        }, false);
-                        this.dom.frameBtns.forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-slate-800'));
-                        target.classList.add('ring-2', 'ring-offset-2', 'ring-slate-800');
-                    });
-                });
-
                 // Toggles
                 this.dom.btnToggleBW.addEventListener('click', () => {
                     triggerHaptic('light');
@@ -855,26 +811,35 @@
                 try {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    // Use a slightly larger sample for better accuracy, but keep it small for performance
                     canvas.width = 64; canvas.height = 64;
                     ctx.drawImage(imgObj, 0, 0, 64, 64);
                     const data = ctx.getImageData(0, 0, 64, 64).data;
                     
                     const colorCounts = {};
-                    let maxCount = 0; let dominantBin = null;
                     const colorPool = [];
+                    // Bin size helps group similar colors. 32 gives 8x8x8 = 512 possible bins
                     const binSize = 32; 
 
                     for(let i=0; i<data.length; i+=4) {
+                        // Skip highly transparent pixels
                         if (data[i+3] > 128) {
                             const r = data[i], g = data[i+1], b = data[i+2];
-                            colorPool.push({r, g, b});
+                            
+                            // Filter out colors that are too close to pure white or pure black
+                            // to ensure the extracted palette has some character
+                            const luminance = (0.299*r + 0.587*g + 0.114*b);
+                            if (luminance > 240 || luminance < 15) continue;
+                            
+                            colorPool.push({r, g, b, lum: luminance});
+                            
                             const binKey = `${Math.floor(r/binSize)},${Math.floor(g/binSize)},${Math.floor(b/binSize)}`;
                             if (!colorCounts[binKey]) colorCounts[binKey] = { count: 0, rSum: 0, gSum: 0, bSum: 0 };
                             colorCounts[binKey].count++; colorCounts[binKey].rSum += r; colorCounts[binKey].gSum += g; colorCounts[binKey].bSum += b;
-                            if (colorCounts[binKey].count > maxCount) { maxCount = colorCounts[binKey].count; dominantBin = colorCounts[binKey]; }
                         }
                     }
 
+                    // Default elegant grayscale palette fallback
                     const defaultPalette = [
                         { rgbStr: '#d4d4d8', hex: '#d4d4d8', r: 212, g: 212, b: 216 },
                         { rgbStr: '#94a3b8', hex: '#94a3b8', r: 148, g: 163, b: 184 },
@@ -882,28 +847,108 @@
                         { rgbStr: '#1e293b', hex: '#1e293b', r: 30, g: 41, b: 59 }
                     ];
 
-                    if (colorPool.length === 0 || !dominantBin) return defaultPalette;
+                    if (colorPool.length === 0) return defaultPalette;
 
-                    const domR = Math.round(dominantBin.rSum / dominantBin.count);
-                    const domG = Math.round(dominantBin.gSum / dominantBin.count);
-                    const domB = Math.round(dominantBin.bSum / dominantBin.count);
-                    const dominantColor = { r: domR, g: domG, b: domB };
+                    // Sort bins by count to find dominant colors
+                    const sortedBins = Object.values(colorCounts).sort((a, b) => b.count - a.count);
+                    
+                    if (sortedBins.length === 0) return defaultPalette;
 
-                    let picked = [dominantColor];
+                    const getSaturation = (r,g,b) => {
+                        const max = Math.max(r,g,b) / 255;
+                        const min = Math.min(r,g,b) / 255;
+                        if (max === 0) return 0;
+                        return (max - min) / max;
+                    };
+
+                    const getLightness = (r,g,b) => {
+                        const max = Math.max(r,g,b) / 255;
+                        const min = Math.min(r,g,b) / 255;
+                        return (max + min) / 2;
+                    };
+
+                    // Evaluate the top bins to find colors with good saturation and reasonable lightness
+                    let candidates = [];
+                    for (let i = 0; i < Math.min(10, sortedBins.length); i++) {
+                        const bin = sortedBins[i];
+                        if (bin.count > sortedBins[0].count * 0.05) { // Must have a minimum presence
+                            const r = Math.round(bin.rSum / bin.count);
+                            const g = Math.round(bin.gSum / bin.count);
+                            const b = Math.round(bin.bSum / bin.count);
+                            const s = getSaturation(r, g, b);
+                            const l = getLightness(r, g, b);
+                            candidates.push({ r, g, b, s, l, count: bin.count });
+                        }
+                    }
+
+                    // Sort candidates primary by saturation, then by presence
+                    candidates.sort((a, b) => {
+                        // Penalize colors that are too dark or too bright as they might be black/white limits
+                        let scoreA = a.s * (a.l > 0.1 && a.l < 0.9 ? 1 : 0.1) * Math.log(a.count);
+                        let scoreB = b.s * (b.l > 0.1 && b.l < 0.9 ? 1 : 0.1) * Math.log(b.count);
+                        return scoreB - scoreA;
+                    });
+                    
+                    let bestColor = candidates.length > 0 ? candidates[0] : { 
+                        r: Math.round(sortedBins[0].rSum / sortedBins[0].count),
+                        g: Math.round(sortedBins[0].gSum / sortedBins[0].count),
+                        b: Math.round(sortedBins[0].bSum / sortedBins[0].count)
+                    };
+
+                    const pickedColors = [{ r: bestColor.r, g: bestColor.g, b: bestColor.b }];
+
                     const dist = (c1, c2) => Math.pow(c1.r-c2.r,2) + Math.pow(c1.g-c2.g,2) + Math.pow(c1.b-c2.b,2);
+                    
+                    // Always take the most dominant valid bin first
+                    let dominantBin = sortedBins[0];
+                    let domR = Math.round(dominantBin.rSum / dominantBin.count);
+                    let domG = Math.round(dominantBin.gSum / dominantBin.count);
+                    let domB = Math.round(dominantBin.bSum / dominantBin.count);
+                    
+                    // OPTIMIZATION: If the dominant color is very dull (low saturation), 
+                    // try to find a more colorful one in the top 5 bins
+                    let bestSaturation = getSaturation(domR, domG, domB);
+                    let bestBinIndex = 0;
+                    
+                    for (let i = 1; i < Math.min(5, sortedBins.length); i++) {
+                        const bin = sortedBins[i];
+                        if (bin.count > dominantBin.count * 0.2) { // Must be reasonably common
+                            const r = Math.round(bin.rSum / bin.count);
+                            const g = Math.round(bin.gSum / bin.count);
+                            const b = Math.round(bin.bSum / bin.count);
+                            const sat = getSaturation(r, g, b);
+                            
+                            // If it's significantly more saturated, prefer it for the immersive background
+                            if (sat > bestSaturation + 0.15) {
+                                bestSaturation = sat;
+                                bestBinIndex = i;
+                                domR = r; domG = g; domB = b;
+                            }
+                        }
+                    }
 
-                    while(picked.length < 4) {
+                    pickedColors.push({ r: domR, g: domG, b: domB });
+
+                    // Find 3 more distinct colors
+                    while(pickedColors.length < 4 && colorPool.length > 0) {
                         let maxDist = -1; let furthestColor = colorPool[0];
                         for(let c of colorPool) {
-                            let minDistToPicked = Math.min(...picked.map(p => dist(c, p)));
+                            let minDistToPicked = Math.min(...pickedColors.map(p => dist(c, p)));
                             if(minDistToPicked > maxDist) { maxDist = minDistToPicked; furthestColor = c; }
                         }
-                        picked.push(furthestColor);
+                        pickedColors.push({r: furthestColor.r, g: furthestColor.g, b: furthestColor.b});
                     }
                     
                     const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => { const hex = x.toString(16); return hex.length === 1 ? '0' + hex : hex; }).join('');
-                    return picked.map(c => ({ rgbStr: `rgba(${c.r}, ${c.g}, ${c.b}, 0.85)`, hex: rgbToHex(c.r, c.g, c.b), r: c.r, g: c.g, b: c.b }));
+                    
+                    // Format output
+                    return pickedColors.map(c => ({ 
+                        rgbStr: `rgba(${c.r}, ${c.g}, ${c.b}, 1)`, 
+                        hex: rgbToHex(c.r, c.g, c.b), 
+                        r: c.r, g: c.g, b: c.b 
+                    }));
                 } catch(e) {
+                    console.error("Error extracting palette:", e);
                     return [{ rgbStr: '#d4d4d8', hex: '#d4d4d8', r: 212, g: 212, b: 216 }, { rgbStr: '#94a3b8', hex: '#94a3b8', r: 148, g: 163, b: 184 }, { rgbStr: '#64748b', hex: '#64748b', r: 100, g: 116, b: 139 }, { rgbStr: '#1e293b', hex: '#1e293b', r: 30, g: 41, b: 59 }];
                 }
             }
@@ -943,9 +988,8 @@
                             let make = exifData.Make || ''; let model = exifData.Model || '';
                             if (model.toUpperCase().startsWith(make.toUpperCase())) { camera = model.toUpperCase(); } 
                             else { camera = `${make} ${model}`.trim().toUpperCase(); }
-                        } // 修复：补充缺失的闭合括号
+                        }
 
-                        // 修复：确保所有摄影参数变量正确初始化
                         let lens = exifData?.LensModel ? exifData.LensModel.toUpperCase() : '24MM';
                         let focal = exifData?.FocalLength ? `${parseFloat(Number(exifData.FocalLength).toFixed(1))}mm` : '24mm';
                         let fnumber = exifData?.FNumber ? `f/${parseFloat(Number(exifData.FNumber).toFixed(1))}` : 'f/2.8';
@@ -1098,9 +1142,8 @@
 
             updateControlsVisibility(style) {
                 const isFilm = style.startsWith('film');
-                const isGallery = ['framed', 'museum', 'floating', 'polaroid'].includes(style);
-                // Added minimal_line to isArtist so it has margin controls but no shadow/frame materials
-                const isArtist = ['exif', 'exif_palette', 'exif_minimal', 'grid_mosaic', 'immersive_color', 'minimal_line'].includes(style); 
+                // Removed deleted styles, kept active styles logic clear
+                const isArtist = ['exif', 'exif_palette', 'exif_minimal', 'immersive_color', 'minimal_line', 'triptych_watermark'].includes(style); 
 
                 const secLayout = document.getElementById('section-layout');
                 const ctrlMargin = document.getElementById('ctrl-margin');
@@ -1124,11 +1167,11 @@
                     if (ctrlShadow) ctrlShadow.style.display = 'block';
                 }
 
-                if (isGallery) {
+                if (style === 'polaroid') {
                     if (secMaterials) secMaterials.style.display = 'block';
                     if (ctrlWall) ctrlWall.style.display = 'block';
-                    if (ctrlFrame) ctrlFrame.style.display = 'block';
-                } else if (style === 'film35mm' || style === 'film_strip' || style === 'unframed') {
+                    if (ctrlFrame) ctrlFrame.style.display = 'none';
+                } else if (style === 'film35mm' || style === 'film_strip') {
                     if (secMaterials) secMaterials.style.display = 'block';
                     if (ctrlWall) ctrlWall.style.display = 'block';
                     if (ctrlFrame) ctrlFrame.style.display = 'none';
@@ -1189,7 +1232,7 @@
             }
 
             renderScene(ctx, imgData, targetWidth, targetHeight) {
-                const { style, wallColor, frameColor, frameGradient, matMultiplier, shadowMultiplier, invertAmount, grainAmount, bwAmount } = this.state.settings;
+                const { style, wallColor, matMultiplier, shadowMultiplier, invertAmount, grainAmount, bwAmount } = this.state.settings;
                 const { imgObj, width: imgW, height: imgH, textLeft, textRight, exifTime, exifCamera, exifLens, exifParams, filmName } = imgData;
 
                 const shortEdge = Math.min(imgW, imgH);
@@ -1234,16 +1277,78 @@
                         ctx.strokeRect(iX, iY, iW, iH);
                     };
 
-                } else if (style === 'unframed') {
-                    const pad = imgW * 0.1 * matMultiplier;
-                    sceneW = imgW + pad * 2 + wallPaddingX * 2; sceneH = imgH + pad * 2 + wallPaddingY * 2;
+                } else if (style === 'triptych_watermark') {
+                    wallPaddingX = 0; wallPaddingY = 0;
+                    // 增大上下留白
+                    const padX = shortEdge * 0.1 * matMultiplier;
+                    const padTop = shortEdge * 0.45 * matMultiplier; 
+                    const padBot = shortEdge * 0.65 * matMultiplier; 
+                    
+                    const gap = shortEdge * 0.015; // 3个面板之间的视觉间距
+                    const isPortrait = imgH > imgW;
+                    
+                    // 根据图片横竖动态分配长宽，确保无损排版不吞像素
+                    if (isPortrait) {
+                        sceneW = imgW + padX * 2;
+                        sceneH = imgH + (gap * 2) + padTop + padBot;
+                    } else {
+                        sceneW = imgW + (gap * 2) + padX * 2;
+                        sceneH = imgH + padTop + padBot;
+                    }
+
                     drawLogic = (scale) => {
-                        drawBackground(scale);
-                        const pX = wallPaddingX * scale, pY = wallPaddingY * scale, pW = (imgW + pad * 2) * scale, pH = (imgH + pad * 2) * scale;
-                        ctx.save(); ctx.shadowColor = `rgba(0, 0, 0, ${0.1 * shadowMultiplier})`; ctx.shadowBlur = shortEdge * 0.05 * scale * shadowMultiplier; ctx.shadowOffsetY = shortEdge * 0.02 * scale * shadowMultiplier;
-                        ctx.fillStyle = '#ffffff'; ctx.fillRect(pX, pY, pW, pH); ctx.restore();
-                        const fImg = this.getFilteredImage(imgData, imgW * scale, imgH * scale, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, pX + pad * scale, pY + pad * scale, imgW * scale, imgH * scale);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
+
+                        const sPadX = padX * scale;
+                        const sPadTop = padTop * scale;
+                        const sGap = gap * scale;
+                        
+                        const iW = imgW * scale;
+                        const iH = imgH * scale;
+
+                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
+                        
+                        // 获取图片真实像素，解决错位与裁剪放大问题
+                        const srcW = fImg.naturalWidth || fImg.width;
+                        const srcH = fImg.naturalHeight || fImg.height;
+
+                        if (isPortrait) {
+                            const sPanelH = srcH / 3;
+                            const dPanelH = iH / 3;
+                            ctx.drawImage(fImg, 0, 0, srcW, sPanelH, sPadX, sPadTop, iW, dPanelH);
+                            ctx.drawImage(fImg, 0, sPanelH, srcW, sPanelH, sPadX, sPadTop + dPanelH + sGap, iW, dPanelH);
+                            ctx.drawImage(fImg, 0, sPanelH * 2, srcW, sPanelH, sPadX, sPadTop + (dPanelH * 2) + (sGap * 2), iW, dPanelH);
+                        } else {
+                            const sPanelW = srcW / 3;
+                            const dPanelW = iW / 3;
+                            ctx.drawImage(fImg, 0, 0, sPanelW, srcH, sPadX, sPadTop, dPanelW, iH);
+                            ctx.drawImage(fImg, sPanelW, 0, sPanelW, srcH, sPadX + dPanelW + sGap, sPadTop, dPanelW, iH);
+                            ctx.drawImage(fImg, sPanelW * 2, 0, sPanelW, srcH, sPadX + (dPanelW * 2) + (sGap * 2), sPadTop, dPanelW, iH);
+                        }
+
+                        if (matMultiplier > 0.3) {
+                            const centerX = sceneW * scale / 2;
+                            const totalImgDrawH = isPortrait ? (iH + sGap * 2) : iH;
+                            const textY = sPadTop + totalImgDrawH + (padBot * scale * 0.4); 
+                            
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            const fontSize = shortEdge * 0.015 * scale;
+                            ctx.fillStyle = '#94a3b8'; 
+                            ctx.font = `500 ${fontSize}px "Inter", sans-serif`;
+                            
+                            try { ctx.letterSpacing = `${fontSize * 0.6}px`; } catch(e){}
+                            ctx.fillText((textLeft || 'THE PHOTO').toUpperCase(), centerX, textY - (fontSize * 0.8));
+                            
+                            let yearStr = '2026';
+                            if (imgData.exifDate) {
+                                const yearMatch = imgData.exifDate.match(/\d{4}/);
+                                if (yearMatch) yearStr = yearMatch[0];
+                            }
+                            ctx.fillText(`OF ${yearStr}`, centerX, textY + (fontSize * 0.8));
+                            try { ctx.letterSpacing = '0px'; } catch(e){} 
+                        }
                     };
 
                 } else if (style === 'immersive_color') {
@@ -1254,27 +1359,30 @@
                     drawLogic = (scale) => {
                         const sW = sceneW * scale; const sH = sceneH * scale; const sBotH = botBlockH * scale; const sImgH = imgH * scale;
                         
-                        let mainColorRgb = {r: 70, g: 80, b: 70}; 
+                        let mainColorRgb = {r: 30, g: 41, b: 59}; 
                         if (imgData.palette && imgData.palette.length > 0) {
-                            mainColorRgb = { r: imgData.palette[0].r, g: imgData.palette[0].g, b: imgData.palette[0].b };
+                            // 提取全图中饱和度最高的高光纯色作为背景
+                            const getSat = (r, g, b) => {
+                                const max = Math.max(r,g,b)/255, min = Math.min(r,g,b)/255;
+                                return max === 0 ? 0 : (max - min) / max;
+                            };
+                            let bestSat = -1;
+                            imgData.palette.forEach(c => {
+                                const s = getSat(c.r, c.g, c.b);
+                                if(s > bestSat) { bestSat = s; mainColorRgb = c; }
+                            });
                         }
-
-                        // 调校出更低饱和、稍暗的高级质感底色
+                        
+                        // 稍微调暗以确保白色字体的可读性，保留纯色填充
                         const adjustColor = (c, factor) => Math.max(0, Math.min(255, Math.floor(c * factor)));
-                        const r = adjustColor(mainColorRgb.r, 0.65);
-                        const g = adjustColor(mainColorRgb.g, 0.65);
-                        const b = adjustColor(mainColorRgb.b, 0.65);
+                        const r = adjustColor(mainColorRgb.r, 0.75);
+                        const g = adjustColor(mainColorRgb.g, 0.75);
+                        const b = adjustColor(mainColorRgb.b, 0.75);
                         
-                        // 【核心修复】：先画渐变背景，并使其向上延伸 2 像素至图片下方，消除像素黑边缝隙
-                        const gradient = ctx.createLinearGradient(0, sImgH - 2, 0, sH);
-                        gradient.addColorStop(0, `rgb(${r+20}, ${g+20}, ${b+20})`);
-                        gradient.addColorStop(0.4, `rgb(${r}, ${g}, ${b})`);
-                        gradient.addColorStop(1, `rgb(${Math.max(0, r-15)}, ${Math.max(0, g-15)}, ${Math.max(0, b-15)})`);
-                        
-                        ctx.fillStyle = gradient;
-                        ctx.fillRect(0, sImgH - 2, sW, sBotH + 2); 
+                        // 取消渐变，应用统一的浸入式纯色
+                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                        ctx.fillRect(0, 0, sW, sH);
 
-                        // 再绘制图片覆盖上去，确保无缝衔接
                         const fImg = this.getFilteredImage(imgData, sW, sImgH, bwAmount, invertAmount);
                         ctx.drawImage(fImg, 0, 0, sW, sImgH);
 
@@ -1282,87 +1390,27 @@
                             ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
                             const textCenterX = sW / 2;
                             
-                            // 极简字号比例
                             const primaryFontSize = sW * 0.013; 
                             const secondaryFontSize = sW * 0.011;
                             
                             const textCenterY = sImgH + (sBotH * 0.45);
-                            const gap = primaryFontSize * 2.8; // 增加行距提供呼吸感
+                            const gap = primaryFontSize * 2.8;
 
-                            const textColor = 'rgba(255, 255, 255, 0.85)';
-                            const subTextColor = 'rgba(255, 255, 255, 0.6)';
-
-                            // 第一行：坐标 & 日期 (使用无衬线字体，字距拉开)
                             ctx.font = `400 ${primaryFontSize}px "Inter", sans-serif`; 
-                            ctx.fillStyle = textColor;
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
                             const coordStr = imgData.location || "35° 39' 10\" N    139° 42' 55\" E";
                             const dateStr = imgData.exifTime ? imgData.exifTime : '12 Feb 2026';
                             
-                            const mainText = `${coordStr}      ${dateStr}`;
-                            
                             try { ctx.letterSpacing = `${primaryFontSize * 0.15}px`; } catch(e){}
-                            ctx.fillText(mainText, textCenterX, textCenterY - (gap/2)); 
+                            ctx.fillText(`${coordStr}      ${dateStr}`, textCenterX, textCenterY - (gap/2)); 
 
-                            // 第二行：精简的拍摄参数 (如 24mm  f/2.8  1/125s  ISO 400)
                             ctx.font = `400 ${secondaryFontSize}px "Inter", sans-serif`; 
-                            ctx.fillStyle = subTextColor;
-                            
-                            const paramsStr = imgData.exifParams || '24mm   f/2.8   1/125s   ISO 400';
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
                             
                             try { ctx.letterSpacing = `${secondaryFontSize * 0.2}px`; } catch(e){}
-                            ctx.fillText(paramsStr, textCenterX, textCenterY + (gap/2));
+                            ctx.fillText(imgData.exifParams || '24mm   f/2.8   1/125s   ISO 400', textCenterX, textCenterY + (gap/2));
                             try { ctx.letterSpacing = '0px'; } catch(e){}
                         }
-                    };
-
-                } else if (style === 'framed' || style === 'museum') {
-                    const isMuseum = style === 'museum';
-                    const frameT = shortEdge * (isMuseum ? 0.015 : 0.035);
-                    const matX = shortEdge * (isMuseum ? 0.25 : 0.12) * matMultiplier; const matTop = shortEdge * (isMuseum ? 0.25 : 0.12) * matMultiplier; const matBot = shortEdge * (isMuseum ? 0.35 : 0.18) * matMultiplier; 
-                    const frameW = imgW + (matX * 2) + (frameT * 2); const frameH = imgH + (matTop + matBot) + (frameT * 2);
-                    sceneW = frameW + wallPaddingX * 2; sceneH = frameH + wallPaddingY * 2;
-
-                    drawLogic = (scale) => {
-                        drawBackground(scale);
-                        const fX = wallPaddingX * scale, fY = wallPaddingY * scale, fW = frameW * scale, fH = frameH * scale, fTs = frameT * scale;
-                        ctx.save(); ctx.shadowColor = `rgba(0, 0, 0, ${0.18 * shadowMultiplier})`; ctx.shadowBlur = shortEdge * 0.08 * scale * shadowMultiplier; ctx.shadowOffsetY = shortEdge * 0.03 * scale * shadowMultiplier;
-                        applyFrameMaterial(fX, fY, fW, fH); ctx.fillRect(fX, fY, fW, fH); ctx.restore();
-                        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(fX + fTs*0.8, fY + fTs*0.8, fW - fTs*1.6, fH - fTs*1.6);
-                        const mX = fX + fTs, mY = fY + fTs, mW = fW - fTs * 2, mH = fH - fTs * 2;
-                        ctx.fillStyle = '#fafafa'; ctx.fillRect(mX, mY, mW, mH);
-                        ctx.save();
-                        const iX = mX + (matX * scale), iY = mY + (matTop * scale), iW = imgW * scale, iH = imgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
-
-                        ctx.strokeStyle = `rgba(0,0,0,${0.15 * shadowMultiplier})`; ctx.lineWidth = shortEdge * 0.005 * scale; ctx.strokeRect(iX, iY, iW, iH);
-                        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = shortEdge * 0.002 * scale; ctx.strokeRect(iX - ctx.lineWidth, iY - ctx.lineWidth, iW + ctx.lineWidth*2, iH + ctx.lineWidth*2);
-                        ctx.restore();
-                        if(matMultiplier > 0.3) {
-                            const fontSize = shortEdge * 0.016 * scale; ctx.font = `500 ${fontSize}px "Inter", "Noto Serif SC", sans-serif`; ctx.fillStyle = '#1e293b'; ctx.textBaseline = 'middle';
-                            const textY = mY + mH - ((matBot * scale) * 0.45);
-                            if (textLeft) { ctx.textAlign = 'left'; ctx.fillText(textLeft.toUpperCase(), mX + (matX * scale), textY); }
-                            if (textRight) { ctx.textAlign = 'right'; ctx.fillText(textRight, mX + mW - (matX * scale), textY); }
-                        }
-                    };
-
-                } else if (style === 'floating') {
-                    const frameT = shortEdge * 0.025, matPad = shortEdge * 0.15 * matMultiplier;
-                    const frameW = imgW + (matPad * 2) + (frameT * 2), frameH = imgH + (matPad * 2) + (frameT * 2);
-                    sceneW = frameW + wallPaddingX * 2; sceneH = frameH + wallPaddingY * 2;
-                    drawLogic = (scale) => {
-                        drawBackground(scale);
-                        const fX = wallPaddingX * scale, fY = wallPaddingY * scale, fW = frameW * scale, fH = frameH * scale, fTs = frameT * scale;
-                        ctx.save(); ctx.shadowColor = `rgba(0, 0, 0, ${0.15 * shadowMultiplier})`; ctx.shadowBlur = shortEdge * 0.06 * scale * shadowMultiplier; ctx.shadowOffsetY = shortEdge * 0.03 * scale * shadowMultiplier;
-                        applyFrameMaterial(fX, fY, fW, fH); ctx.fillRect(fX, fY, fW, fH); ctx.restore();
-                        const mX = fX + fTs, mY = fY + fTs, mW = fW - fTs * 2, mH = fH - fTs * 2;
-                        ctx.fillStyle = '#f8fafc'; ctx.fillRect(mX, mY, mW, mH);
-                        ctx.strokeStyle = `rgba(0,0,0,${0.15 * shadowMultiplier})`; ctx.lineWidth = fTs * 0.6; ctx.strokeRect(mX + ctx.lineWidth/2, mY + ctx.lineWidth/2, mW - ctx.lineWidth, mH - ctx.lineWidth);
-                        const iX = mX + (matPad * scale), iY = mY + (matPad * scale), iW = imgW * scale, iH = imgH * scale;
-                        ctx.save(); ctx.shadowColor = `rgba(0, 0, 0, ${0.3 * shadowMultiplier})`; ctx.shadowBlur = shortEdge * 0.05 * scale * shadowMultiplier; ctx.shadowOffsetY = shortEdge * 0.02 * scale * shadowMultiplier;
-                        ctx.fillStyle = '#ffffff'; ctx.fillRect(iX, iY, iW, iH); ctx.restore(); 
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
                     };
 
                 } else if (style === 'polaroid') {
@@ -1380,78 +1428,8 @@
                         ctx.strokeStyle = `rgba(0,0,0,${0.05 * shadowMultiplier})`; ctx.lineWidth = shortEdge * 0.002 * scale; ctx.strokeRect(iX, iY, imgW * scale, imgH * scale);
                     };
 
-                } else if (style === 'grid_mosaic') {
-                    wallPaddingX = 0; wallPaddingY = 0;
-                    const targetShortCells = 10; let cols, rows;
-                    if (imgW < imgH) { cols = targetShortCells; rows = Math.max(1, Math.round(cols * (imgH / imgW))); } 
-                    else { rows = targetShortCells; cols = Math.max(1, Math.round(rows * (imgW / imgH))); }
-
-                    const baseCellSize = 200; const gridW = cols * baseCellSize; const gridH = rows * baseCellSize;
-                    const referenceEdge = targetShortCells * baseCellSize; 
-                    const padX = referenceEdge * 0.12 * matMultiplier; const padTop = referenceEdge * 0.12 * matMultiplier; const padBot = referenceEdge * 0.35 * matMultiplier;
-
-                    sceneW = gridW + padX * 2; sceneH = gridH + padTop + padBot;
-                    const targetRatio = cols / rows; const imgRatio = imgW / imgH;
-                    let sCropX = 0, sCropY = 0, sCropW = imgW, sCropH = imgH;
-
-                    if (imgRatio > targetRatio) { sCropW = imgH * targetRatio; sCropX = (imgW - sCropW) / 2; } 
-                    else { sCropH = imgW / targetRatio; sCropY = (imgH - sCropH) / 2; }
-                    const sCellW = sCropW / cols; const sCellH = sCropH / rows;
-
-                    let seed = 0; for (let i = 0; i < imgData.id.length; i++) seed += imgData.id.charCodeAt(i);
-                    const random = () => { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
-
-                    const cellMap = []; const swapCandidates = [];
-                    for (let r = 0; r < rows; r++) {
-                        for (let c = 0; c < cols; c++) {
-                            cellMap.push({ c, r, sc: c, sr: r });
-                            if (random() > 0.7) swapCandidates.push({ c, r });
-                        }
-                    }
-
-                    const shuffledSources = [...swapCandidates];
-                    for (let i = shuffledSources.length - 1; i > 0; i--) {
-                        const j = Math.floor(random() * (i + 1));
-                        [shuffledSources[i], shuffledSources[j]] = [shuffledSources[j], shuffledSources[i]];
-                    }
-
-                    swapCandidates.forEach((cell, index) => {
-                        const mapIndex = cell.r * cols + cell.c;
-                        cellMap[mapIndex].sc = shuffledSources[index].c; cellMap[mapIndex].sr = shuffledSources[index].r;
-                    });
-
-                    drawLogic = (scale) => {
-                        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
-                        const gridStartX = padX * scale; const gridStartY = padTop * scale; const dCellSize = baseCellSize * scale;
-                        const fImg = this.getFilteredImage(imgData, imgW, imgH, bwAmount, invertAmount);
-
-                        cellMap.forEach(cell => {
-                            const srcX = sCropX + cell.sc * sCellW; const srcY = sCropY + cell.sr * sCellH;
-                            const destX = gridStartX + cell.c * dCellSize; const destY = gridStartY + cell.r * dCellSize;
-                            ctx.drawImage(fImg, srcX, srcY, sCellW, sCellH, destX, destY, dCellSize + 1, dCellSize + 1);
-                        });
-
-                        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1.5, 3 * scale); ctx.beginPath();
-                        for (let c = 0; c <= cols; c++) { ctx.moveTo(gridStartX + c * dCellSize, gridStartY); ctx.lineTo(gridStartX + c * dCellSize, gridStartY + gridH * scale); }
-                        for (let r = 0; r <= rows; r++) { ctx.moveTo(gridStartX, gridStartY + r * dCellSize); ctx.lineTo(gridStartX + gridW * scale, gridStartY + r * dCellSize); }
-                        ctx.stroke();
-
-                        if (matMultiplier > 0.3) {
-                            const bY = gridStartY + gridH * scale + (padBot * scale * 0.2); const bFont = dCellSize * 0.25; 
-                            ctx.fillStyle = '#1e293b'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-                            ctx.font = `800 ${bFont * 2.5}px "Inter", sans-serif`;
-                            try { ctx.letterSpacing = '-0.02em'; } catch(e){} ctx.fillText((textLeft || 'GRID MOSAIC ART').toUpperCase(), gridStartX, bY); try { ctx.letterSpacing = '0px'; } catch(e){}
-                            ctx.font = `500 ${bFont * 0.65}px "JetBrains Mono", monospace`; ctx.fillStyle = '#64748b';
-                            ctx.fillText(`C:${cols} R:${rows} / RETRO COLLAGE / ${exifParams || 'ANALOG PROCESS'}`, gridStartX, bY + bFont * 3.2);
-
-                            ctx.textAlign = 'right'; ctx.font = `500 ${bFont * 0.8}px "Inter", sans-serif`; ctx.fillStyle = '#475569';
-                            ctx.fillText(textRight || '© XIANGEDITION', gridStartX + gridW * scale, bY + bFont * 2.8);
-                            ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1 * scale; ctx.beginPath();
-                            ctx.moveTo(gridStartX, bY - (padBot * scale * 0.12)); ctx.lineTo(gridStartX + gridW * scale, bY - (padBot * scale * 0.12)); ctx.stroke();
-                        }
-                    };
-
                 } else if (style === 'exif') {
+                    // 恢复 EXIF 到最经典的原始布局
                     wallPaddingX = 0; wallPaddingY = 0;
                     const padX = shortEdge * 0.06 * matMultiplier, padTop = shortEdge * 0.06 * matMultiplier, padBot = shortEdge * 0.28 * matMultiplier;
                     sceneW = imgW + padX * 2; sceneH = imgH + padTop + padBot;
@@ -1713,7 +1691,7 @@
                             try { ctx.letterSpacing = `${bFont*0.1}px`; } catch(e){} ctx.fillText(textLeft || 'UNTITLED ARTWORK', iX, bY); try { ctx.letterSpacing = '0px'; } catch(e){}
 
                             ctx.fillStyle = '#64748b'; ctx.font = `500 ${bFont * 0.5}px "Inter", sans-serif`;
-                            ctx.fillText(imgData.exifDate, iX, bY + bFont * 1.8);
+                            ctx.fillText(imgData.exifDate || '', iX, bY + bFont * 1.8);
                             ctx.fillText((exifParams || '16MM F2.8 1/100S ISO250') + '    ' + (exifLens || 'STANDARD LENS'), iX, bY + bFont * 2.8);
 
                             if (imgData.palette && imgData.palette.length > 0) {
@@ -1753,7 +1731,7 @@
                             const bY = iY + iH + (padY * scale * 0.25);
                             ctx.textAlign = 'right'; ctx.fillStyle = '#64748b'; ctx.font = `500 ${bFont * 0.6}px "Inter", sans-serif`;
                             ctx.fillText(exifLens || 'E 50-400MM F4.5-6.3', iX + iW, bY);
-                            ctx.fillText(imgData.exifDate, iX + iW, bY + bFont * 1.3);
+                            ctx.fillText(imgData.exifDate || '', iX + iW, bY + bFont * 1.3);
                             
                             ctx.fillStyle = '#1e293b'; ctx.font = `600 ${bFont * 0.65}px "Inter", sans-serif`;
                             try { ctx.letterSpacing = `${bFont*0.05}px`; } catch(e){} ctx.fillText((exifParams || '16MM F2.8 1/100S ISO250').toUpperCase(), iX + iW, bY + bFont * 2.6); try { ctx.letterSpacing = '0px'; } catch(e){}
@@ -1857,8 +1835,8 @@
                 this.state.isProcessing = true;
                 this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
                 
-                // Added 'minimal_line' to batch generation
-                const stylesToGen = ['minimal_line', 'museum', 'framed', 'exif_palette', 'exif_minimal', 'immersive_color']; 
+                // Updated styles sequence avoiding deleted layout templates
+                const stylesToGen = ['minimal_line', 'triptych_watermark', 'exif_palette', 'exif_minimal', 'immersive_color']; 
                 const totalTasks = this.state.images.length * stylesToGen.length; 
                 let currentTask = 0;
                 
