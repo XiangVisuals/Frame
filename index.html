@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>XIANG FRAME 3.0 | XIANGVISUALS 数字画廊与视觉档案生成器</title>
+    <title>XIANG FRAME 3.5 PRO | XIANGVISUALS 数字画廊与 HDR 视觉档案系统</title>
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230a0a0a'%3E%3Crect x='2' y='2' width='20' height='20' fill='none' stroke='%230a0a0a' stroke-width='2'/%3E%3Cpath d='M7 7L17 17M17 7L7 17' stroke='%230a0a0a' stroke-width='1.5'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect x='2' y='2' width='20' height='20' stroke='%230a0a0a' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='5' stroke='%230a0a0a' stroke-width='1.5'/%3E%3C/svg%3E">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- iPhone HEIC/HEIF 跨平台解码器 -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,164 +42,58 @@
             }
         }
     </script>
-
-    <style>
-        :root { 
-            --s-top: env(safe-area-inset-top, 0px);
-            --s-bottom: env(safe-area-inset-bottom, 0px);
-            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        * { box-sizing: border-box; }
-
-        html, body {
-            height: 100dvh; width: 100vw; margin: 0; padding: 0;
-            overflow: hidden; background-color: #fafafa; color: #0a0a0a;
-            -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
-            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-        }
-
-        .native-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-        .native-scroll::-webkit-scrollbar { width: 3px; height: 3px; background: transparent; }
-        .native-scroll::-webkit-scrollbar-thumb { background: #d4d4d8; }
-        .native-scroll::-webkit-scrollbar-thumb:hover { background: #0a0a0a; }
-
-        /* Canvas Studio Background */
-        .canvas-bg {
-            background-color: #f4f4f5;
-            background-image: 
-                linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
-            background-size: 24px 24px;
-            transition: background-color 0.6s var(--ease-out-expo);
-        }
-        .canvas-bg.dark-studio {
-            background-color: #0d0d0d;
-            background-image: 
-                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-        }
-        
-        #previewCanvas {
-            max-width: 100%; max-height: 100%; object-fit: contain;
-            opacity: 0; transform: scale(0.985);
-            transition: opacity 0.35s var(--ease-out-expo), transform 0.35s var(--ease-out-expo), box-shadow 0.35s var(--ease-out-expo);
-            touch-action: none;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-        }
-        #previewCanvas.loaded { opacity: 1; transform: scale(1); }
-
-        /* Architectural Range Slider */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; height: 22px; }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 14px; width: 6px;
-            background: #0a0a0a; cursor: pointer; margin-top: -6px;
-            transition: transform 0.2s var(--ease-out-expo), background-color 0.2s;
-        }
-        input[type=range]::-webkit-slider-thumb:hover { transform: scaleY(1.3); }
-        input[type=range]::-webkit-slider-thumb:active { transform: scaleX(1.6) scaleY(1.2); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #d4d4d8; cursor: pointer; }
-
-        /* Architectural Inputs */
-        .input-elegant {
-            border: 1px solid #e4e4e7; background: #fafafa; border-radius: 0px;
-            padding: 9px 11px; transition: all 0.25s var(--ease-out-expo);
-            width: 100%; color: #0a0a0a; font-size: 11px;
-        }
-        .input-elegant:focus {
-            outline: none; background: #ffffff; border-color: #0a0a0a;
-            box-shadow: 2px 2px 0px #0a0a0a;
-        }
-        .input-label {
-            font-size: 9px; font-family: "JetBrains Mono", monospace;
-            text-transform: uppercase; letter-spacing: 0.1em; color: #71717a;
-            display: block; margin-bottom: 4px; font-weight: 600;
-        }
-
-        /* Editorial Style Buttons */
-        .style-btn {
-            display: flex; flex-direction: column; align-items: flex-start;
-            padding: 11px 12px; border: 1px solid #e4e4e7; border-radius: 0px;
-            background: #ffffff; transition: all 0.3s var(--ease-out-expo);
-            cursor: pointer; text-align: left; position: relative; overflow: hidden;
-        }
-        .style-btn::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
-            background: #0a0a0a; transform: scaleX(0); transform-origin: right;
-            transition: transform 0.35s var(--ease-out-expo);
-        }
-        .style-btn:hover { border-color: #a1a1aa; background: #fafafa; transform: translateY(-1px); }
-        .style-btn:hover::after { transform: scaleX(1); transform-origin: left; }
-        .style-btn.active {
-            border-color: #0a0a0a; background: #0a0a0a; color: #ffffff;
-            box-shadow: 3px 3px 0px rgba(10, 10, 10, 0.12);
-        }
-        .style-btn .icon-wrapper { color: #52525b; transition: color 0.2s ease; font-size: 12px; }
-        .style-btn.active .icon-wrapper { color: #ffffff; }
-        .style-btn .title { font-weight: 600; font-size: 11px; margin-top: 7px; letter-spacing: -0.01em; }
-        .style-btn .subtext { font-size: 9px; color: #a1a1aa; font-family: "JetBrains Mono", monospace; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
-        .style-btn.active .subtext { color: #a1a1aa; }
-        .badge-new {
-            position: absolute; top: 8px; right: 8px; font-size: 8px;
-            font-family: "JetBrains Mono", monospace; padding: 1px 4px;
-            background: #0a0a0a; color: #ffffff; font-weight: 700; letter-spacing: 0.06em;
-        }
-        .style-btn.active .badge-new { background: #ffffff; color: #0a0a0a; }
-
-        .filter-btn { transition: all 0.25s var(--ease-out-expo); border-radius: 0px; }
-        .filter-btn.active-bw { background-color: #0a0a0a; color: #fff; border-color: #0a0a0a; }
-        .btn-invert.active-invert { background-color: #0a0a0a; color: #facc15; border-color: #0a0a0a; }
-
-        /* Sortable Thumbnails */
-        .thumb-item {
-            transition: all 0.25s var(--ease-out-expo); cursor: grab;
-            border: 1px solid #e4e4e7; border-radius: 0px; position: relative;
-        }
-        .thumb-item:active { cursor: grabbing; }
-        .thumb-item.active {
-            border-color: #0a0a0a; box-shadow: 0 0 0 2px #0a0a0a;
-        }
-        .sortable-ghost { opacity: 0.3; transform: scale(0.95); }
-
-        /* View Pager Architecture */
-        .mobile-pager-wrapper { flex: 1; width: 100%; position: relative; overflow: hidden; }
-        .view-pager-container { display: flex; width: 200vw; height: 100%; transition: transform 0.45s var(--ease-out-expo); will-change: transform; }
-        .view-panel { width: 100vw; height: 100%; display: flex; flex-direction: column; flex-shrink: 0; background: #ffffff; }
-
-        /* Desktop Architectural Layout */
-        @media (min-width: 768px) {
-            body { padding: 0; background-color: #ffffff; }
-            .mobile-pager-wrapper, .view-pager-container { display: contents; }
-            .view-panel, #panel-canvas { width: auto; border-radius: 0; background: white; }
-            #panel-gallery { flex: 0 0 250px; border-right: 1px solid #e4e4e7; }
-            #panel-controls { flex: 0 0 340px; border-left: 1px solid #e4e4e7; }
-            #panel-canvas { flex: 1; }
-            .mobile-nav { display: none !important; }
-        }
-
-        /* Modals & Overlays */
-        #globalLoader { background: rgba(10, 10, 10, 0.92); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity 0.4s var(--ease-out-expo); z-index: 100; }
-        #globalLoader.active { opacity: 1; pointer-events: all; }
-        #toastContainer { position: fixed; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-        .toast {
-            background: #0a0a0a; color: #fff; padding: 10px 18px; border: 1px solid #27272a;
-            font-size: 11px; font-family: "JetBrains Mono", monospace; display: flex; align-items: center; gap: 10px;
-            opacity: 0; transform: translateY(-10px); transition: all 0.4s var(--ease-out-expo);
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
-        }
-        .toast.show { opacity: 1; transform: translateY(0); }
-
-        .btn-xv {
-            position: relative; overflow: hidden; transition: all 0.3s var(--ease-out-expo);
-        }
-        .btn-xv:active { transform: scale(0.98); }
-    </style>
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body class="flex flex-col font-sans select-none">
 
+    <!-- KINETIC ARCHITECTURAL BOOT PRELOADER (圆矩影像 · 光学启动序幕) -->
+    <div id="bootPreloader">
+        <div class="preloader-grid-lines"></div>
+        
+        <div class="relative z-10 flex items-center justify-between border-b border-white/10 pb-4">
+            <div class="flex items-center gap-2.5">
+                <span class="w-2 h-2 bg-white inline-block animate-pulse"></span>
+                <span class="font-mono text-[10px] tracking-[0.25em] uppercase text-white/80">XIANGVISUALS OPTICAL ENGINE</span>
+            </div>
+            <div class="font-mono text-[10px] tracking-[0.2em] text-white/50 hidden sm:block">
+                COLOR PIPELINE: DISPLAY-P3 // HDR READY
+            </div>
+        </div>
+
+        <div class="relative z-10 flex flex-col items-center justify-center my-auto py-8">
+            <div class="relative w-24 h-24 flex items-center justify-center mb-6">
+                <svg class="w-full h-full" viewBox="0 0 100 100" fill="none">
+                    <rect class="cmos-rect" x="14" y="14" width="72" height="72" stroke="white" stroke-width="1.5"/>
+                    <path d="M8 20V8H20M80 8H92V20M92 80V92H80M20 92H8V80" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <circle class="lens-inner-circle" cx="50" cy="50" r="26" stroke="white" stroke-width="1.2"/>
+                    <circle class="lens-aperture-svg origin-center" cx="50" cy="50" r="18" stroke="rgba(255,255,255,0.35)" stroke-width="0.75" stroke-dasharray="4 4"/>
+                    <line x1="45" y1="50" x2="55" y2="50" stroke="white" stroke-width="1"/>
+                    <line x1="50" y1="45" x2="50" y2="55" stroke="white" stroke-width="1"/>
+                </svg>
+            </div>
+            <div class="text-center">
+                <h1 class="font-mono text-sm md:text-base font-bold tracking-[0.38em] uppercase text-white mb-1.5">XIANG FRAME 3.5</h1>
+                <p class="font-serif italic text-xs md:text-sm text-white/60 tracking-widest">Digital Gallery &amp; Wide-Gamut Archive System</p>
+            </div>
+        </div>
+
+        <div class="relative z-10">
+            <div class="flex items-end justify-between mb-2">
+                <div class="flex flex-col">
+                    <span id="bootStatusText" class="font-mono text-[9px] tracking-[0.22em] text-white/50 uppercase">INITIALIZING P3 COLOR SPACE &amp; HEIF DECODER...</span>
+                </div>
+                <div class="font-mono text-2xl md:text-3xl font-light tracking-tighter text-white">
+                    <span id="bootCounter">000</span><span class="text-xs text-white/40 ml-0.5">%</span>
+                </div>
+            </div>
+            <div class="w-full h-[1px] bg-white/15 overflow-hidden">
+                <div id="bootProgressBar" class="h-full bg-white w-0 transition-all duration-100 ease-out"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- TOP ARCHITECTURAL HEADER -->
-    <header style="padding-top: var(--s-top);" class="bg-white flex-shrink-0 z-30 border-b border-xv-border">
+    <header style="padding-top: var(--s-top);" class="stagger-enter bg-white flex-shrink-0 z-30 border-b border-xv-border">
         <div class="h-12 md:h-14 flex items-center justify-between px-4 md:px-6">
             <div class="flex items-center gap-3">
                 <a href="https://xiangvisuals.com/" target="_blank" class="group flex items-center gap-2.5 focus:outline-none" title="访问 XIANGVISUALS.COM 主站">
@@ -207,7 +103,7 @@
                     <div class="flex flex-col">
                         <div class="flex items-center gap-1.5">
                             <h1 class="text-xs font-bold text-xv-black tracking-[0.18em] uppercase font-mono">XIANG FRAME</h1>
-                            <span class="text-[9px] font-mono bg-xv-black text-white px-1 py-0.2 font-semibold">3.0</span>
+                            <span class="text-[9px] font-mono bg-xv-black text-white px-1 py-0.2 font-semibold">3.5 HDR</span>
                         </div>
                         <span class="text-[9px] font-mono text-xv-gray tracking-widest hidden sm:inline group-hover:text-xv-black transition-colors">XIANGVISUALS.COM ARCHIVE SYSTEM ↗</span>
                     </div>
@@ -215,6 +111,10 @@
             </div>
             
             <div class="flex items-center gap-2">
+                <div id="hdrEngineBadge" class="hidden sm:flex items-center gap-1.5 px-2.5 h-8 border border-xv-border bg-[#fafafa] text-[9px] font-mono text-xv-gray tracking-wider" title="Display-P3 广色域与 HEIC/HDR 解码管线已激活">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>P3 · HEIC/HDR</span>
+                </div>
                 <button id="btnStudioTheme" class="h-8 w-8 border border-xv-border text-xv-black text-xs hover:bg-xv-light transition-all flex items-center justify-center" title="切换暗房/画廊预览背景">
                     <i class="fa-solid fa-circle-half-stroke text-[11px]"></i>
                 </button>
@@ -234,20 +134,26 @@
     <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative w-full">
         
         <!-- PANEL 2: CANVAS/PREVIEW -->
-        <section id="panel-canvas" class="w-full h-[46vh] shrink-0 md:h-full md:flex-1 md:order-2 bg-white relative z-20 border-b border-xv-border md:border-none">
+        <section id="panel-canvas" class="stagger-enter delay-2 w-full h-[46vh] shrink-0 md:h-full md:flex-1 md:order-2 bg-white relative z-20 border-b border-xv-border md:border-none">
             <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#fafafa] p-6">
-                <div class="max-w-md w-full border border-xv-border bg-white p-8 md:p-10 text-center relative">
-                    <div class="text-[9px] font-mono uppercase tracking-[0.25em] text-xv-gray mb-4">ARCHIVE GENERATOR // EDITION 3.0</div>
-                    <div class="w-12 h-12 mx-auto border border-xv-black flex items-center justify-center mb-5 text-xv-black">
+                <div class="max-w-md w-full border border-xv-border bg-white p-8 md:p-10 text-center relative group hover:border-xv-black transition-colors duration-500">
+                    <div class="text-[9px] font-mono uppercase tracking-[0.25em] text-xv-gray mb-4">ARCHIVE GENERATOR // EDITION 3.5 PRO</div>
+                    <div class="w-12 h-12 mx-auto border border-xv-black flex items-center justify-center mb-5 text-xv-black transition-transform duration-500 group-hover:scale-105">
                         <i class="fa-solid fa-crop-simple text-lg"></i>
                     </div>
                     <h2 class="text-lg md:text-xl font-serif font-semibold text-xv-black tracking-wide mb-2">构建您的数字摄影档案</h2>
-                    <p class="text-[11px] text-xv-gray mb-6 leading-relaxed font-sans">
-                        自动解析照片 EXIF 信息与地理坐标，支持无边框高密光学矢量矩阵、画廊级色卡档案及胶片暗房装裱。
+                    <p class="text-[11px] text-xv-gray mb-5 leading-relaxed font-sans">
+                        全面支持 <strong>iPhone HEIC/HEIF、Display-P3 广色域与 HDR 高动态照片</strong>。内置瑞士网格、光学直方图、弥散流光、暗房溢光及高密矢量矩阵等 17 款先锋版式。
                     </p>
+                    <div class="flex flex-wrap items-center justify-center gap-1.5 mb-6 text-[9px] font-mono text-xv-gray">
+                        <span class="px-2 py-0.5 bg-xv-light border border-xv-border">HEIC / HEIF</span>
+                        <span class="px-2 py-0.5 bg-xv-light border border-xv-border">ULTRA HDR</span>
+                        <span class="px-2 py-0.5 bg-xv-light border border-xv-border">AVIF / TIFF</span>
+                        <span class="px-2 py-0.5 bg-xv-light border border-xv-border">DISPLAY-P3</span>
+                    </div>
                     <div class="flex flex-col sm:flex-row gap-2.5 justify-center">
                         <button onclick="document.getElementById('fileInput').click();" class="btn-xv px-6 py-2.5 bg-xv-black text-white text-[11px] font-mono uppercase tracking-widest font-semibold hover:bg-neutral-800">
-                            + 导入作品图片
+                            + 导入作品原片 (支持 HEIC/HDR)
                         </button>
                     </div>
                 </div>
@@ -258,9 +164,15 @@
             </div>
             
             <!-- Top Left & Right Floating Technical HUD -->
-            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur border border-xv-border px-2.5 py-1 z-20 pointer-events-none hidden md:flex items-center gap-2">
-                <span class="w-1.5 h-1.5 bg-xv-black inline-block"></span>
-                <span id="hudStyleName" class="text-[10px] font-mono uppercase tracking-widest text-xv-black font-semibold">EXIF RAW</span>
+            <div class="absolute top-3 left-3 flex items-center gap-1.5 z-20 pointer-events-none">
+                <div class="bg-white/90 backdrop-blur border border-xv-border px-2.5 py-1 hidden md:flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-xv-black inline-block"></span>
+                    <span id="hudStyleName" class="text-[10px] font-mono uppercase tracking-widest text-xv-black font-semibold">EXIF RAW</span>
+                </div>
+                <div id="hudHdrBadge" class="hidden hdr-pill px-2 py-1 text-[9px] font-mono font-bold tracking-widest uppercase items-center gap-1">
+                    <i class="fa-solid fa-sun text-[9px] text-amber-300"></i>
+                    <span id="hudHdrText">HDR · P3</span>
+                </div>
             </div>
             <div class="absolute top-3 right-3 bg-white/90 backdrop-blur border border-xv-border px-2.5 py-1 z-20 pointer-events-none hidden md:flex items-center gap-2">
                 <span id="imgDimensions" class="text-[10px] font-mono font-medium text-xv-gray">-- × -- PX</span>
@@ -271,20 +183,18 @@
             <div id="view-pager" class="view-pager-container">
                 
                 <!-- PANEL 1: GALLERY -->
-                <aside id="panel-gallery" class="view-panel md:order-1">
+                <aside id="panel-gallery" class="stagger-enter delay-1 view-panel md:order-1">
                     <div class="px-4 py-3 flex items-center justify-between shrink-0 bg-white border-b border-xv-border hidden md:flex">
                         <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-[0.15em]">01 / ARCHIVE QUEUE</h3>
                         <span id="galleryCount" class="text-[10px] font-mono text-xv-gray">0 ITEMS</span>
                     </div>
                     <div class="native-scroll flex-1 p-3 pb-24 md:pb-4">
-                        <div id="thumbnailList" class="grid grid-cols-4 md:grid-cols-2 gap-2">
-                            <!-- Thumbnails injected here -->
-                        </div>
+                        <div id="thumbnailList" class="grid grid-cols-4 md:grid-cols-2 gap-2"></div>
                     </div>
                 </aside>
 
                 <!-- PANEL 3: CONTROLS/INSPECTOR -->
-                <aside id="panel-controls" class="view-panel md:order-3 bg-white">
+                <aside id="panel-controls" class="stagger-enter delay-3 view-panel md:order-3 bg-white">
                     <div class="border-b border-xv-border bg-white z-10 shrink-0 hidden md:block">
                         <div class="grid grid-cols-3 divide-x divide-xv-border">
                             <button class="tab-btn py-3 text-[10px] font-mono uppercase tracking-widest font-bold bg-xv-black text-white transition-all" data-tab="tab-templates">01 版式</button>
@@ -298,12 +208,48 @@
                         <!-- TAB 1: TEMPLATES -->
                         <div id="tab-templates" class="tab-pane block space-y-4">
                             
-                            <!-- SECTION: EDITORIAL & EXIF -->
+                            <!-- SECTION: 2026 CURATORIAL TRENDS -->
                             <div class="flex items-center justify-between border-b border-xv-border pb-1.5">
-                                <span class="text-[9px] font-mono text-xv-black uppercase tracking-[0.18em] font-bold">Editorial & EXIF // 经典画廊档案</span>
-                                <span class="text-[9px] font-mono text-xv-gray">03</span>
+                                <span class="text-[9px] font-mono text-xv-black uppercase tracking-[0.18em] font-bold">2026 Trends // 先锋策展与流行趋势</span>
+                                <span class="text-[9px] font-mono bg-xv-black text-white px-1 font-bold">05 NEW</span>
                             </div>
                             <div class="grid grid-cols-2 gap-2" id="styleGroup">
+                                <button class="style-btn" data-style="swiss_grid">
+                                    <span class="badge-new">TREND</span>
+                                    <i class="fa-solid fa-border-all icon-wrapper pointer-events-none"></i>
+                                    <span class="title pointer-events-none">瑞士网格展签</span>
+                                    <span class="subtext pointer-events-none">Swiss Spec Sheet</span>
+                                </button>
+                                <button class="style-btn" data-style="optical_histogram">
+                                    <span class="badge-new">PRO</span>
+                                    <i class="fa-solid fa-chart-area icon-wrapper pointer-events-none"></i>
+                                    <span class="title pointer-events-none">光学直方图档案</span>
+                                    <span class="subtext pointer-events-none">Live RGB Waveform</span>
+                                </button>
+                                <button class="style-btn" data-style="aura_blur">
+                                    <span class="badge-trend">AURA</span>
+                                    <i class="fa-solid fa-wand-magic-sparkles icon-wrapper pointer-events-none"></i>
+                                    <span class="title pointer-events-none">弥散光感画境</span>
+                                    <span class="subtext pointer-events-none">Atmospheric Glow</span>
+                                </button>
+                                <button class="style-btn" data-style="halation_lab">
+                                    <span class="badge-trend">LAB</span>
+                                    <i class="fa-solid fa-fire-flame-curved icon-wrapper pointer-events-none"></i>
+                                    <span class="title pointer-events-none">暗房高光溢光</span>
+                                    <span class="subtext pointer-events-none">CineStill Halation</span>
+                                </button>
+                                <button class="style-btn col-span-2" data-style="cyanotype">
+                                    <span class="badge-trend">1842 ARCHIVE</span>
+                                    <i class="fa-solid fa-scroll icon-wrapper pointer-events-none"></i>
+                                    <span class="title pointer-events-none">古典蓝晒印相 (普鲁士蓝铁氰酸盐手工边框)</span>
+                                    <span class="subtext pointer-events-none">Prussian Blue Cyanotype Print</span>
+                                </button>
+
+                                <!-- SECTION: EDITORIAL & EXIF -->
+                                <div class="col-span-2 mt-3 pt-2 border-b border-xv-border pb-1.5 flex items-center justify-between">
+                                    <span class="text-[9px] font-mono text-xv-black uppercase tracking-[0.18em] font-bold">Editorial & EXIF // 经典画廊档案</span>
+                                    <span class="text-[9px] font-mono text-xv-gray">03</span>
+                                </div>
                                 <button class="style-btn active" data-style="exif">
                                     <i class="fa-solid fa-align-left icon-wrapper pointer-events-none"></i>
                                     <span class="title pointer-events-none">EXIF 原生</span>
@@ -326,7 +272,7 @@
                                     <span class="text-[9px] font-mono text-xv-gray">03</span>
                                 </div>
                                 <button class="style-btn col-span-2" data-style="vector_field">
-                                    <span class="badge-new">NEW · 70 COLS</span>
+                                    <span class="badge-new">70 COLS</span>
                                     <i class="fa-solid fa-compass icon-wrapper pointer-events-none"></i>
                                     <span class="title pointer-events-none">光学矢量矩阵 (无边框高密)</span>
                                     <span class="subtext pointer-events-none">Dense Luminance Vector Grid</span>
@@ -388,6 +334,25 @@
 
                         <!-- TAB 2: ADJUSTMENTS -->
                         <div id="tab-adjust" class="tab-pane hidden space-y-5">
+                            <section class="space-y-3 bg-[#fafafa] p-3.5 border border-xv-border">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-widest">
+                                        <i class="fa-solid fa-sun mr-1"></i> HDR &amp; P3 Tone Mapping
+                                    </h3>
+                                    <span id="inspectorColorSpace" class="text-[9px] font-mono bg-xv-black text-white px-1.5 py-0.5 font-bold">DISPLAY-P3</span>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-gray font-bold">EDR 高光动态激发 / Highlight Roll-off</label>
+                                        <span class="text-[10px] font-mono text-xv-black bg-xv-border px-1.5 py-0.5 font-bold" id="hdrBoostVal">0%</span>
+                                    </div>
+                                    <input type="range" id="hdrBoostSlider" min="0" max="1" step="0.05" value="0">
+                                    <p class="text-[9px] font-mono text-xv-gray mt-1 leading-relaxed">
+                                        针对 HEIC/HDR 原片进行高光微对比度延展与 P3 广色域通透度增强。
+                                    </p>
+                                </div>
+                            </section>
+
                             <section id="section-layout" class="space-y-4">
                                 <div id="ctrl-margin" class="bg-[#fafafa] p-3.5 border border-xv-border">
                                     <div class="flex justify-between items-center mb-2">
@@ -405,7 +370,6 @@
                                 </div>
                             </section>
 
-                            <!-- Vector Field Controls (Default 70 Columns) -->
                             <section id="section-vector" class="space-y-4 bg-[#fafafa] p-3.5 border border-xv-border" style="display: none;">
                                 <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-widest mb-1"><i class="fa-solid fa-compass mr-1"></i> Vector Matrix 无边框高密矢量场</h3>
                                 <div>
@@ -417,7 +381,6 @@
                                 </div>
                             </section>
 
-                            <!-- Global Optical Filters -->
                             <section id="section-optical" class="space-y-4 bg-[#fafafa] p-3.5 border border-xv-border">
                                 <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-widest mb-2"><i class="fa-solid fa-sliders mr-1"></i> Optical Lab 光学与暗房</h3>
                                 <div class="flex gap-2">
@@ -516,23 +479,20 @@
                 <span class="text-[9px] font-mono uppercase tracking-wider font-bold">04 档案</span>
             </button>
         </div>
-        <style>
-            .nav-btn.active-nav { color: #0a0a0a; background: #fafafa; }
-            .nav-btn.active-nav::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: #0a0a0a; }
-        </style>
     </div>
 
-    <input type="file" id="fileInput" class="hidden" accept="image/jpeg, image/png, image/webp, image/heic" multiple>
+    <input type="file" id="fileInput" class="hidden" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/avif,image/tiff,.heic,.heif,.avif,.tif,.tiff,.dng" multiple>
     
     <div id="toastContainer" style="top: max(20px, var(--s-top)); left: 50%; transform: translateX(-50%);"></div>
 
-    <!-- Global Curtain Loader -->
+    <!-- Global Optical Scan Loader -->
     <div id="globalLoader" class="fixed inset-0 flex flex-col items-center justify-center text-white">
-        <div class="w-10 h-10 border border-white/30 flex items-center justify-center mb-4">
-            <i class="fa-solid fa-circle-notch fa-spin text-lg"></i>
+        <div class="w-14 h-14 border border-white/30 flex flex-col items-center justify-center mb-5 relative overflow-hidden">
+            <div class="scan-line absolute"></div>
+            <span class="font-mono text-[10px] tracking-tighter font-bold">HDR</span>
         </div>
-        <h3 class="font-mono text-xs font-bold tracking-[0.3em] uppercase">PROCESSING ARCHIVE</h3>
-        <p class="text-[10px] text-neutral-400 mt-1.5 font-mono tracking-widest">EXTRACTING METADATA & PALETTE...</p>
+        <h3 id="loaderMainTitle" class="font-mono text-xs font-bold tracking-[0.3em] uppercase">OPTICAL ARCHIVE ENGINE</h3>
+        <p id="loaderSubTitle" class="text-[10px] text-neutral-400 mt-1.5 font-mono tracking-widest uppercase">DECODING HEIF / P3 GAMUT &amp; WAVEFORM...</p>
     </div>
 
     <!-- Batch Progress Modal -->
@@ -540,7 +500,7 @@
         <div class="w-80 max-w-[85%] border border-neutral-800 p-6 bg-neutral-950">
             <div class="text-[9px] font-mono uppercase tracking-[0.25em] text-neutral-500 mb-2 text-center">BATCH RENDER ENGINE</div>
             <h3 class="text-sm font-mono uppercase tracking-widest font-bold mb-2 text-center" id="progressTitle">正在渲染高清画册...</h3>
-            <p class="text-[10px] text-neutral-400 mb-5 text-center font-mono">DO NOT CLOSE THIS WINDOW</p>
+            <p class="text-[10px] text-neutral-400 mb-5 text-center font-mono">DISPLAY-P3 HIGH BITRATE EXPORT</p>
             <div class="w-full h-1 bg-neutral-800 overflow-hidden">
                 <div id="progressBar" class="h-full bg-white transition-all duration-300 w-0"></div>
             </div>
@@ -548,1544 +508,8 @@
         </div>
     </div>
 
-    <script>
-        function triggerHaptic(type = 'light') {
-            if (!navigator.vibrate) return;
-            try {
-                if (type === 'light') navigator.vibrate(10);
-                else if (type === 'medium') navigator.vibrate(20);
-                else if (type === 'success') navigator.vibrate([15, 30, 15]);
-            } catch(e) {}
-        }
-
-        class AppController {
-            constructor() {
-                this.state = {
-                    images: [], 
-                    activeId: null,
-                    settings: {
-                        style: 'exif', 
-                        wallColor: '#ffffff',
-                        matMultiplier: 1.0,
-                        shadowMultiplier: 1.0,
-                        invertAmount: 0,
-                        grainAmount: 0.15,
-                        bwAmount: 0,
-                        vectorCols: 70
-                    },
-                    isProcessing: false,
-                    grainPattern: null,
-                    currentTab: 0
-                };
-                this.OUTPUT_MAX_DIMENSION = 4200; 
-                this.isRendering = false; 
-                this.animationFrames = {}; 
-                
-                this.hitboxes = [];
-                this.dragInfo = { active: false, id: null, offsetX: 0, offsetY: 0, currX: 0, currY: 0 };
-
-                this.initDOM();
-                this.bindEvents();
-                this.initSortable();
-                this.updateControlsVisibility(this.state.settings.style); 
-                
-                window.addEventListener('resize', this.debounce(() => {
-                    this.handleResize();
-                    this.renderPreview(false);
-                }, 200));
-                
-                if (window.innerWidth < 768) {
-                    this.switchToTab(0);
-                }
-            }
-
-            initDOM() {
-                this.dom = {
-                    fileInput: document.getElementById('fileInput'),
-                    btnAddFiles: document.getElementById('btnAddFiles'),
-                    btnStudioTheme: document.getElementById('btnStudioTheme'),
-                    btnDownloadAll: document.getElementById('btnDownloadAll'),
-                    btnDownloadCurrent: document.getElementById('btnDownloadCurrent'),
-                    btnApplyTextToAll: document.getElementById('btnApplyTextToAll'),
-                    
-                    thumbnailList: document.getElementById('thumbnailList'),
-                    galleryCount: document.getElementById('galleryCount'),
-                    emptyState: document.getElementById('emptyState'),
-                    workspace: document.getElementById('workspace'),
-                    previewCanvas: document.getElementById('previewCanvas'),
-                    controlPanel: document.getElementById('controlPanel'),
-                    imgDimensions: document.getElementById('imgDimensions'),
-                    hudStyleName: document.getElementById('hudStyleName'),
-                    globalLoader: document.getElementById('globalLoader'),
-                    
-                    inputLeft: document.getElementById('inputLeft'),
-                    inputRight: document.getElementById('inputRight'),
-                    inputExifTime: document.getElementById('inputExifTime'),
-                    inputLocation: document.getElementById('inputLocation'),
-                    inputExifCamera: document.getElementById('inputExifCamera'),
-                    inputExifLens: document.getElementById('inputExifLens'),
-                    inputExifParams: document.getElementById('inputExifParams'),
-                    inputFilmName: document.getElementById('inputFilmName'),
-                    
-                    matSizeSlider: document.getElementById('matSizeSlider'),
-                    matSizeVal: document.getElementById('matSizeVal'),
-                    shadowSlider: document.getElementById('shadowSlider'),
-                    shadowVal: document.getElementById('shadowVal'),
-
-                    vectorColsSlider: document.getElementById('vectorColsSlider'),
-                    vectorColsVal: document.getElementById('vectorColsVal'),
-
-                    btnToggleBW: document.getElementById('btnToggleBW'),
-                    btnToggleInvert: document.getElementById('btnToggleInvert'),
-                    grainSlider: document.getElementById('grainSlider'), 
-                    grainVal: document.getElementById('grainVal'),       
-                    
-                    navBtns: document.querySelectorAll('.nav-btn'),
-                    tabBtns: document.querySelectorAll('.tab-btn'),
-                    tabPanes: document.querySelectorAll('.tab-pane'),
-                    styleBtns: document.querySelectorAll('.style-btn'),
-                    wallBtns: document.querySelectorAll('.wall-btn'),
-                    
-                    toastContainer: document.getElementById('toastContainer'),
-                    progressModal: document.getElementById('progressModal'),
-                    progressBar: document.getElementById('progressBar'),
-                    progressTitle: document.getElementById('progressTitle'),
-                    progressCount: document.getElementById('progressCount')
-                };
-                this.ctx = this.dom.previewCanvas.getContext('2d', { alpha: false });
-            }
-
-            initSortable() {
-                new Sortable(this.dom.thumbnailList, {
-                    animation: 180,
-                    ghostClass: 'sortable-ghost',
-                    onEnd: () => {
-                        triggerHaptic('light');
-                        const itemEls = this.dom.thumbnailList.querySelectorAll('.thumb-item');
-                        const newOrderIds = Array.from(itemEls).map(el => el.dataset.id);
-                        this.state.images.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
-                        if (this.state.settings.style === 'film_strip') {
-                            this.renderPreview(false); 
-                        }
-                    }
-                });
-            }
-
-            switchToTab(index, targetTabId = null) {
-                triggerHaptic('light');
-                this.state.currentTab = index;
-                const pager = document.getElementById('view-pager');
-                
-                if (window.innerWidth < 768) {
-                    pager.style.transform = `translateX(-${index * 100}vw)`;
-                }
-
-                if (index === 1 && targetTabId) {
-                    this.dom.tabBtns.forEach(b => {
-                        if (b.dataset.tab === targetTabId) {
-                            b.classList.add('bg-xv-black', 'text-white');
-                            b.classList.remove('text-xv-gray');
-                        } else {
-                            b.classList.remove('bg-xv-black', 'text-white');
-                            b.classList.add('text-xv-gray');
-                        }
-                    });
-                    
-                    this.dom.tabPanes.forEach(pane => {
-                        pane.style.display = pane.id === targetTabId ? 'block' : 'none';
-                    });
-                }
-
-                this.dom.navBtns.forEach(b => {
-                    const bIndex = parseInt(b.dataset.index);
-                    const bTarget = b.dataset.target;
-                    let isActive = (index === 0 && bIndex === 0) || (index === 1 && bIndex === 1 && bTarget === targetTabId);
-                    b.classList.toggle('active-nav', isActive);
-                });
-                
-                if (this.state.images.length > 0) setTimeout(() => this.renderPreview(false), 300);
-            }
-
-            handleResize() {
-                if (window.innerWidth >= 768) {
-                    document.getElementById('view-pager').style.transform = '';
-                } else {
-                    document.getElementById('view-pager').style.transform = `translateX(-${this.state.currentTab * 100}vw)`;
-                }
-            }
-
-            animateFilter(key, targetValue) {
-                if (this.animationFrames[key]) cancelAnimationFrame(this.animationFrames[key]);
-                const startValue = this.state.settings[key];
-                const startTime = performance.now();
-                const duration = 260; 
-
-                const animate = (now) => {
-                    const elapsed = now - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-                    this.state.settings[key] = startValue + (targetValue - startValue) * ease;
-                    this.renderPreview(false); 
-                    if (progress < 1) this.animationFrames[key] = requestAnimationFrame(animate);
-                };
-                this.animationFrames[key] = requestAnimationFrame(animate);
-            }
-
-            bindEvents() {
-                this.dom.btnAddFiles.addEventListener('click', () => { triggerHaptic(); this.dom.fileInput.click(); });
-                this.dom.fileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
-
-                this.dom.btnStudioTheme.addEventListener('click', () => {
-                    triggerHaptic('light');
-                    this.dom.workspace.classList.toggle('dark-studio');
-                });
-
-                this.dom.navBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const index = parseInt(e.currentTarget.dataset.index);
-                        const targetTab = e.currentTarget.dataset.target;
-                        this.switchToTab(index, targetTab);
-                    });
-                });
-
-                this.dom.tabBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const targetTab = e.currentTarget.dataset.tab;
-                        this.switchToTab(1, targetTab);
-                    });
-                });
-
-                const body = document.body;
-                body.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    if (e.dataTransfer.types.includes('Files')) body.classList.add('opacity-80');
-                });
-                body.addEventListener('dragleave', (e) => {
-                    if (e.clientX === 0 || e.clientY === 0) body.classList.remove('opacity-80');
-                });
-                body.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    body.classList.remove('opacity-80');
-                    if (!this.state.isProcessing && e.dataTransfer.files.length > 0) this.handleFiles(e.dataTransfer.files);
-                });
-
-                this.dom.styleBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        triggerHaptic('light');
-                        const target = e.currentTarget;
-                        const newStyle = target.dataset.style;
-                        this.dom.styleBtns.forEach(b => b.classList.remove('active'));
-                        target.classList.add('active');
-                        if (this.dom.hudStyleName) {
-                            this.dom.hudStyleName.textContent = newStyle.replace(/_/g, ' ').toUpperCase();
-                        }
-                        this.updateSettings({ style: newStyle }, true);
-                    });
-                });
-
-                this.dom.wallBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        triggerHaptic('light');
-                        const color = e.target.dataset.wall;
-                        this.updateSettings({ wallColor: color }, false); 
-                        this.dom.wallBtns.forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-xv-black'));
-                        e.target.classList.add('ring-2', 'ring-offset-2', 'ring-xv-black');
-                    });
-                });
-
-                this.dom.btnToggleBW.addEventListener('click', () => {
-                    triggerHaptic('light');
-                    const isBW = this.state.settings.bwAmount === 1;
-                    this.animateFilter('bwAmount', isBW ? 0 : 1);
-                    this.dom.btnToggleBW.classList.toggle('active-bw', !isBW);
-                });
-
-                this.dom.btnToggleInvert.addEventListener('click', () => {
-                    triggerHaptic('light');
-                    const isInvert = this.state.settings.invertAmount === 1;
-                    this.animateFilter('invertAmount', isInvert ? 0 : 1);
-                    this.dom.btnToggleInvert.classList.toggle('active-invert', !isInvert);
-                });
-
-                const sliderInputHandler = (key, value, displayElem, formatter) => {
-                    if (!this.isRendering) {
-                        this.isRendering = true;
-                        requestAnimationFrame(() => {
-                            this.updateSettings({ [key]: parseFloat(value) }, false); 
-                            displayElem.textContent = formatter ? formatter(value) : `${Math.round(value * 100)}%`;
-                            this.isRendering = false;
-                        });
-                    }
-                };
-                this.dom.matSizeSlider.addEventListener('input', (e) => sliderInputHandler('matMultiplier', e.target.value, this.dom.matSizeVal));
-                this.dom.shadowSlider.addEventListener('input', (e) => sliderInputHandler('shadowMultiplier', e.target.value, this.dom.shadowVal));
-                this.dom.grainSlider.addEventListener('input', (e) => sliderInputHandler('grainAmount', e.target.value, this.dom.grainVal)); 
-                this.dom.vectorColsSlider.addEventListener('input', (e) => sliderInputHandler('vectorCols', e.target.value, this.dom.vectorColsVal, v => `${v} 列`));
-
-                const textInputHandler = this.debounce((key, value) => {
-                    const activeImg = this.getActiveImage();
-                    if (activeImg) {
-                        activeImg[key] = value;
-                        this.renderPreview(false); 
-                    }
-                }, 120);
-
-                this.dom.inputLeft.addEventListener('input', (e) => textInputHandler('textLeft', e.target.value));
-                this.dom.inputRight.addEventListener('input', (e) => textInputHandler('textRight', e.target.value));
-                this.dom.inputExifTime.addEventListener('input', (e) => textInputHandler('exifTime', e.target.value));
-                this.dom.inputLocation.addEventListener('input', (e) => textInputHandler('location', e.target.value));
-                this.dom.inputExifCamera.addEventListener('input', (e) => textInputHandler('exifCamera', e.target.value));
-                this.dom.inputExifLens.addEventListener('input', (e) => textInputHandler('exifLens', e.target.value));
-                this.dom.inputExifParams.addEventListener('input', (e) => textInputHandler('exifParams', e.target.value));
-                this.dom.inputFilmName.addEventListener('input', (e) => textInputHandler('filmName', e.target.value));
-
-                this.dom.btnApplyTextToAll.addEventListener('click', () => {
-                    triggerHaptic('success');
-                    const activeImg = this.getActiveImage();
-                    if (!activeImg) return;
-                    this.state.images.forEach(img => {
-                        img.textLeft = activeImg.textLeft;
-                        img.textRight = activeImg.textRight;
-                        img.exifTime = activeImg.exifTime;
-                        img.location = activeImg.location;
-                        img.exifCamera = activeImg.exifCamera;
-                        img.exifLens = activeImg.exifLens;
-                        img.exifParams = activeImg.exifParams;
-                        img.filmName = activeImg.filmName;
-                    });
-                    this.showToast('ARCHIVE METADATA SYNCED // 已同步至全部作品', 'success');
-                });
-
-                this.dom.btnDownloadCurrent.addEventListener('click', () => { triggerHaptic('medium'); this.downloadCurrent(); });
-                this.dom.btnDownloadAll.addEventListener('click', () => { triggerHaptic('medium'); this.downloadAll(); });
-
-                // Canvas Drag & Drop for Contact Sheet (film_strip)
-                const cvs = this.dom.previewCanvas;
-                const getCoords = (e) => {
-                    const rect = cvs.getBoundingClientRect();
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                    const canvasRatio = cvs.width / cvs.height;
-                    const rectRatio = rect.width / rect.height;
-                    let renderW, renderH, offsetX = 0, offsetY = 0;
-                    if (canvasRatio > rectRatio) {
-                        renderW = rect.width; renderH = rect.width / canvasRatio; offsetY = (rect.height - renderH) / 2;
-                    } else {
-                        renderH = rect.height; renderW = rect.height * canvasRatio; offsetX = (rect.width - renderW) / 2;
-                    }
-                    const scale = cvs.width / renderW;
-                    return { x: (clientX - rect.left - offsetX) * scale, y: (clientY - rect.top - offsetY) * scale };
-                };
-
-                const handleDown = (e) => {
-                    if (this.state.settings.style !== 'film_strip') return;
-                    const coords = getCoords(e);
-                    for (let i = this.hitboxes.length - 1; i >= 0; i--) {
-                        const box = this.hitboxes[i];
-                        if (coords.x >= box.x && coords.x <= box.x + box.w && coords.y >= box.y && coords.y <= box.y + box.h) {
-                            triggerHaptic('light');
-                            this.dragInfo = { active: true, id: box.id, offsetX: coords.x - box.x, offsetY: coords.y - box.y, currX: coords.x, currY: coords.y };
-                            cvs.style.cursor = 'grabbing';
-                            this.renderPreview(false); 
-                            break;
-                        }
-                    }
-                };
-
-                const handleMove = (e) => {
-                    if (!this.dragInfo.active) return;
-                    e.preventDefault(); 
-                    const coords = getCoords(e);
-                    this.dragInfo.currX = coords.x; this.dragInfo.currY = coords.y;
-
-                    let swapId = null;
-                    for (let box of this.hitboxes) {
-                        if (box.id !== this.dragInfo.id) {
-                            if (coords.x >= box.x && coords.x <= box.x + box.w && coords.y >= box.y && coords.y <= box.y + box.h) {
-                                swapId = box.id; break;
-                            }
-                        }
-                    }
-                    if (swapId) {
-                        const idx1 = this.state.images.findIndex(img => img.id === this.dragInfo.id);
-                        const idx2 = this.state.images.findIndex(img => img.id === swapId);
-                        if (idx1 > -1 && idx2 > -1) {
-                            triggerHaptic('medium');
-                            const temp = this.state.images[idx1];
-                            this.state.images[idx1] = this.state.images[idx2];
-                            this.state.images[idx2] = temp;
-                            this.updateThumbnailsOrderDOM(); 
-                        }
-                    }
-                    this.renderPreview(false);
-                };
-
-                const handleUp = () => {
-                    if (this.dragInfo.active) {
-                        triggerHaptic('light');
-                        this.dragInfo.active = false;
-                        cvs.style.cursor = 'auto';
-                        this.renderPreview(false);
-                    }
-                };
-
-                cvs.addEventListener('mousedown', handleDown);
-                cvs.addEventListener('mousemove', handleMove);
-                window.addEventListener('mouseup', handleUp); 
-                cvs.addEventListener('touchstart', handleDown, { passive: false });
-                cvs.addEventListener('touchmove', handleMove, { passive: false });
-                window.addEventListener('touchend', handleUp);
-            }
-
-            debounce(func, wait) {
-                let timeout;
-                return function (...args) {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(this, args), wait);
-                };
-            }
-
-            updateThumbnailsOrderDOM() {
-                this.state.images.forEach(img => {
-                    const thumb = this.dom.thumbnailList.querySelector(`[data-id="${img.id}"]`);
-                    if (thumb) this.dom.thumbnailList.appendChild(thumb);
-                });
-            }
-
-            extractPalette(imgObj) {
-                try {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                    canvas.width = 64; canvas.height = 64;
-                    ctx.drawImage(imgObj, 0, 0, 64, 64);
-                    const data = ctx.getImageData(0, 0, 64, 64).data;
-                    
-                    const colorCounts = {};
-                    const colorPool = [];
-                    const binSize = 32; 
-
-                    for (let i = 0; i < data.length; i += 4) {
-                        if (data[i+3] > 128) {
-                            const r = data[i], g = data[i+1], b = data[i+2];
-                            const luminance = (0.299*r + 0.587*g + 0.114*b);
-                            if (luminance > 242 || luminance < 14) continue;
-                            colorPool.push({ r, g, b, lum: luminance });
-                            const binKey = `${Math.floor(r/binSize)},${Math.floor(g/binSize)},${Math.floor(b/binSize)}`;
-                            if (!colorCounts[binKey]) colorCounts[binKey] = { count: 0, rSum: 0, gSum: 0, bSum: 0 };
-                            colorCounts[binKey].count++;
-                            colorCounts[binKey].rSum += r;
-                            colorCounts[binKey].gSum += g;
-                            colorCounts[binKey].bSum += b;
-                        }
-                    }
-
-                    const defaultPalette = [
-                        { rgbStr: '#d4d4d8', hex: '#d4d4d8', r: 212, g: 212, b: 216 },
-                        { rgbStr: '#94a3b8', hex: '#94a3b8', r: 148, g: 163, b: 184 },
-                        { rgbStr: '#64748b', hex: '#64748b', r: 100, g: 116, b: 139 },
-                        { rgbStr: '#1e293b', hex: '#1e293b', r: 30, g: 41, b: 59 }
-                    ];
-
-                    if (colorPool.length === 0) return defaultPalette;
-                    const sortedBins = Object.values(colorCounts).sort((a, b) => b.count - a.count);
-                    if (sortedBins.length === 0) return defaultPalette;
-
-                    const getSaturation = (r, g, b) => {
-                        const max = Math.max(r, g, b) / 255, min = Math.min(r, g, b) / 255;
-                        return max === 0 ? 0 : (max - min) / max;
-                    };
-                    const getLightness = (r, g, b) => (Math.max(r, g, b) / 255 + Math.min(r, g, b) / 255) / 2;
-
-                    let candidates = [];
-                    for (let i = 0; i < Math.min(10, sortedBins.length); i++) {
-                        const bin = sortedBins[i];
-                        if (bin.count > sortedBins[0].count * 0.05) {
-                            const r = Math.round(bin.rSum / bin.count);
-                            const g = Math.round(bin.gSum / bin.count);
-                            const b = Math.round(bin.bSum / bin.count);
-                            candidates.push({ r, g, b, s: getSaturation(r, g, b), l: getLightness(r, g, b), count: bin.count });
-                        }
-                    }
-
-                    candidates.sort((a, b) => {
-                        let scoreA = a.s * (a.l > 0.1 && a.l < 0.9 ? 1 : 0.1) * Math.log(a.count);
-                        let scoreB = b.s * (b.l > 0.1 && b.l < 0.9 ? 1 : 0.1) * Math.log(b.count);
-                        return scoreB - scoreA;
-                    });
-                    
-                    let bestColor = candidates.length > 0 ? candidates[0] : { 
-                        r: Math.round(sortedBins[0].rSum / sortedBins[0].count),
-                        g: Math.round(sortedBins[0].gSum / sortedBins[0].count),
-                        b: Math.round(sortedBins[0].bSum / sortedBins[0].count)
-                    };
-
-                    const pickedColors = [{ r: bestColor.r, g: bestColor.g, b: bestColor.b }];
-                    const dist = (c1, c2) => Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2);
-                    
-                    let dominantBin = sortedBins[0];
-                    pickedColors.push({
-                        r: Math.round(dominantBin.rSum / dominantBin.count),
-                        g: Math.round(dominantBin.gSum / dominantBin.count),
-                        b: Math.round(dominantBin.bSum / dominantBin.count)
-                    });
-
-                    while (pickedColors.length < 4 && colorPool.length > 0) {
-                        let maxDist = -1; let furthestColor = colorPool[0];
-                        for (let c of colorPool) {
-                            let minDistToPicked = Math.min(...pickedColors.map(p => dist(c, p)));
-                            if (minDistToPicked > maxDist) { maxDist = minDistToPicked; furthestColor = c; }
-                        }
-                        pickedColors.push({ r: furthestColor.r, g: furthestColor.g, b: furthestColor.b });
-                    }
-                    
-                    const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-                    return pickedColors.map(c => ({ 
-                        rgbStr: `rgba(${c.r}, ${c.g}, ${c.b}, 1)`, 
-                        hex: rgbToHex(c.r, c.g, c.b), 
-                        r: c.r, g: c.g, b: c.b 
-                    }));
-                } catch(e) {
-                    return [
-                        { rgbStr: '#d4d4d8', hex: '#d4d4d8', r: 212, g: 212, b: 216 },
-                        { rgbStr: '#94a3b8', hex: '#94a3b8', r: 148, g: 163, b: 184 },
-                        { rgbStr: '#64748b', hex: '#64748b', r: 100, g: 116, b: 139 },
-                        { rgbStr: '#1e293b', hex: '#1e293b', r: 30, g: 41, b: 59 }
-                    ];
-                }
-            }
-
-            async handleFiles(fileList) {
-                const files = Array.from(fileList).filter(f => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|heic)$/i.test(f.name));
-                if (files.length === 0) { this.showToast('未检测到有效的图片文件', 'error'); return; }
-
-                this.dom.globalLoader.classList.add('active'); 
-                await new Promise(r => setTimeout(r, 80));
-
-                if (this.state.images.length === 0) {
-                    this.dom.emptyState.style.display = 'none';
-                    this.dom.controlPanel.classList.remove('opacity-40', 'pointer-events-none');
-                    this.dom.btnDownloadCurrent.classList.remove('hidden');
-                    this.dom.btnDownloadAll.classList.remove('hidden');
-                    this.dom.btnDownloadCurrent.classList.add('flex');
-                    this.dom.btnDownloadAll.classList.add('flex');
-                }
-
-                let firstNewId = null;
-
-                for (let file of files) {
-                    try {
-                        const url = URL.createObjectURL(file);
-                        const imgObj = await this.loadImage(url);
-                        
-                        let exifData = null;
-                        try {
-                            if (typeof exifr !== 'undefined') {
-                                exifData = await exifr.parse(file, { gps: true, tiff: true, exif: true });
-                            }
-                        } catch (err) { console.warn("EXIF 解析跳过:", err); }
-
-                        let camera = 'DIGITAL CAMERA';
-                        if (exifData?.Make || exifData?.Model) {
-                            let make = exifData.Make || ''; let model = exifData.Model || '';
-                            camera = model.toUpperCase().startsWith(make.toUpperCase())
-                                ? model.toUpperCase()
-                                : `${make} ${model}`.trim().toUpperCase();
-                        }
-
-                        let lens = exifData?.LensModel ? exifData.LensModel.toUpperCase() : '24MM';
-                        let focal = exifData?.FocalLength ? `${parseFloat(Number(exifData.FocalLength).toFixed(1))}mm` : '24mm';
-                        let fnumber = exifData?.FNumber ? `f/${parseFloat(Number(exifData.FNumber).toFixed(1))}` : 'f/2.8';
-                        let exposure = exifData?.ExposureTime
-                            ? (exifData.ExposureTime >= 1 ? `${exifData.ExposureTime}s` : `1/${Math.round(1/exifData.ExposureTime)}s`)
-                            : '1/125s';
-                        let iso = exifData?.ISO ? `ISO ${exifData.ISO}` : 'ISO 400';
-                        let params = [focal, fnumber, exposure, iso].filter(Boolean).join('   ') || '24mm   f/2.8   1/125s   ISO 400';
-
-                        let dateStr = 'PHOTOGRAPHED IN : OCT 15, 2026';
-                        let timeStr = '12 FEB 2026';
-                        if (exifData?.DateTimeOriginal) {
-                            try {
-                                const d = new Date(exifData.DateTimeOriginal);
-                                const options = { month: 'short', day: 'numeric', year: 'numeric' };
-                                dateStr = 'PHOTOGRAPHED IN : ' + d.toLocaleDateString('en-US', options).toUpperCase();
-                                timeStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase();
-                            } catch(e) {}
-                        }
-
-                        let locationStr = "38° 55' 00\" N    121° 38' 00\" E";
-                        if (typeof exifData?.latitude === 'number' && typeof exifData?.longitude === 'number') {
-                            const formatDMS = (deg, isLat) => {
-                                const d = Math.abs(deg);
-                                const degInt = Math.floor(d);
-                                const minFloat = (d - degInt) * 60;
-                                const minInt = Math.floor(minFloat);
-                                const secInt = Math.round((minFloat - minInt) * 60);
-                                const dir = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W');
-                                return `${degInt}° ${minInt}' ${secInt}" ${dir}`;
-                            };
-                            locationStr = `${formatDMS(exifData.latitude, true)}    ${formatDMS(exifData.longitude, false)}`;
-                        }
-
-                        const defaultTitle = file.name.split('.')[0].replace(/[-_]/g, ' ').toUpperCase() || 'UNTITLED ARTWORK';
-                        const palette = this.extractPalette(imgObj);
-
-                        const newImg = {
-                            id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                            file, url, imgObj,
-                            width: imgObj.width, height: imgObj.height,
-                            textLeft: defaultTitle,
-                            textRight: '© XIANGVISUALS',
-                            exifTime: timeStr,
-                            location: locationStr,
-                            exifCamera: camera,
-                            exifLens: lens,
-                            exifParams: params,
-                            exifDate: dateStr,
-                            filmName: 'FUJIFILM RVP50',
-                            palette
-                        };
-                        
-                        this.state.images.push(newImg);
-                        this.addThumbnail(newImg);
-                        if (!firstNewId) firstNewId = newImg.id;
-                    } catch (e) { console.error("加载失败:", file.name, e); }
-                }
-                
-                this.updateGalleryCounter();
-                this.dom.globalLoader.classList.remove('active'); 
-                if (firstNewId) this.setActiveImage(firstNewId); 
-                
-                if (window.innerWidth < 768) {
-                    this.switchToTab(1, 'tab-templates');
-                }
-                triggerHaptic('success');
-                this.showToast(`LOADED ${files.length} ARTWORKS // 已解析入库`, 'success');
-            }
-
-            updateGalleryCounter() {
-                if (this.dom.galleryCount) {
-                    this.dom.galleryCount.textContent = `${this.state.images.length} ITEMS`;
-                }
-            }
-
-            loadImage(url) {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = url;
-                });
-            }
-
-            addThumbnail(imgData) {
-                const div = document.createElement('div');
-                div.className = 'thumb-item relative shrink-0 w-full aspect-square overflow-hidden bg-xv-light group';
-                div.dataset.id = imgData.id;
-                div.innerHTML = `<img src="${imgData.url}" class="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover:scale-105">`;
-
-                const delBtn = document.createElement('button');
-                delBtn.className = 'absolute top-1 right-1 w-5 h-5 bg-xv-black/80 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10';
-                delBtn.innerHTML = '<i class="fa-solid fa-xmark text-[10px]"></i>';
-                delBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    triggerHaptic('light');
-                    this.removeImage(imgData.id);
-                });
-                
-                div.appendChild(delBtn);
-                div.addEventListener('click', () => {
-                    triggerHaptic('light');
-                    this.setActiveImage(imgData.id);
-                });
-                this.dom.thumbnailList.appendChild(div);
-            }
-
-            removeImage(id) {
-                const index = this.state.images.findIndex(img => img.id === id);
-                if (index > -1) {
-                    URL.revokeObjectURL(this.state.images[index].url);
-                    this.state.images.splice(index, 1);
-                    const thumb = document.querySelector(`.thumb-item[data-id="${id}"]`);
-                    if (thumb) thumb.remove();
-                    this.updateGalleryCounter();
-
-                    if (this.state.images.length === 0) {
-                        this.resetUI();
-                    } else if (this.state.activeId === id) {
-                        const nextIndex = Math.min(index, this.state.images.length - 1);
-                        this.setActiveImage(this.state.images[nextIndex].id);
-                    }
-                    if (this.state.settings.style === 'film_strip') {
-                        this.renderPreview(true);
-                    }
-                }
-            }
-            
-            resetUI() {
-                this.state.activeId = null;
-                this.dom.emptyState.style.display = 'flex';
-                this.dom.controlPanel.classList.add('opacity-40', 'pointer-events-none');
-                this.dom.btnDownloadCurrent.classList.add('hidden');
-                this.dom.btnDownloadAll.classList.add('hidden');
-                this.dom.previewCanvas.classList.remove('loaded');
-                this.ctx.clearRect(0, 0, this.dom.previewCanvas.width, this.dom.previewCanvas.height);
-                this.dom.imgDimensions.textContent = '-- × -- PX';
-                if (window.innerWidth < 768) this.switchToTab(0);
-            }
-
-            getActiveImage() { return this.state.images.find(img => img.id === this.state.activeId); }
-
-            setActiveImage(id) {
-                this.state.activeId = id;
-                const imgData = this.getActiveImage();
-                if (!imgData) return;
-
-                document.querySelectorAll('.thumb-item').forEach(el => {
-                    el.classList.toggle('active', el.dataset.id === id);
-                });
-
-                this.dom.inputLeft.value = imgData.textLeft || '';
-                this.dom.inputRight.value = imgData.textRight || '';
-                this.dom.inputExifTime.value = imgData.exifTime || '';
-                this.dom.inputLocation.value = imgData.location || '';
-                this.dom.inputExifCamera.value = imgData.exifCamera || '';
-                this.dom.inputExifLens.value = imgData.exifLens || '';
-                this.dom.inputExifParams.value = imgData.exifParams || '';
-                this.dom.inputFilmName.value = imgData.filmName || '';
-                this.dom.imgDimensions.textContent = `${imgData.width} × ${imgData.height} PX`;
-
-                this.renderPreview(true); 
-            }
-
-            updateSettings(newSettings, animate = false) {
-                const oldStyle = this.state.settings.style;
-                this.state.settings = { ...this.state.settings, ...newSettings };
-                if (newSettings.style && newSettings.style !== oldStyle) {
-                    this.updateControlsVisibility(newSettings.style);
-                }
-                this.renderPreview(animate);
-            }
-
-            updateControlsVisibility(style) {
-                const isFilm = style.startsWith('film');
-                const isVector = style === 'vector_field';
-                const hasWall = ['polaroid', 'film35mm', 'film_strip'].includes(style);
-
-                const secLayout = document.getElementById('section-layout');
-                const ctrlMargin = document.getElementById('ctrl-margin');
-                const ctrlShadow = document.getElementById('ctrl-shadow');
-                const secVector = document.getElementById('section-vector');
-                const secMaterials = document.getElementById('section-materials');
-                const ctrlGrain = document.getElementById('ctrl-grain');
-
-                if (secVector) secVector.style.display = isVector ? 'block' : 'none';
-                if (ctrlGrain) ctrlGrain.style.display = isFilm ? 'block' : 'none';
-                if (secMaterials) secMaterials.style.display = hasWall ? 'block' : 'none';
-
-                if (style === 'film4x5' || style === 'film_xpan' || style === 'vector_field') {
-                    if (secLayout) secLayout.style.display = 'none';
-                } else {
-                    if (secLayout) secLayout.style.display = 'block';
-                    if (ctrlMargin) ctrlMargin.style.display = 'block';
-                    if (ctrlShadow) ctrlShadow.style.display = hasWall ? 'block' : 'none';
-                }
-            }
-
-            createFilmGrainPattern(ctx) {
-                if (this.state.grainPattern) return this.state.grainPattern;
-                const patternCanvas = document.createElement('canvas');
-                const size = 128;
-                patternCanvas.width = size; patternCanvas.height = size;
-                const pCtx = patternCanvas.getContext('2d');
-                const imgData = pCtx.createImageData(size, size);
-                for (let i = 0; i < imgData.data.length; i += 4) {
-                    const val = Math.random() * 255;
-                    imgData.data[i] = val; imgData.data[i+1] = val; imgData.data[i+2] = val; imgData.data[i+3] = 40; 
-                }
-                pCtx.putImageData(imgData, 0, 0);
-                this.state.grainPattern = ctx.createPattern(patternCanvas, 'repeat');
-                return this.state.grainPattern;
-            }
-
-            drawDXCode(ctx, x, y, width, height, seed) {
-                ctx.fillStyle = 'rgba(250, 204, 21, 0.7)';
-                for (let b = 0; b < 5; b++) {
-                    const hash = Math.sin(seed + b * 1.3) * 10000;
-                    if (hash - Math.floor(hash) > 0.4) {
-                        ctx.fillRect(x + b * width * 0.25, y, width * 0.18, height);
-                    }
-                }
-            }
-
-            getFilteredImage(imgDataObj, w, h, bwAmount, invertAmount) {
-                if (bwAmount === 0 && invertAmount === 0) return imgDataObj.imgObj;
-                const rw = Math.max(1, Math.round(w));
-                const rh = Math.max(1, Math.round(h));
-                const cacheKey = `${bwAmount.toFixed(3)}_${invertAmount.toFixed(3)}_${rw}_${rh}`;
-                if (imgDataObj.filterCache && imgDataObj.filterCache.key === cacheKey) return imgDataObj.filterCache.canvas;
-
-                const canvas = document.createElement('canvas');
-                canvas.width = rw; canvas.height = rh;
-                const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                ctx.drawImage(imgDataObj.imgObj, 0, 0, rw, rh);
-                const imgPixels = ctx.getImageData(0, 0, rw, rh);
-                const data = imgPixels.data;
-
-                for (let i = 0; i < data.length; i += 4) {
-                    let r = data[i], g = data[i+1], b = data[i+2];
-                    if (bwAmount > 0) {
-                        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                        r += (gray - r) * bwAmount;
-                        g += (gray - g) * bwAmount;
-                        b += (gray - b) * bwAmount;
-                    }
-                    if (invertAmount > 0) {
-                        r += (255 - r * 2) * invertAmount;
-                        g += (255 - g * 2) * invertAmount;
-                        b += (255 - b * 2) * invertAmount;
-                    }
-                    data[i] = r; data[i+1] = g; data[i+2] = b;
-                }
-                ctx.putImageData(imgPixels, 0, 0);
-                imgDataObj.filterCache = { key: cacheKey, canvas };
-                return canvas;
-            }
-
-            // =========================================================================
-            // MAIN SCENE RENDER ENGINE
-            // =========================================================================
-            async renderScene(ctx, imgData, targetWidth, targetHeight) {
-                const { style, wallColor, matMultiplier, shadowMultiplier, invertAmount, grainAmount, bwAmount, vectorCols } = this.state.settings;
-                const { width: imgW, height: imgH, textLeft, textRight, exifTime, exifCamera, exifLens, exifParams, filmName } = imgData;
-
-                const shortEdge = Math.min(imgW, imgH);
-                let wallPaddingX = imgW * 0.25;
-                let wallPaddingY = imgH * 0.25;
-                let sceneW, sceneH;
-                let drawLogic = () => {}; 
-                this.hitboxes = [];
-                let dragDrawOperation = null; 
-
-                const drawBackground = (sc) => {
-                    ctx.fillStyle = wallColor;
-                    ctx.fillRect(0, 0, sceneW * sc, sceneH * sc);
-                };
-
-                // ---------------------------------------------------------------------
-                // BORDERLESS DENSE LUMINANCE VECTOR FIELD (默认 70 列，无边框满版)
-                // ---------------------------------------------------------------------
-                if (style === 'vector_field') {
-                    wallPaddingX = 0; wallPaddingY = 0;
-                    sceneW = imgW;
-                    sceneH = imgH;
-
-                    drawLogic = (scale) => {
-                        const sW = sceneW * scale;
-                        const sH = sceneH * scale;
-
-                        ctx.fillStyle = '#050505';
-                        ctx.fillRect(0, 0, sW, sH);
-
-                        const cols = Math.max(20, Math.round(vectorCols || 70));
-                        const cellSize = sW / cols;
-                        const rows = Math.max(12, Math.round(sH / cellSize));
-
-                        const sCanvas = document.createElement('canvas');
-                        sCanvas.width = cols; sCanvas.height = rows;
-                        const sCtx = sCanvas.getContext('2d', { willReadFrequently: true });
-                        sCtx.drawImage(imgData.imgObj, 0, 0, cols, rows);
-                        const data = sCtx.getImageData(0, 0, cols, rows).data;
-
-                        ctx.save();
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.fillStyle = '#ffffff';
-                        ctx.lineCap = 'square';
-                        ctx.lineJoin = 'miter';
-
-                        for (let r = 0; r < rows; r++) {
-                            for (let c = 0; c < cols; c++) {
-                                const idx = (r * cols + c) * 4;
-                                let lum = (0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2]) / 255;
-                                if (invertAmount > 0) lum = Math.abs(invertAmount - lum);
-
-                                const contrastLum = Math.pow(lum, 1.12);
-                                if (contrastLum < 0.03) continue;
-
-                                const cx = (c + 0.5) * cellSize;
-                                const cy = (r + 0.5) * cellSize;
-
-                                const isBright = contrastLum > 0.25;
-                                const angle = isBright
-                                    ? (Math.PI * 0.5 + Math.min(1, (contrastLum - 0.18) * 1.35) * (Math.PI * 0.25))
-                                    : (Math.PI * 0.5);
-
-                                const len = cellSize * (0.24 + contrastLum * 0.64);
-                                const thickness = Math.max(0.75, cellSize * (0.045 + contrastLum * 0.145));
-
-                                ctx.save();
-                                ctx.translate(cx, cy);
-                                ctx.rotate(angle);
-
-                                ctx.lineWidth = thickness;
-                                const halfLen = len * 0.48;
-                                const headSize = len * (0.28 + contrastLum * 0.12);
-
-                                ctx.beginPath();
-                                ctx.moveTo(-halfLen, 0);
-                                ctx.lineTo(halfLen, 0);
-                                ctx.stroke();
-
-                                ctx.beginPath();
-                                ctx.moveTo(halfLen - headSize, -headSize * 0.82);
-                                ctx.lineTo(halfLen, 0);
-                                ctx.lineTo(halfLen - headSize, headSize * 0.82);
-                                ctx.stroke();
-
-                                ctx.restore();
-                            }
-                        }
-                        ctx.restore();
-                    };
-
-                } else if (style === 'minimal_line') {
-                    wallPaddingX = 0; wallPaddingY = 0;
-                    const padX = shortEdge * 0.15 * matMultiplier;
-                    const padTop = shortEdge * 0.25 * matMultiplier;
-                    const padBot = shortEdge * 0.35 * matMultiplier; 
-
-                    sceneW = imgW + padX * 2;
-                    sceneH = imgH + padTop + padBot;
-
-                    drawLogic = (scale) => {
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
-
-                        const iX = padX * scale, iY = padTop * scale, iW = imgW * scale, iH = imgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
-
-                        ctx.strokeStyle = '#0a0a0a';
-                        ctx.lineWidth = Math.max(1.5, shortEdge * 0.002 * scale);
-                        ctx.strokeRect(iX, iY, iW, iH);
-                    };
-
-                } else if (style === 'triptych_watermark') {
-                    wallPaddingX = 0; wallPaddingY = 0;
-                    const padX = shortEdge * 0.1 * matMultiplier;
-                    const padTop = shortEdge * 0.45 * matMultiplier; 
-                    const padBot = shortEdge * 0.65 * matMultiplier; 
-                    const gap = shortEdge * 0.015;
-                    const isPortrait = imgH > imgW;
-                    
-                    if (isPortrait) {
-                        sceneW = imgW + padX * 2;
-                        sceneH = imgH + (gap * 2) + padTop + padBot;
-                    } else {
-                        sceneW = imgW + (gap * 2) + padX * 2;
-                        sceneH = imgH + padTop + padBot;
-                    }
-
-                    drawLogic = (scale) => {
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
-
-                        const sPadX = padX * scale, sPadTop = padTop * scale, sGap = gap * scale;
-                        const iW = imgW * scale, iH = imgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        const srcW = fImg.naturalWidth || fImg.width;
-                        const srcH = fImg.naturalHeight || fImg.height;
-
-                        if (isPortrait) {
-                            const sPanelH = srcH / 3, dPanelH = iH / 3;
-                            ctx.drawImage(fImg, 0, 0, srcW, sPanelH, sPadX, sPadTop, iW, dPanelH);
-                            ctx.drawImage(fImg, 0, sPanelH, srcW, sPanelH, sPadX, sPadTop + dPanelH + sGap, iW, dPanelH);
-                            ctx.drawImage(fImg, 0, sPanelH * 2, srcW, sPanelH, sPadX, sPadTop + (dPanelH * 2) + (sGap * 2), iW, dPanelH);
-                        } else {
-                            const sPanelW = srcW / 3, dPanelW = iW / 3;
-                            ctx.drawImage(fImg, 0, 0, sPanelW, srcH, sPadX, sPadTop, dPanelW, iH);
-                            ctx.drawImage(fImg, sPanelW, 0, sPanelW, srcH, sPadX + dPanelW + sGap, sPadTop, dPanelW, iH);
-                            ctx.drawImage(fImg, sPanelW * 2, 0, sPanelW, srcH, sPadX + (dPanelW * 2) + (sGap * 2), sPadTop, dPanelW, iH);
-                        }
-
-                        if (matMultiplier > 0.3) {
-                            const centerX = sceneW * scale / 2;
-                            const totalImgDrawH = isPortrait ? (iH + sGap * 2) : iH;
-                            const textY = sPadTop + totalImgDrawH + (padBot * scale * 0.4); 
-                            
-                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                            const fontSize = shortEdge * 0.015 * scale;
-                            ctx.fillStyle = '#71717a'; 
-                            ctx.font = `500 ${fontSize}px "Inter", sans-serif`;
-                            
-                            try { ctx.letterSpacing = `${fontSize * 0.6}px`; } catch(e){}
-                            ctx.fillText((textLeft || 'THE PHOTO').toUpperCase(), centerX, textY - (fontSize * 0.8));
-                            
-                            let yearStr = '2026';
-                            if (imgData.exifDate) {
-                                const yearMatch = imgData.exifDate.match(/\d{4}/);
-                                if (yearMatch) yearStr = yearMatch[0];
-                            }
-                            ctx.fillText(`OF ${yearStr}`, centerX, textY + (fontSize * 0.8));
-                            try { ctx.letterSpacing = '0px'; } catch(e){} 
-                        }
-                    };
-
-                } else if (style === 'immersive_color') {
-                    wallPaddingX = 0; wallPaddingY = 0;
-                    const botBlockH = imgH * 0.85; 
-                    sceneW = imgW; sceneH = imgH + botBlockH;
-
-                    drawLogic = (scale) => {
-                        const sW = sceneW * scale, sH = sceneH * scale, sBotH = botBlockH * scale, sImgH = imgH * scale;
-                        let mainColorRgb = { r: 30, g: 41, b: 59 }; 
-                        if (imgData.palette && imgData.palette.length > 0) {
-                            const getSat = (r, g, b) => {
-                                const max = Math.max(r,g,b)/255, min = Math.min(r,g,b)/255;
-                                return max === 0 ? 0 : (max - min) / max;
-                            };
-                            let bestSat = -1;
-                            imgData.palette.forEach(c => {
-                                const s = getSat(c.r, c.g, c.b);
-                                if (s > bestSat) { bestSat = s; mainColorRgb = c; }
-                            });
-                        }
-                        
-                        const adjustColor = (c, factor) => Math.max(0, Math.min(255, Math.floor(c * factor)));
-                        const r = adjustColor(mainColorRgb.r, 0.75);
-                        const g = adjustColor(mainColorRgb.g, 0.75);
-                        const b = adjustColor(mainColorRgb.b, 0.75);
-                        
-                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                        ctx.fillRect(0, 0, sW, sH);
-
-                        const fImg = this.getFilteredImage(imgData, sW, sImgH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, 0, 0, sW, sImgH);
-
-                        if (matMultiplier > 0.4) {
-                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
-                            const textCenterX = sW / 2;
-                            const primaryFontSize = sW * 0.013; 
-                            const secondaryFontSize = sW * 0.011;
-                            const textCenterY = sImgH + (sBotH * 0.45);
-                            const gap = primaryFontSize * 2.8;
-
-                            ctx.font = `400 ${primaryFontSize}px "Inter", sans-serif`; 
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-                            const coordStr = imgData.location || "38° 55' 00\" N    121° 38' 00\" E";
-                            const dateStr = imgData.exifTime || '12 FEB 2026';
-                            
-                            try { ctx.letterSpacing = `${primaryFontSize * 0.15}px`; } catch(e){}
-                            ctx.fillText(`${coordStr}      ${dateStr}`, textCenterX, textCenterY - (gap/2)); 
-
-                            ctx.font = `400 ${secondaryFontSize}px "Inter", sans-serif`; 
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-                            try { ctx.letterSpacing = `${secondaryFontSize * 0.2}px`; } catch(e){}
-                            ctx.fillText(imgData.exifParams || '24mm   f/2.8   1/125s   ISO 400', textCenterX, textCenterY + (gap/2));
-                            try { ctx.letterSpacing = '0px'; } catch(e){}
-                        }
-                    };
-
-                } else if (style === 'polaroid') {
-                    const matX = shortEdge * 0.08 * matMultiplier, matTop = shortEdge * 0.08 * matMultiplier, matBot = shortEdge * 0.3 * matMultiplier;
-                    const paperW = imgW + (matX * 2), paperH = imgH + matTop + matBot;
-                    sceneW = paperW + wallPaddingX * 2; sceneH = paperH + wallPaddingY * 2;
-                    drawLogic = (scale) => {
-                        drawBackground(scale);
-                        const pX = wallPaddingX * scale, pY = wallPaddingY * scale, pW = paperW * scale, pH = paperH * scale;
-                        ctx.save();
-                        ctx.shadowColor = `rgba(0, 0, 0, ${0.14 * shadowMultiplier})`;
-                        ctx.shadowBlur = shortEdge * 0.04 * scale * shadowMultiplier;
-                        ctx.shadowOffsetY = shortEdge * 0.02 * scale * shadowMultiplier;
-                        ctx.fillStyle = '#fdfcf8'; ctx.fillRect(pX, pY, pW, pH);
-                        ctx.restore();
-
-                        const iX = pX + (matX * scale), iY = pY + (matTop * scale), iW = imgW * scale, iH = imgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
-                        ctx.strokeStyle = `rgba(0,0,0,${0.06 * shadowMultiplier})`;
-                        ctx.lineWidth = shortEdge * 0.002 * scale;
-                        ctx.strokeRect(iX, iY, iW, iH);
-                    };
-
-                } else if (style === 'exif') {
-                    wallPaddingX = 0; wallPaddingY = 0;
-                    const padX = shortEdge * 0.06 * matMultiplier, padTop = shortEdge * 0.06 * matMultiplier, padBot = shortEdge * 0.28 * matMultiplier;
-                    sceneW = imgW + padX * 2; sceneH = imgH + padTop + padBot;
-                    drawLogic = (scale) => {
-                        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
-                        const iX = padX * scale, iY = padTop * scale, iW = imgW * scale, iH = imgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
-
-                        ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = Math.max(1, shortEdge * 0.002 * scale); ctx.strokeRect(iX, iY, iW, iH);
-                        if (matMultiplier > 0.4) {
-                            const textY = iY + iH + (shortEdge * 0.05 * scale * matMultiplier);
-                            const baseFontSize = shortEdge * 0.016 * scale;
-                            ctx.fillStyle = '#0a0a0a'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-                            ctx.font = `600 ${baseFontSize * 1.2}px "JetBrains Mono", monospace`;
-                            ctx.fillText((exifCamera || 'DIGITAL CAMERA').toUpperCase(), iX, textY);
-                            ctx.font = `400 ${baseFontSize * 0.85}px "JetBrains Mono", monospace`;
-                            ctx.fillStyle = '#52525b';
-                            ctx.fillText((exifLens || 'STANDARD LENS').toUpperCase(), iX, textY + baseFontSize * 2.3);
-                            ctx.fillText((exifParams || '50mm f/2.8 1/100s ISO100'), iX, textY + baseFontSize * 3.5);
-                        }
-                    };
-
-                } else if (style === 'film35mm') {
-                    const baseH = 1000; const ratio = imgW / imgH;
-                    const filmPadY = baseH * 0.18 * matMultiplier; const targetImgH = baseH - (filmPadY * 2);
-                    const gap = baseH * 0.05 * matMultiplier; const filmPadX = gap * 1.5; const targetImgW = targetImgH * ratio;
-                    const filmW = (filmPadX * 2) + targetImgW; const filmH = baseH;
-
-                    wallPaddingX = baseH * 0.15; wallPaddingY = baseH * 0.25;
-                    sceneW = filmW + wallPaddingX * 2; sceneH = filmH + wallPaddingY * 2;
-
-                    drawLogic = (scale) => {
-                        drawBackground(scale);
-                        const fX = wallPaddingX * scale, fY = wallPaddingY * scale, fW = filmW * scale, fH = filmH * scale;
-                        
-                        ctx.save();
-                        ctx.shadowColor = `rgba(0, 0, 0, ${0.4 * shadowMultiplier})`;
-                        ctx.shadowBlur = baseH * 0.08 * scale * shadowMultiplier;
-                        ctx.shadowOffsetY = baseH * 0.04 * scale * shadowMultiplier;
-                        ctx.fillStyle = '#0f0f0f'; ctx.fillRect(fX, fY, fW, fH);
-                        ctx.restore();
-                        
-                        ctx.fillStyle = wallColor; 
-                        const holeW = baseH * 0.012 * scale, holeH = baseH * 0.022 * scale, holeGap = baseH * 0.035 * scale;
-                        const topHoleY = fY + (filmPadY * 0.2 * scale); const botHoleY = fY + fH - (filmPadY * 0.2 * scale) - holeH;
-                        for (let x = fX + holeGap; x < fX + fW - holeGap; x += holeGap) {
-                            ctx.beginPath(); ctx.roundRect(x, topHoleY, holeW, holeH, holeW/2); ctx.roundRect(x, botHoleY, holeW, holeH, holeW/2); ctx.fill();
-                        }
-
-                        const iX = fX + filmPadX * scale, iY = fY + filmPadY * scale, iW = targetImgW * scale, iH = targetImgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
-
-                        if (invertAmount > 0) {
-                            ctx.save(); ctx.globalCompositeOperation = 'multiply';
-                            ctx.fillStyle = `rgba(220, 95, 15, ${invertAmount * 0.6})`; ctx.fillRect(iX, iY, iW, iH); ctx.restore();
-                        }
-                        
-                        if (matMultiplier > 0.4) {
-                            const fontSize = baseH * 0.018 * scale; ctx.textBaseline = 'middle';
-                            const textTopY = fY + (filmPadY * 0.65 * scale); const textBotY = fY + fH - (filmPadY * 0.65 * scale);
-                            const filmText = (filmName || 'KODAK PORTRA 400').toUpperCase();
-                            const bcW = baseH * 0.05 * scale, bcH = baseH * 0.01 * scale;
-                            this.drawDXCode(ctx, iX, textTopY - bcH*0.5, bcW, bcH, 42);
-                            
-                            ctx.fillStyle = '#facc15'; ctx.font = `600 ${fontSize}px "Inter", sans-serif`;
-                            ctx.textAlign = 'left'; ctx.fillText('22A', iX + bcW*1.5, textTopY);
-                            ctx.textAlign = 'center'; ctx.fillText(filmText, iX + iW/2, textTopY);
-                            ctx.textAlign = 'right'; ctx.fillText('23', iX + iW, textTopY);
-                            
-                            ctx.font = `400 ${fontSize * 0.8}px "JetBrains Mono", monospace`; ctx.fillStyle = 'rgba(250, 204, 21, 0.6)';
-                            ctx.textAlign = 'center'; ctx.fillText(exifParams || '', iX + iW/2, textBotY);
-                        }
-
-                        ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = this.createFilmGrainPattern(ctx);
-                        ctx.globalAlpha = grainAmount + (invertAmount * 0.15); ctx.fillRect(fX, fY, fW, fH); ctx.restore();
-                    };
-
-                } else if (style === 'film4x5') {
-                    wallPaddingX = 0; wallPaddingY = 0; const baseH = 1200; const ratio = imgW / imgH;
-                    const blackBorderTop = baseH * 0.035 * matMultiplier, blackBorderBot = baseH * 0.02 * matMultiplier, blackBorderSide = baseH * 0.015 * matMultiplier;
-                    const targetImgH = baseH - blackBorderTop - blackBorderBot; const targetImgW = targetImgH * ratio; const blackW = targetImgW + blackBorderSide * 2;
-                    const whitePadX = baseH * 0.1 * matMultiplier, whitePadY = baseH * 0.1 * matMultiplier;
-                    sceneW = blackW + whitePadX * 2; sceneH = baseH + whitePadY * 2;
-
-                    drawLogic = (scale) => {
-                        const sWhitePadX = whitePadX * scale, sWhitePadY = whitePadY * scale, sBlackW = blackW * scale, sBaseH = baseH * scale;
-                        ctx.fillStyle = '#f9f9f9'; ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
-                        const fX = sWhitePadX, fY = sWhitePadY;
-                        ctx.fillStyle = '#080808'; ctx.fillRect(fX, fY, sBlackW, sBaseH);
-
-                        ctx.beginPath(); ctx.arc(fX + sBlackW, fY + sBaseH * 0.15, baseH * 0.015 * scale, 0, Math.PI * 2); ctx.fillStyle = '#f9f9f9'; ctx.fill();
-                        ctx.beginPath(); ctx.arc(fX + sBlackW, fY + sBaseH * 0.20, baseH * 0.01 * scale, 0, Math.PI * 2); ctx.fill();
-
-                        const iX = fX + blackBorderSide * scale, iY = fY + blackBorderTop * scale, iW = targetImgW * scale, iH = targetImgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
-
-                        if (matMultiplier > 0.4) {
-                            const fontSize = baseH * 0.012 * scale; ctx.fillStyle = '#facc15'; ctx.font = `600 ${fontSize}px "JetBrains Mono", monospace`; ctx.textBaseline = 'middle';
-                            const textY = fY + (blackBorderTop * scale * 0.5); const filmText = (filmName || 'FUJIFILM   RVP50').toUpperCase();
-                            ctx.textAlign = 'center'; ctx.fillText(`${filmText}       50782       D L AGA I`, fX + sBlackW/2, textY);
-                        }
-
-                        ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = this.createFilmGrainPattern(ctx);
-                        ctx.globalAlpha = grainAmount + (invertAmount * 0.1); ctx.fillRect(fX, fY, sBlackW, sBaseH); ctx.restore();
-                    };
-
-                } else if (style === 'film_xpan') {
-                    wallPaddingX = 0; wallPaddingY = 0; const baseH = 800; const targetRatio = 65 / 24; 
-                    const targetImgH = baseH, targetImgW = targetImgH * targetRatio;
-                    const blackBorderT = baseH * 0.01 * matMultiplier, whitePadX = baseH * 0.1 * matMultiplier, whitePadY = baseH * 0.12 * matMultiplier;
-                    sceneW = targetImgW + blackBorderT * 2 + whitePadX * 2; sceneH = targetImgH + blackBorderT * 2 + whitePadY * 2;
-
-                    drawLogic = (scale) => {
-                        const pW = sceneW * scale, pH = sceneH * scale;
-                        const sWhitePadX = whitePadX * scale, sWhitePadY = whitePadY * scale, sBlackT = blackBorderT * scale;
-                        const sImgW = targetImgW * scale, sImgH = targetImgH * scale;
-
-                        ctx.fillStyle = '#fcfcfc'; ctx.fillRect(0, 0, pW, pH);
-                        const bX = sWhitePadX, bY = sWhitePadY;
-                        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(bX, bY, sImgW + sBlackT*2, sImgH + sBlackT*2);
-
-                        const iX = bX + sBlackT, iY = bY + sBlackT;
-                        ctx.save(); ctx.beginPath(); ctx.rect(iX, iY, sImgW, sImgH); ctx.clip();
-
-                        const imgRatio = imgW / imgH; let drawW, drawH, drawX, drawY;
-                        if (imgRatio > targetRatio) { drawH = sImgH; drawW = drawH * imgRatio; drawX = iX - (drawW - sImgW) / 2; drawY = iY; } 
-                        else { drawW = sImgW; drawH = drawW / imgRatio; drawX = iX; drawY = iY - (drawH - sImgH) / 2; }
-                        
-                        const fImg = this.getFilteredImage(imgData, drawW, drawH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, drawX, drawY, drawW, drawH);
-                        ctx.restore();
-
-                        if (matMultiplier > 0.4) {
-                            const fontSize = baseH * 0.02 * scale; ctx.fillStyle = '#666'; ctx.font = `400 ${fontSize}px "JetBrains Mono", monospace`; ctx.textAlign = 'center';
-                            try { ctx.letterSpacing = `${fontSize * 0.2}px`; } catch(e){}
-                            ctx.fillText((exifParams || '65:24 PANORAMIC FORMAT').toUpperCase(), pW/2, pH - sWhitePadY*0.4);
-                            try { ctx.letterSpacing = '0px'; } catch(e){}
-                        }
-                        ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = this.createFilmGrainPattern(ctx);
-                        ctx.globalAlpha = grainAmount + (invertAmount * 0.25); ctx.fillRect(bX, bY, sImgW + sBlackT*2, sImgH + sBlackT*2); ctx.restore();
-                    };
-
-                } else if (style === 'film_strip') {
-                    const allImages = this.state.images;
-                    if (allImages.length === 0) return;
-                    const maxPerRow = 5; const rows = [];
-                    for (let i = 0; i < allImages.length; i += maxPerRow) rows.push(allImages.slice(i, i + maxPerRow));
-
-                    const baseH = 1000, filmPadY = baseH * 0.18 * matMultiplier, targetImgH = baseH - (filmPadY * 2);
-                    const gap = baseH * 0.05 * matMultiplier, filmPadX = gap * 1.5; 
-                    const rowLayouts = []; let maxFilmW = 0;
-
-                    rows.forEach(row => {
-                        let totalImgW = 0; const layout = [];
-                        row.forEach(img => { const ratio = img.width / img.height; const iW = targetImgH * ratio; layout.push({ imgObj: img.imgObj, w: iW, h: targetImgH, originalData: img }); totalImgW += iW; });
-                        const currentFilmW = (filmPadX * 2) + totalImgW + gap * (row.length - 1);
-                        maxFilmW = Math.max(maxFilmW, currentFilmW); rowLayouts.push({ layout, w: currentFilmW });
-                    });
-
-                    const filmW = maxFilmW, stripGap = baseH * 0.12; 
-                    const filmH = rows.length * baseH + Math.max(0, rows.length - 1) * stripGap;
-                    wallPaddingX = baseH * 0.15; wallPaddingY = baseH * 0.25;
-                    sceneW = filmW + wallPaddingX * 2; sceneH = filmH + wallPaddingY * 2;
-
-                    drawLogic = (scale) => {
-                        drawBackground(scale);
-                        let currentY = wallPaddingY * scale; const fX = wallPaddingX * scale, fW = filmW * scale, fH = baseH * scale;
-                        const grainPat = this.createFilmGrainPattern(ctx), grainAlpha = grainAmount + (invertAmount * 0.25);
-
-                        rowLayouts.forEach((rowInfo, rowIndex) => {
-                            const fY = currentY;
-                            ctx.save(); ctx.shadowColor = `rgba(0, 0, 0, ${0.4 * shadowMultiplier})`; ctx.shadowBlur = baseH * 0.08 * scale * shadowMultiplier; ctx.shadowOffsetY = baseH * 0.04 * scale * shadowMultiplier;
-                            ctx.fillStyle = '#0f0f0f'; ctx.fillRect(fX, fY, fW, fH); ctx.restore();
-
-                            ctx.fillStyle = wallColor; 
-                            const holeW = baseH * 0.012 * scale, holeH = baseH * 0.022 * scale, holeGap = baseH * 0.035 * scale;
-                            const topHoleY = fY + (filmPadY * 0.2 * scale), botHoleY = fY + fH - (filmPadY * 0.2 * scale) - holeH;
-                            for (let x = fX + holeGap; x < fX + fW - holeGap; x += holeGap) {
-                                ctx.beginPath(); ctx.roundRect(x, topHoleY, holeW, holeH, holeW/2); ctx.roundRect(x, botHoleY, holeW, holeH, holeW/2); ctx.fill();
-                            }
-
-                            let currX = fX + filmPadX * scale;
-                            rowInfo.layout.forEach(item => {
-                                const iW = item.w * scale, iH = item.h * scale, iX = currX, iY = fY + filmPadY * scale;
-                                this.hitboxes.push({ id: item.originalData.id, x: iX, y: iY, w: iW, h: iH });
-
-                                if (this.dragInfo.active && this.dragInfo.id === item.originalData.id) {
-                                    ctx.save(); ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(iX, iY, iW, iH); ctx.restore();
-                                    dragDrawOperation = () => {
-                                        const dX = this.dragInfo.currX - this.dragInfo.offsetX, dY = this.dragInfo.currY - this.dragInfo.offsetY;
-                                        ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 40 * scale; ctx.shadowOffsetY = 20 * scale;
-                                        const fImg = this.getFilteredImage(item.originalData, iW, iH, bwAmount, invertAmount);
-                                        ctx.drawImage(fImg, dX, dY, iW, iH);
-                                        ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = Math.max(2, baseH * 0.003 * scale); ctx.strokeRect(dX, dY, iW, iH); ctx.restore();
-                                    };
-                                } else {
-                                    const fImg = this.getFilteredImage(item.originalData, iW, iH, bwAmount, invertAmount);
-                                    ctx.drawImage(fImg, iX, iY, iW, iH);
-                                }
-                                currX += iW + gap * scale;
-                            });
-
-                            if (matMultiplier > 0.4) {
-                                const fontSize = baseH * 0.018 * scale; ctx.textBaseline = 'middle';
-                                const textTopY = fY + (filmPadY * 0.65 * scale);
-                                currX = fX + filmPadX * scale; let frameIndex = rowIndex * (maxPerRow * 2) + 1; 
-                                rowInfo.layout.forEach((item, idx) => {
-                                    const iW_scaled = item.w * scale, filmStr = (item.originalData.filmName || 'KODAK PORTRA 400').toUpperCase(), seed = rowIndex * 100 + idx; 
-                                    const bcW = baseH * 0.05 * scale, bcH = baseH * 0.01 * scale;
-                                    this.drawDXCode(ctx, currX, textTopY - bcH*0.5, bcW, bcH, seed);
-                                    ctx.fillStyle = '#facc15'; ctx.font = `600 ${fontSize}px "Inter", sans-serif`; 
-                                    ctx.textAlign = 'left'; ctx.fillText(`${frameIndex}A`, currX + bcW*1.5, textTopY);
-                                    ctx.textAlign = 'center'; ctx.fillText(filmStr, currX + iW_scaled/2, textTopY);
-                                    ctx.textAlign = 'right'; ctx.fillText(`${frameIndex + 1}`, currX + iW_scaled, textTopY);
-                                    currX += iW_scaled + gap * scale; frameIndex += 2;
-                                });
-                            }
-                            ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = grainPat; ctx.globalAlpha = grainAlpha; ctx.fillRect(fX, fY, fW, fH); ctx.restore();
-                            currentY += fH + stripGap * scale;
-                        });
-                        if (dragDrawOperation) dragDrawOperation();
-                    };
-
-                } else if (style === 'exif_palette') {
-                    wallPaddingX = 0; wallPaddingY = 0;
-                    const padX = shortEdge * 0.1 * matMultiplier, padTop = shortEdge * 0.22 * matMultiplier, padBot = shortEdge * 0.3 * matMultiplier;
-                    sceneW = imgW + padX * 2; sceneH = padTop + imgH + padBot;
-
-                    drawLogic = (scale) => {
-                        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
-                        const iX = padX * scale, iY = padTop * scale, iW = imgW * scale, iH = imgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
-
-                        if (matMultiplier > 0.4) {
-                            const sEdge = shortEdge * scale, bFont = sEdge * 0.022;
-                            const brand = (exifCamera || 'CAMERA').split(' ')[0].toUpperCase();
-                            const model = (exifCamera || 'UNKNOWN MODEL').replace(brand, '').trim() || exifCamera;
-
-                            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-                            ctx.fillStyle = '#0a0a0a'; ctx.font = `800 ${bFont * 1.8}px "Inter", sans-serif`;
-                            try { ctx.letterSpacing = `${bFont * 0.25}px`; } catch(e){}
-                            ctx.fillText(brand, iX, iY - (padTop * scale * 0.65));
-                            try { ctx.letterSpacing = '0px'; } catch(e){}
-
-                            ctx.fillStyle = '#71717a'; ctx.font = `600 ${bFont * 0.6}px "Inter", sans-serif`;
-                            ctx.fillText(model, iX, iY - (padTop * scale * 0.65) + bFont * 2.4);
-
-                            const bY = iY + iH + (padBot * scale * 0.28);
-                            ctx.fillStyle = '#0a0a0a'; ctx.font = `700 ${bFont * 0.9}px "Inter", sans-serif`;
-                            try { ctx.letterSpacing = `${bFont*0.1}px`; } catch(e){}
-                            ctx.fillText(textLeft || 'UNTITLED ARTWORK', iX, bY);
-                            try { ctx.letterSpacing = '0px'; } catch(e){}
-
-                            ctx.fillStyle = '#71717a'; ctx.font = `500 ${bFont * 0.5}px "Inter", sans-serif`;
-                            ctx.fillText(imgData.exifDate || '', iX, bY + bFont * 1.8);
-                            ctx.fillText((exifParams || '24MM F2.8 1/100S ISO250') + '    ' + (exifLens || 'STANDARD LENS'), iX, bY + bFont * 2.8);
-
-                            if (imgData.palette && imgData.palette.length > 0) {
-                                const pW = sEdge * 0.08, pH = sEdge * 0.025;
-                                let startX = iX + iW - (pW * imgData.palette.length);
-                                imgData.palette.forEach((color, idx) => {
-                                    ctx.fillStyle = color.rgbStr ? color.rgbStr : color; 
-                                    ctx.fillRect(startX + (idx * pW), bY + bFont * 0.2, pW, pH);
-                                });
-                            }
-                        }
-                    };
-
-                } else if (style === 'exif_minimal') {
-                    wallPaddingX = 0; wallPaddingY = 0;
-                    const padX = shortEdge * 0.1 * matMultiplier, padY = shortEdge * 0.15 * matMultiplier;
-                    sceneW = imgW + padX * 2; sceneH = imgH + padY * 2;
-
-                    drawLogic = (scale) => {
-                        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, sceneW * scale, sceneH * scale);
-                        const iX = padX * scale, iY = padY * scale, iW = imgW * scale, iH = imgH * scale;
-                        const fImg = this.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                        ctx.drawImage(fImg, iX, iY, iW, iH);
-
-                        if (matMultiplier > 0.4) {
-                            const sEdge = shortEdge * scale, bFont = sEdge * 0.022;
-                            const brand = (exifCamera || 'CAMERA').split(' ')[0].toUpperCase();
-                            const model = (exifCamera || 'UNKNOWN MODEL').replace(brand, '').trim() || exifCamera;
-
-                            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-                            ctx.fillStyle = '#0a0a0a'; ctx.font = `700 ${bFont * 2}px "Inter", sans-serif`;
-                            try { ctx.letterSpacing = `${bFont*0.08}px`; } catch(e){}
-                            ctx.fillText(brand, iX, iY - (padY * scale * 0.6));
-                            try { ctx.letterSpacing = '0px'; } catch(e){}
-
-                            ctx.fillStyle = '#52525b'; ctx.font = `500 ${bFont * 0.7}px "Inter", sans-serif`;
-                            ctx.fillText(model, iX, iY - (padY * scale * 0.6) + bFont * 2.4);
-
-                            const bY = iY + iH + (padY * scale * 0.25);
-                            ctx.textAlign = 'right'; ctx.fillStyle = '#71717a'; ctx.font = `500 ${bFont * 0.6}px "Inter", sans-serif`;
-                            ctx.fillText(exifLens || 'RF 24-70MM F2.8 L', iX + iW, bY);
-                            ctx.fillText(imgData.exifDate || '', iX + iW, bY + bFont * 1.3);
-                            
-                            ctx.fillStyle = '#0a0a0a'; ctx.font = `600 ${bFont * 0.65}px "Inter", sans-serif`;
-                            try { ctx.letterSpacing = `${bFont*0.05}px`; } catch(e){}
-                            ctx.fillText((exifParams || '24MM F2.8 1/100S ISO250').toUpperCase(), iX + iW, bY + bFont * 2.6);
-                            try { ctx.letterSpacing = '0px'; } catch(e){}
-                        }
-                    };
-                }
-
-                let finalScale = 1, outW, outH;
-                if (targetWidth && targetHeight) {
-                    finalScale = Math.min(targetWidth / sceneW, targetHeight / sceneH);
-                    outW = Math.max(1, Math.round(sceneW * finalScale));
-                    outH = Math.max(1, Math.round(sceneH * finalScale));
-                } else {
-                    finalScale = this.OUTPUT_MAX_DIMENSION / Math.max(sceneW, sceneH);
-                    outW = Math.max(1, Math.round(sceneW * finalScale));
-                    outH = Math.max(1, Math.round(sceneH * finalScale));
-                }
-
-                ctx.canvas.width = outW;
-                ctx.canvas.height = outH;
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-                
-                drawLogic(finalScale);
-            }
-
-            async renderPreview(animate = true) {
-                const imgData = this.getActiveImage();
-                if (!imgData && this.state.settings.style !== 'film_strip') return;
-                if (this.state.settings.style === 'film_strip' && this.state.images.length === 0) return;
-
-                if (animate) this.dom.previewCanvas.classList.remove('loaded');
-                
-                const dpr = window.devicePixelRatio || 1;
-                const containerW = Math.max(300, this.dom.workspace.clientWidth - 40);
-                const containerH = Math.max(300, this.dom.workspace.clientHeight - 40);
-                const safeDpr = Math.min(dpr, 2);
-                
-                const dataToRender = imgData || this.state.images[0];
-                await this.renderScene(this.ctx, dataToRender, containerW * safeDpr, containerH * safeDpr);
-                
-                this.dom.previewCanvas.style.width = 'auto';
-                this.dom.previewCanvas.style.height = 'auto';
-                this.dom.previewCanvas.style.maxWidth = '100%';
-                this.dom.previewCanvas.style.maxHeight = '100%';
-                if (animate) {
-                    requestAnimationFrame(() => requestAnimationFrame(() => this.dom.previewCanvas.classList.add('loaded')));
-                } else {
-                    this.dom.previewCanvas.classList.add('loaded');
-                }
-            }
-
-            renderHighResBlob(imgData, styleOverride = null) {
-                return new Promise(async (resolve) => { 
-                    const originalStyle = this.state.settings.style;
-                    if (styleOverride) this.state.settings.style = styleOverride;
-
-                    const offscreenCanvas = document.createElement('canvas');
-                    const offCtx = offscreenCanvas.getContext('2d', { alpha: false });
-                    
-                    await this.renderScene(offCtx, imgData, null, null);
-                    
-                    offscreenCanvas.toBlob((blob) => {
-                        if (styleOverride) this.state.settings.style = originalStyle;
-                        resolve(blob);
-                    }, 'image/jpeg', 0.96);
-                });
-            }
-
-            async downloadCurrent() {
-                const imgData = this.getActiveImage();
-                const dataToRender = imgData || this.state.images[0];
-                if (!dataToRender || this.state.isProcessing) return;
-
-                this.state.isProcessing = true;
-                const originalText = this.dom.btnDownloadCurrent.innerHTML;
-                this.dom.btnDownloadCurrent.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>RENDERING</span>';
-                
-                try {
-                    await new Promise(r => setTimeout(r, 50)); 
-                    const blob = await this.renderHighResBlob(dataToRender);
-                    const url = URL.createObjectURL(blob);
-                    
-                    const link = document.createElement('a');
-                    const styleName = this.state.settings.style.toUpperCase();
-                    link.download = `XIANGVISUALS_${styleName}_${Date.now()}.jpg`;
-                    link.href = url;
-                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                    
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                    triggerHaptic('success');
-                    this.showToast('HIGH-RES ARCHIVE EXPORTED // 高清作品已导出', 'success');
-                } catch (e) {
-                    console.error(e); this.showToast('EXPORT FAILED // 导出失败', 'error');
-                } finally {
-                    this.state.isProcessing = false;
-                    this.dom.btnDownloadCurrent.innerHTML = originalText;
-                }
-            }
-
-            async downloadAll() {
-                if (this.state.images.length === 0 || this.state.isProcessing) return;
-
-                this.state.isProcessing = true;
-                this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
-                
-                const stylesToGen = ['vector_field', 'exif_palette', 'exif_minimal', 'immersive_color', 'triptych_watermark', 'minimal_line']; 
-                const totalTasks = this.state.images.length * stylesToGen.length; 
-                let currentTask = 0;
-                
-                this.dom.progressTitle.textContent = 'RENDERING ARCHIVE EDITIONS...';
-                this.updateProgress(0, totalTasks);
-
-                try {
-                    const zip = new JSZip();
-                    for (let i = 0; i < this.state.images.length; i++) {
-                        const img = this.state.images[i];
-                        const baseName = img.file.name.substring(0, img.file.name.lastIndexOf('.')) || `Artwork_${i+1}`;
-                        const folder = zip.folder(baseName);
-                        
-                        for (let style of stylesToGen) {
-                            const blob = await this.renderHighResBlob(img, style);
-                            folder.file(`${baseName}_${style.toUpperCase()}.jpg`, blob);
-                            currentTask++;
-                            this.updateProgress(currentTask, totalTasks);
-                            await new Promise(r => requestAnimationFrame(r));
-                        }
-                    }
-
-                    this.dom.progressTitle.textContent = 'COMPRESSING ZIP ARCHIVE...';
-                    const zipContent = await zip.generateAsync({ type: "blob" });
-                    
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(zipContent);
-                    link.download = `XIANGVISUALS_Archive_${Date.now()}.zip`;
-                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                    
-                    triggerHaptic('success');
-                    this.showToast('BATCH ARCHIVE EXPORTED // 批量画册已打包', 'success');
-                } catch (e) {
-                    console.error(e); this.showToast('BATCH EXPORT FAILED // 打包失败', 'error');
-                } finally {
-                    this.dom.progressModal.classList.add('opacity-0', 'pointer-events-none');
-                    this.state.isProcessing = false;
-                }
-            }
-            
-            updateProgress(current, total) {
-                const percent = Math.floor((current / total) * 100);
-                this.dom.progressBar.style.width = `${percent}%`;
-                this.dom.progressCount.textContent = `${current} / ${total} EDITIONS`;
-            }
-
-            showToast(message, type = 'info') {
-                const toast = document.createElement('div');
-                toast.className = `toast pointer-events-auto`;
-                let icon = 'fa-square-full';
-                if (type === 'success') icon = 'fa-check';
-                if (type === 'error') icon = 'fa-triangle-exclamation';
-                
-                toast.innerHTML = `<i class="fa-solid ${icon} text-[10px] text-white"></i><span class="tracking-widest">${message}</span>`;
-                this.dom.toastContainer.appendChild(toast);
-                
-                requestAnimationFrame(() => requestAnimationFrame(() => this.dom.toastContainer && toast.classList.add('show')));
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => toast.remove(), 400);
-                }, 3200);
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            new AppController();
-        });
-    </script>
+    <!-- 模块化脚本引入 -->
+    <script src="./templates.js"></script>
+    <script src="./app.js"></script>
 </body>
 </html>
