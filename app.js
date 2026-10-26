@@ -1,7 +1,8 @@
 /**
- * XIANG FRAME 3.5 PRO - Core Controller & HDR/HEIC Pipeline
- * - 纯白画廊级开机动画
- * - 全站深色模式切换（无自动强制变黑 Bug）
+ * XIANG FRAME 4.0 GLASS EDITION - Core Controller
+ * - 极简呼吸一线载入动画（0.75s 轻盈揭幕）
+ * - 0px 磨砂玻璃深/浅双模式切换（无自动变黑 Bug）
+ * - iPhone HEIC/HEIF + Display-P3 + HDR GainMap 支持
  */
 function triggerHaptic(type = 'light') {
     if (!navigator.vibrate) return;
@@ -12,49 +13,13 @@ function triggerHaptic(type = 'light') {
     } catch(e) {}
 }
 
-// 纯白画廊启动序幕动画（圆矩影像对焦环 + 毫秒级遥测计数）
+// 极简一线呼吸载入动画：0.75 秒内轻盈淡出
 function runBootSequence() {
     const preloader = document.getElementById('bootPreloader');
-    const counterEl = document.getElementById('bootCounter');
-    const barEl = document.getElementById('bootProgressBar');
-    const statusEl = document.getElementById('bootStatusText');
-
-    const stages = [
-        { pct: 30, text: 'GALLERY WHITE CALIBRATION // DISPLAY-P3 GAMUT' },
-        { pct: 65, text: 'MOUNTING APPLE HEIF & GAIN MAP HDR ENGINE...' },
-        { pct: 92, text: 'PREPARING SWISS ARCHITECTURAL TEMPLATES...' },
-        { pct: 100, text: 'EXHIBITION READY // XIANGVISUALS ARCHIVE 3.5' }
-    ];
-
-    const start = performance.now();
-    const duration = 950;
-
-    const step = (now) => {
-        const elapsed = now - start;
-        const progress = Math.min(1, elapsed / duration);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const currentPct = Math.round(eased * 100);
-
-        if (counterEl) counterEl.textContent = String(currentPct).padStart(3, '0');
-        if (barEl) barEl.style.width = `${currentPct}%`;
-
-        for (let s of stages) {
-            if (currentPct <= s.pct) {
-                if (statusEl) statusEl.textContent = s.text;
-                break;
-            }
-        }
-
-        if (progress < 1) {
-            requestAnimationFrame(step);
-        } else {
-            setTimeout(() => {
-                if (preloader) preloader.classList.add('dismissed');
-                document.body.classList.add('app-ready');
-            }, 140);
-        }
-    };
-    requestAnimationFrame(step);
+    setTimeout(() => {
+        if (preloader) preloader.classList.add('dismissed');
+        document.body.classList.add('app-ready');
+    }, 760);
 }
 
 class AppController {
@@ -82,7 +47,6 @@ class AppController {
         this.OUTPUT_MAX_DIMENSION = 4200;
         this.isRendering = false;
         this.animationFrames = {};
-
         this.hitboxes = [];
         this.dragInfo = { active: false, id: null, offsetX: 0, offsetY: 0, currX: 0, currY: 0 };
 
@@ -103,52 +67,52 @@ class AppController {
     }
 
     initDOM() {
+        const $ = (id) => document.getElementById(id);
         this.dom = {
-            fileInput: document.getElementById('fileInput'),
-            btnAddFiles: document.getElementById('btnAddFiles'),
-            btnStudioTheme: document.getElementById('btnStudioTheme'),
-            btnDownloadAll: document.getElementById('btnDownloadAll'),
-            btnDownloadCurrent: document.getElementById('btnDownloadCurrent'),
-            btnApplyTextToAll: document.getElementById('btnApplyTextToAll'),
+            fileInput: $('fileInput'),
+            btnAddFiles: $('btnAddFiles'),
+            btnStudioTheme: $('btnStudioTheme'),
+            btnDownloadAll: $('btnDownloadAll'),
+            btnDownloadCurrent: $('btnDownloadCurrent'),
+            btnApplyTextToAll: $('btnApplyTextToAll'),
 
-            thumbnailList: document.getElementById('thumbnailList'),
-            galleryCount: document.getElementById('galleryCount'),
-            emptyState: document.getElementById('emptyState'),
-            workspace: document.getElementById('workspace'),
-            previewCanvas: document.getElementById('previewCanvas'),
-            controlPanel: document.getElementById('controlPanel'),
-            imgDimensions: document.getElementById('imgDimensions'),
-            hudStyleName: document.getElementById('hudStyleName'),
-            hudHdrBadge: document.getElementById('hudHdrBadge'),
-            hudHdrText: document.getElementById('hudHdrText'),
-            inspectorColorSpace: document.getElementById('inspectorColorSpace'),
-            globalLoader: document.getElementById('globalLoader'),
-            loaderMainTitle: document.getElementById('loaderMainTitle'),
-            loaderSubTitle: document.getElementById('loaderSubTitle'),
+            thumbnailList: $('thumbnailList'),
+            galleryCount: $('galleryCount'),
+            emptyState: $('emptyState'),
+            workspace: $('workspace'),
+            previewCanvas: $('previewCanvas'),
+            controlPanel: $('controlPanel'),
+            imgDimensions: $('imgDimensions'),
+            hudStyleName: $('hudStyleName'),
+            hudHdrBadge: $('hudHdrBadge'),
+            hudHdrText: $('hudHdrText'),
+            inspectorColorSpace: $('inspectorColorSpace'),
+            globalLoader: $('globalLoader'),
+            loaderMainTitle: $('loaderMainTitle'),
+            loaderSubTitle: $('loaderSubTitle'),
 
-            inputLeft: document.getElementById('inputLeft'),
-            inputRight: document.getElementById('inputRight'),
-            inputExifTime: document.getElementById('inputExifTime'),
-            inputLocation: document.getElementById('inputLocation'),
-            inputExifCamera: document.getElementById('inputExifCamera'),
-            inputExifLens: document.getElementById('inputExifLens'),
-            inputExifParams: document.getElementById('inputExifParams'),
-            inputFilmName: document.getElementById('inputFilmName'),
+            inputLeft: $('inputLeft'),
+            inputRight: $('inputRight'),
+            inputExifTime: $('inputExifTime'),
+            inputLocation: $('inputLocation'),
+            inputExifCamera: $('inputExifCamera'),
+            inputExifLens: $('inputExifLens'),
+            inputExifParams: $('inputExifParams'),
+            inputFilmName: $('inputFilmName'),
 
-            matSizeSlider: document.getElementById('matSizeSlider'),
-            matSizeVal: document.getElementById('matSizeVal'),
-            shadowSlider: document.getElementById('shadowSlider'),
-            shadowVal: document.getElementById('shadowVal'),
-            hdrBoostSlider: document.getElementById('hdrBoostSlider'),
-            hdrBoostVal: document.getElementById('hdrBoostVal'),
+            matSizeSlider: $('matSizeSlider'),
+            matSizeVal: $('matSizeVal'),
+            shadowSlider: $('shadowSlider'),
+            shadowVal: $('shadowVal'),
+            hdrBoostSlider: $('hdrBoostSlider'),
+            hdrBoostVal: $('hdrBoostVal'),
+            vectorColsSlider: $('vectorColsSlider'),
+            vectorColsVal: $('vectorColsVal'),
 
-            vectorColsSlider: document.getElementById('vectorColsSlider'),
-            vectorColsVal: document.getElementById('vectorColsVal'),
-
-            btnToggleBW: document.getElementById('btnToggleBW'),
-            btnToggleInvert: document.getElementById('btnToggleInvert'),
-            grainSlider: document.getElementById('grainSlider'),
-            grainVal: document.getElementById('grainVal'),
+            btnToggleBW: $('btnToggleBW'),
+            btnToggleInvert: $('btnToggleInvert'),
+            grainSlider: $('grainSlider'),
+            grainVal: $('grainVal'),
 
             navBtns: document.querySelectorAll('.nav-btn'),
             tabBtns: document.querySelectorAll('.tab-btn'),
@@ -156,11 +120,11 @@ class AppController {
             styleBtns: document.querySelectorAll('.style-btn'),
             wallBtns: document.querySelectorAll('.wall-btn'),
 
-            toastContainer: document.getElementById('toastContainer'),
-            progressModal: document.getElementById('progressModal'),
-            progressBar: document.getElementById('progressBar'),
-            progressTitle: document.getElementById('progressTitle'),
-            progressCount: document.getElementById('progressCount')
+            toastContainer: $('toastContainer'),
+            progressModal: $('progressModal'),
+            progressBar: $('progressBar'),
+            progressTitle: $('progressTitle'),
+            progressCount: $('progressCount')
         };
     }
 
@@ -187,11 +151,10 @@ class AppController {
         }
     }
 
-    // 全站深色模式切换（同时控制整个应用界面与画布暗房）
+    // 全站磨砂深/浅色模式切换
     toggleDarkMode(forceState = null) {
         this.state.darkMode = forceState !== null ? forceState : !this.state.darkMode;
         document.body.classList.toggle('dark-mode', this.state.darkMode);
-        this.dom.workspace.classList.toggle('dark-studio', this.state.darkMode);
 
         const icon = this.dom.btnStudioTheme.querySelector('i');
         if (icon) {
@@ -228,13 +191,10 @@ class AppController {
 
         if (index === 1 && targetTabId) {
             this.dom.tabBtns.forEach(b => {
-                if (b.dataset.tab === targetTabId) {
-                    b.classList.add('bg-xv-black', 'text-white');
-                    b.classList.remove('text-xv-gray');
-                } else {
-                    b.classList.remove('bg-xv-black', 'text-white');
-                    b.classList.add('text-xv-gray');
-                }
+                const active = b.dataset.tab === targetTabId;
+                b.classList.toggle('bg-xv-black', active);
+                b.classList.toggle('text-white', active);
+                b.classList.toggle('text-xv-gray', !active);
             });
 
             this.dom.tabPanes.forEach(pane => {
@@ -245,19 +205,16 @@ class AppController {
         this.dom.navBtns.forEach(b => {
             const bIndex = parseInt(b.dataset.index);
             const bTarget = b.dataset.target;
-            let isActive = (index === 0 && bIndex === 0) || (index === 1 && bIndex === 1 && bTarget === targetTabId);
+            const isActive = (index === 0 && bIndex === 0) || (index === 1 && bIndex === 1 && bTarget === targetTabId);
             b.classList.toggle('active-nav', isActive);
         });
 
-        if (this.state.images.length > 0) setTimeout(() => this.renderPreview(false), 300);
+        if (this.state.images.length > 0) setTimeout(() => this.renderPreview(false), 260);
     }
 
     handleResize() {
-        if (window.innerWidth >= 768) {
-            document.getElementById('view-pager').style.transform = '';
-        } else {
-            document.getElementById('view-pager').style.transform = `translateX(-${this.state.currentTab * 100}vw)`;
-        }
+        const pager = document.getElementById('view-pager');
+        pager.style.transform = window.innerWidth >= 768 ? '' : `translateX(-${this.state.currentTab * 100}vw)`;
     }
 
     animateFilter(key, targetValue) {
@@ -267,8 +224,7 @@ class AppController {
         const duration = 260;
 
         const animate = (now) => {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
+            const progress = Math.min((now - startTime) / duration, 1);
             const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
             this.state.settings[key] = startValue + (targetValue - startValue) * ease;
             this.renderPreview(false);
@@ -281,7 +237,6 @@ class AppController {
         this.dom.btnAddFiles.addEventListener('click', () => { triggerHaptic(); this.dom.fileInput.click(); });
         this.dom.fileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
 
-        // 切换全站深色/浅色模式
         this.dom.btnStudioTheme.addEventListener('click', () => {
             triggerHaptic('light');
             this.toggleDarkMode();
@@ -289,34 +244,28 @@ class AppController {
 
         this.dom.navBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                const targetTab = e.currentTarget.dataset.target;
-                this.switchToTab(index, targetTab);
+                this.switchToTab(parseInt(e.currentTarget.dataset.index), e.currentTarget.dataset.target);
             });
         });
 
         this.dom.tabBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const targetTab = e.currentTarget.dataset.tab;
-                this.switchToTab(1, targetTab);
-            });
+            btn.addEventListener('click', (e) => this.switchToTab(1, e.currentTarget.dataset.tab));
         });
 
-        const body = document.body;
-        body.addEventListener('dragover', (e) => {
+        document.body.addEventListener('dragover', (e) => {
             e.preventDefault();
-            if (e.dataTransfer.types.includes('Files')) body.classList.add('opacity-80');
+            if (e.dataTransfer.types.includes('Files')) document.body.classList.add('opacity-80');
         });
-        body.addEventListener('dragleave', (e) => {
-            if (e.clientX === 0 || e.clientY === 0) body.classList.remove('opacity-80');
+        document.body.addEventListener('dragleave', (e) => {
+            if (e.clientX === 0 || e.clientY === 0) document.body.classList.remove('opacity-80');
         });
-        body.addEventListener('drop', (e) => {
+        document.body.addEventListener('drop', (e) => {
             e.preventDefault();
-            body.classList.remove('opacity-80');
+            document.body.classList.remove('opacity-80');
             if (!this.state.isProcessing && e.dataTransfer.files.length > 0) this.handleFiles(e.dataTransfer.files);
         });
 
-        // 切换模版：已彻底移除强制把 workspace 变成 dark-studio 的 Bug
+        // 切换版式：保持用户当前深浅主题，绝不强制变黑
         this.dom.styleBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 triggerHaptic('light');
@@ -355,23 +304,25 @@ class AppController {
             this.dom.btnToggleInvert.classList.toggle('active-invert', !isInvert);
         });
 
-        const sliderInputHandler = (key, value, displayElem, formatter) => {
-            if (!this.isRendering) {
+        const bindSlider = (slider, key, label, fmt) => {
+            slider.addEventListener('input', (e) => {
+                if (this.isRendering) return;
                 this.isRendering = true;
                 requestAnimationFrame(() => {
-                    this.updateSettings({ [key]: parseFloat(value) }, false);
-                    displayElem.textContent = formatter ? formatter(value) : `${Math.round(value * 100)}%`;
+                    const val = parseFloat(e.target.value);
+                    this.updateSettings({ [key]: val }, false);
+                    label.textContent = fmt ? fmt(val) : `${Math.round(val * 100)}%`;
                     this.isRendering = false;
                 });
-            }
+            });
         };
-        this.dom.matSizeSlider.addEventListener('input', (e) => sliderInputHandler('matMultiplier', e.target.value, this.dom.matSizeVal));
-        this.dom.shadowSlider.addEventListener('input', (e) => sliderInputHandler('shadowMultiplier', e.target.value, this.dom.shadowVal));
-        this.dom.grainSlider.addEventListener('input', (e) => sliderInputHandler('grainAmount', e.target.value, this.dom.grainVal));
-        this.dom.hdrBoostSlider.addEventListener('input', (e) => sliderInputHandler('hdrBoost', e.target.value, this.dom.hdrBoostVal));
-        this.dom.vectorColsSlider.addEventListener('input', (e) => sliderInputHandler('vectorCols', e.target.value, this.dom.vectorColsVal, v => `${v} 列`));
+        bindSlider(this.dom.matSizeSlider, 'matMultiplier', this.dom.matSizeVal);
+        bindSlider(this.dom.shadowSlider, 'shadowMultiplier', this.dom.shadowVal);
+        bindSlider(this.dom.grainSlider, 'grainAmount', this.dom.grainVal);
+        bindSlider(this.dom.hdrBoostSlider, 'hdrBoost', this.dom.hdrBoostVal);
+        bindSlider(this.dom.vectorColsSlider, 'vectorCols', this.dom.vectorColsVal, v => `${v} 列`);
 
-        const textInputHandler = this.debounce((key, value) => {
+        const onTextChange = this.debounce((key, value) => {
             const activeImg = this.getActiveImage();
             if (activeImg) {
                 activeImg[key] = value;
@@ -379,28 +330,22 @@ class AppController {
             }
         }, 120);
 
-        this.dom.inputLeft.addEventListener('input', (e) => textInputHandler('textLeft', e.target.value));
-        this.dom.inputRight.addEventListener('input', (e) => textInputHandler('textRight', e.target.value));
-        this.dom.inputExifTime.addEventListener('input', (e) => textInputHandler('exifTime', e.target.value));
-        this.dom.inputLocation.addEventListener('input', (e) => textInputHandler('location', e.target.value));
-        this.dom.inputExifCamera.addEventListener('input', (e) => textInputHandler('exifCamera', e.target.value));
-        this.dom.inputExifLens.addEventListener('input', (e) => textInputHandler('exifLens', e.target.value));
-        this.dom.inputExifParams.addEventListener('input', (e) => textInputHandler('exifParams', e.target.value));
-        this.dom.inputFilmName.addEventListener('input', (e) => textInputHandler('filmName', e.target.value));
+        const textMap = [
+            ['inputLeft', 'textLeft'], ['inputRight', 'textRight'],
+            ['inputExifTime', 'exifTime'], ['inputLocation', 'location'],
+            ['inputExifCamera', 'exifCamera'], ['inputExifLens', 'exifLens'],
+            ['inputExifParams', 'exifParams'], ['inputFilmName', 'filmName']
+        ];
+        textMap.forEach(([domKey, prop]) => {
+            this.dom[domKey].addEventListener('input', (e) => onTextChange(prop, e.target.value));
+        });
 
         this.dom.btnApplyTextToAll.addEventListener('click', () => {
             triggerHaptic('success');
             const activeImg = this.getActiveImage();
             if (!activeImg) return;
             this.state.images.forEach(img => {
-                img.textLeft = activeImg.textLeft;
-                img.textRight = activeImg.textRight;
-                img.exifTime = activeImg.exifTime;
-                img.location = activeImg.location;
-                img.exifCamera = activeImg.exifCamera;
-                img.exifLens = activeImg.exifLens;
-                img.exifParams = activeImg.exifParams;
-                img.filmName = activeImg.filmName;
+                textMap.forEach(([, prop]) => { img[prop] = activeImg[prop]; });
             });
             this.showToast('ARCHIVE METADATA SYNCED // 已同步至全部作品', 'success');
         });
@@ -408,6 +353,7 @@ class AppController {
         this.dom.btnDownloadCurrent.addEventListener('click', () => { triggerHaptic('medium'); this.downloadCurrent(); });
         this.dom.btnDownloadAll.addEventListener('click', () => { triggerHaptic('medium'); this.downloadAll(); });
 
+        // Contact Sheet Drag Reorder
         const cvs = this.dom.previewCanvas;
         const getCoords = (e) => {
             const rect = cvs.getBoundingClientRect();
@@ -415,11 +361,11 @@ class AppController {
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             const canvasRatio = cvs.width / cvs.height;
             const rectRatio = rect.width / rect.height;
-            let renderW, renderH, offsetX = 0, offsetY = 0;
+            let renderW = rect.width, renderH = rect.height, offsetX = 0, offsetY = 0;
             if (canvasRatio > rectRatio) {
-                renderW = rect.width; renderH = rect.width / canvasRatio; offsetY = (rect.height - renderH) / 2;
+                renderH = rect.width / canvasRatio; offsetY = (rect.height - renderH) / 2;
             } else {
-                renderH = rect.height; renderW = rect.height * canvasRatio; offsetX = (rect.width - renderW) / 2;
+                renderW = rect.height * canvasRatio; offsetX = (rect.width - renderW) / 2;
             }
             const scale = cvs.width / renderW;
             return { x: (clientX - rect.left - offsetX) * scale, y: (clientY - rect.top - offsetY) * scale };
@@ -446,22 +392,13 @@ class AppController {
             const coords = getCoords(e);
             this.dragInfo.currX = coords.x; this.dragInfo.currY = coords.y;
 
-            let swapId = null;
-            for (let box of this.hitboxes) {
-                if (box.id !== this.dragInfo.id) {
-                    if (coords.x >= box.x && coords.x <= box.x + box.w && coords.y >= box.y && coords.y <= box.y + box.h) {
-                        swapId = box.id; break;
-                    }
-                }
-            }
-            if (swapId) {
+            const targetBox = this.hitboxes.find(b => b.id !== this.dragInfo.id && coords.x >= b.x && coords.x <= b.x + b.w && coords.y >= b.y && coords.y <= b.y + b.h);
+            if (targetBox) {
                 const idx1 = this.state.images.findIndex(img => img.id === this.dragInfo.id);
-                const idx2 = this.state.images.findIndex(img => img.id === swapId);
+                const idx2 = this.state.images.findIndex(img => img.id === targetBox.id);
                 if (idx1 > -1 && idx2 > -1) {
                     triggerHaptic('medium');
-                    const temp = this.state.images[idx1];
-                    this.state.images[idx1] = this.state.images[idx2];
-                    this.state.images[idx2] = temp;
+                    [this.state.images[idx1], this.state.images[idx2]] = [this.state.images[idx2], this.state.images[idx1]];
                     this.updateThumbnailsOrderDOM();
                 }
             }
@@ -501,39 +438,28 @@ class AppController {
     }
 
     async detectHdrAndColorProfile(file, exifData) {
-        let isHDR = false;
-        let hdrType = 'SDR';
-        let colorProfile = 'sRGB';
-
+        let isHDR = false, hdrType = 'SDR', colorProfile = 'sRGB';
         const ext = (file.name.split('.').pop() || '').toLowerCase();
-        const isHeic = ext === 'heic' || ext === 'heif' || file.type === 'image/heic' || file.type === 'image/heif';
-        const isAvif = ext === 'avif' || file.type === 'image/avif';
+        const isHeic = ext === 'heic' || ext === 'heif' || file.type.includes('heic') || file.type.includes('heif');
+        const isAvif = ext === 'avif' || file.type.includes('avif');
 
         if (exifData) {
-            if (exifData.ColorSpace === 65535 || String(exifData.ProfileDescription || '').includes('P3') || String(exifData.ColorSpace || '').includes('Uncalibrated')) {
+            if (exifData.ColorSpace === 65535 || String(exifData.ProfileDescription || '').includes('P3')) {
                 colorProfile = 'DISPLAY-P3';
             }
-            if (exifData.CustomRendered === 3 || exifData.CustomRendered === 'HDR' || (exifData.Make && String(exifData.Make).toUpperCase().includes('APPLE') && isHeic)) {
-                isHDR = true;
-                hdrType = 'APPLE EDR';
-                colorProfile = 'DISPLAY-P3';
+            if (exifData.CustomRendered === 3 || (exifData.Make && String(exifData.Make).toUpperCase().includes('APPLE') && isHeic)) {
+                isHDR = true; hdrType = 'APPLE EDR'; colorProfile = 'DISPLAY-P3';
             }
         }
 
         try {
-            const slice = file.slice(0, Math.min(file.size, 262144));
-            const buf = await slice.arrayBuffer();
+            const buf = await file.slice(0, Math.min(file.size, 262144)).arrayBuffer();
             const ascii = new TextDecoder('latin1').decode(new Uint8Array(buf));
-
-            if (ascii.includes('hdrgm') || ascii.includes('GainMap') || ascii.includes('urn:iso:std:iso:ts:21496')) {
-                isHDR = true;
-                hdrType = 'ULTRA HDR';
-                colorProfile = 'DISPLAY-P3';
-            } else if (ascii.includes('tmap') || ascii.includes('hvc1') || ascii.includes('MiHB')) {
-                isHDR = true;
-                hdrType = isHeic ? 'HEIF 10-BIT HDR' : 'HDR GAINMAP';
-                colorProfile = 'DISPLAY-P3';
-            } else if (ascii.includes('Display P3') || (ascii.includes('sRGB IEC61966') === false && isHeic)) {
+            if (ascii.includes('hdrgm') || ascii.includes('GainMap') || ascii.includes('21496')) {
+                isHDR = true; hdrType = 'ULTRA HDR'; colorProfile = 'DISPLAY-P3';
+            } else if (ascii.includes('tmap') || ascii.includes('hvc1')) {
+                isHDR = true; hdrType = isHeic ? 'HEIF 10-BIT HDR' : 'HDR GAINMAP'; colorProfile = 'DISPLAY-P3';
+            } else if (ascii.includes('Display P3') || isHeic) {
                 colorProfile = 'DISPLAY-P3';
             }
         } catch (e) {}
@@ -544,8 +470,7 @@ class AppController {
 
     async decodeImageFile(file) {
         const ext = (file.name.split('.').pop() || '').toLowerCase();
-        const isHeic = ext === 'heic' || ext === 'heif' || file.type === 'image/heic' || file.type === 'image/heif';
-
+        const isHeic = ext === 'heic' || ext === 'heif' || file.type.includes('heic') || file.type.includes('heif');
         const nativeUrl = URL.createObjectURL(file);
         try {
             const imgObj = await this.loadImage(nativeUrl);
@@ -553,15 +478,9 @@ class AppController {
         } catch (nativeErr) {
             URL.revokeObjectURL(nativeUrl);
             if (isHeic && typeof heic2any !== 'undefined') {
-                if (this.dom.loaderSubTitle) {
-                    this.dom.loaderSubTitle.textContent = `TRANSCODING APPLE HEIC/HEIF (${file.name})...`;
-                }
-                const convertedBlob = await heic2any({
-                    blob: file,
-                    toType: 'image/jpeg',
-                    quality: 0.96
-                });
-                const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                if (this.dom.loaderSubTitle) this.dom.loaderSubTitle.textContent = `TRANSCODING HEIC (${file.name})...`;
+                const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.96 });
+                const finalBlob = Array.isArray(converted) ? converted[0] : converted;
                 const convertedUrl = URL.createObjectURL(finalBlob);
                 const imgObj = await this.loadImage(convertedUrl);
                 return { url: convertedUrl, imgObj };
@@ -572,237 +491,140 @@ class AppController {
 
     computeHistogram(imgObj) {
         const bins = 64;
-        const rHist = new Float32Array(bins);
-        const gHist = new Float32Array(bins);
-        const bHist = new Float32Array(bins);
-        const lHist = new Float32Array(bins);
-
+        const rH = new Float32Array(bins), gH = new Float32Array(bins), bH = new Float32Array(bins), lH = new Float32Array(bins);
         try {
-            const canvas = document.createElement('canvas');
-            const ctx = this.getCanvasContext(canvas, { willReadFrequently: true });
-            canvas.width = 128; canvas.height = 128;
+            const cvs = document.createElement('canvas');
+            cvs.width = 128; cvs.height = 128;
+            const ctx = this.getCanvasContext(cvs, { willReadFrequently: true });
             ctx.drawImage(imgObj, 0, 0, 128, 128);
             const data = ctx.getImageData(0, 0, 128, 128).data;
-
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i], g = data[i+1], b = data[i+2];
                 const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-                rHist[Math.min(bins - 1, Math.floor((r / 256) * bins))]++;
-                gHist[Math.min(bins - 1, Math.floor((g / 256) * bins))]++;
-                bHist[Math.min(bins - 1, Math.floor((b / 256) * bins))]++;
-                lHist[Math.min(bins - 1, Math.floor((lum / 256) * bins))]++;
+                rH[Math.min(bins - 1, Math.floor((r / 256) * bins))]++;
+                gH[Math.min(bins - 1, Math.floor((g / 256) * bins))]++;
+                bH[Math.min(bins - 1, Math.floor((b / 256) * bins))]++;
+                lH[Math.min(bins - 1, Math.floor((lum / 256) * bins))]++;
             }
-
-            const normalize = (arr) => {
+            const norm = (arr) => {
                 const max = Math.max(...arr, 1);
-                const out = new Float32Array(bins);
-                for (let i = 0; i < bins; i++) {
-                    const prev = arr[Math.max(0, i - 1)];
-                    const curr = arr[i];
-                    const next = arr[Math.min(bins - 1, i + 1)];
-                    out[i] = Math.pow(((prev * 0.25 + curr * 0.5 + next * 0.25) / max), 0.75);
-                }
-                return out;
+                return arr.map((_, i) => {
+                    const avg = (arr[Math.max(0, i - 1)] * 0.25 + arr[i] * 0.5 + arr[Math.min(bins - 1, i + 1)] * 0.25) / max;
+                    return Math.pow(avg, 0.75);
+                });
             };
-
-            return {
-                r: normalize(rHist),
-                g: normalize(gHist),
-                b: normalize(bHist),
-                l: normalize(lHist)
-            };
+            return { r: norm(rH), g: norm(gH), b: norm(bH), l: norm(lH) };
         } catch (e) {
-            return { r: rHist, g: gHist, b: bHist, l: lHist };
+            return { r: rH, g: gH, b: bH, l: lH };
         }
     }
 
     extractPalette(imgObj) {
+        const fallback = [
+            { rgbStr: '#d4d4d8', hex: '#D4D4D8', r: 212, g: 212, b: 216 },
+            { rgbStr: '#94a3b8', hex: '#94A3B8', r: 148, g: 163, b: 184 },
+            { rgbStr: '#64748b', hex: '#64748B', r: 100, g: 116, b: 139 },
+            { rgbStr: '#1e293b', hex: '#1E293B', r: 30, g: 41, b: 59 }
+        ];
         try {
-            const canvas = document.createElement('canvas');
-            const ctx = this.getCanvasContext(canvas, { willReadFrequently: true });
-            canvas.width = 64; canvas.height = 64;
+            const cvs = document.createElement('canvas');
+            cvs.width = 64; cvs.height = 64;
+            const ctx = this.getCanvasContext(cvs, { willReadFrequently: true });
             ctx.drawImage(imgObj, 0, 0, 64, 64);
             const data = ctx.getImageData(0, 0, 64, 64).data;
-
-            const colorCounts = {};
-            const colorPool = [];
-            const binSize = 32;
+            const counts = {}, pool = [];
 
             for (let i = 0; i < data.length; i += 4) {
-                if (data[i+3] > 128) {
-                    const r = data[i], g = data[i+1], b = data[i+2];
-                    const luminance = (0.299*r + 0.587*g + 0.114*b);
-                    if (luminance > 242 || luminance < 14) continue;
-                    colorPool.push({ r, g, b, lum: luminance });
-                    const binKey = `${Math.floor(r/binSize)},${Math.floor(g/binSize)},${Math.floor(b/binSize)}`;
-                    if (!colorCounts[binKey]) colorCounts[binKey] = { count: 0, rSum: 0, gSum: 0, bSum: 0 };
-                    colorCounts[binKey].count++;
-                    colorCounts[binKey].rSum += r;
-                    colorCounts[binKey].gSum += g;
-                    colorCounts[binKey].bSum += b;
-                }
+                if (data[i+3] < 128) continue;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                if (lum > 242 || lum < 14) continue;
+                pool.push({ r, g, b });
+                const k = `${r >> 5},${g >> 5},${b >> 5}`;
+                if (!counts[k]) counts[k] = { count: 0, r: 0, g: 0, b: 0 };
+                counts[k].count++; counts[k].r += r; counts[k].g += g; counts[k].b += b;
             }
+            const bins = Object.values(counts).sort((a, b) => b.count - a.count);
+            if (!bins.length) return fallback;
 
-            const defaultPalette = [
-                { rgbStr: '#d4d4d8', hex: '#D4D4D8', r: 212, g: 212, b: 216 },
-                { rgbStr: '#94a3b8', hex: '#94A3B8', r: 148, g: 163, b: 184 },
-                { rgbStr: '#64748b', hex: '#64748B', r: 100, g: 116, b: 139 },
-                { rgbStr: '#1e293b', hex: '#1E293B', r: 30, g: 41, b: 59 }
-            ];
+            const picked = bins.slice(0, 4).map(b => ({
+                r: Math.round(b.r / b.count),
+                g: Math.round(b.g / b.count),
+                b: Math.round(b.b / b.count)
+            }));
+            while (picked.length < 4) picked.push(pool[picked.length] || { r: 120, g: 120, b: 120 });
 
-            if (colorPool.length === 0) return defaultPalette;
-            const sortedBins = Object.values(colorCounts).sort((a, b) => b.count - a.count);
-            if (sortedBins.length === 0) return defaultPalette;
-
-            const getSaturation = (r, g, b) => {
-                const max = Math.max(r, g, b) / 255, min = Math.min(r, g, b) / 255;
-                return max === 0 ? 0 : (max - min) / max;
-            };
-            const getLightness = (r, g, b) => (Math.max(r, g, b) / 255 + Math.min(r, g, b) / 255) / 2;
-
-            let candidates = [];
-            for (let i = 0; i < Math.min(10, sortedBins.length); i++) {
-                const bin = sortedBins[i];
-                if (bin.count > sortedBins[0].count * 0.05) {
-                    const r = Math.round(bin.rSum / bin.count);
-                    const g = Math.round(bin.gSum / bin.count);
-                    const b = Math.round(bin.bSum / bin.count);
-                    candidates.push({ r, g, b, s: getSaturation(r, g, b), l: getLightness(r, g, b), count: bin.count });
-                }
-            }
-
-            candidates.sort((a, b) => {
-                let scoreA = a.s * (a.l > 0.1 && a.l < 0.9 ? 1 : 0.1) * Math.log(a.count);
-                let scoreB = b.s * (b.l > 0.1 && b.l < 0.9 ? 1 : 0.1) * Math.log(b.count);
-                return scoreB - scoreA;
-            });
-
-            let bestColor = candidates.length > 0 ? candidates[0] : {
-                r: Math.round(sortedBins[0].rSum / sortedBins[0].count),
-                g: Math.round(sortedBins[0].gSum / sortedBins[0].count),
-                b: Math.round(sortedBins[0].bSum / sortedBins[0].count)
-            };
-
-            const pickedColors = [{ r: bestColor.r, g: bestColor.g, b: bestColor.b }];
-            const dist = (c1, c2) => Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2);
-
-            let dominantBin = sortedBins[0];
-            pickedColors.push({
-                r: Math.round(dominantBin.rSum / dominantBin.count),
-                g: Math.round(dominantBin.gSum / dominantBin.count),
-                b: Math.round(dominantBin.bSum / dominantBin.count)
-            });
-
-            while (pickedColors.length < 4 && colorPool.length > 0) {
-                let maxDist = -1; let furthestColor = colorPool[0];
-                for (let c of colorPool) {
-                    let minDistToPicked = Math.min(...pickedColors.map(p => dist(c, p)));
-                    if (minDistToPicked > maxDist) { maxDist = minDistToPicked; furthestColor = c; }
-                }
-                pickedColors.push({ r: furthestColor.r, g: furthestColor.g, b: furthestColor.b });
-            }
-
-            const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
-            return pickedColors.map(c => ({
-                rgbStr: `rgba(${c.r}, ${c.g}, ${c.b}, 1)`,
-                hex: rgbToHex(c.r, c.g, c.b),
+            const toHex = (n) => n.toString(16).padStart(2, '0').toUpperCase();
+            return picked.map(c => ({
+                rgbStr: `rgb(${c.r}, ${c.g}, ${c.b})`,
+                hex: `#${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`,
                 r: c.r, g: c.g, b: c.b
             }));
-        } catch(e) {
-            return [
-                { rgbStr: '#d4d4d8', hex: '#D4D4D8', r: 212, g: 212, b: 216 },
-                { rgbStr: '#94a3b8', hex: '#94A3B8', r: 148, g: 163, b: 184 },
-                { rgbStr: '#64748b', hex: '#64748B', r: 100, g: 116, b: 139 },
-                { rgbStr: '#1e293b', hex: '#1E293B', r: 30, g: 41, b: 59 }
-            ];
+        } catch (e) {
+            return fallback;
         }
     }
 
     async handleFiles(fileList) {
         const files = Array.from(fileList).filter(f => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|heic|heif|avif|tif|tiff|dng)$/i.test(f.name));
-        if (files.length === 0) { this.showToast('未检测到有效的图片或 HEIC/HDR 文件', 'error'); return; }
+        if (!files.length) { this.showToast('未检测到有效的图片或 HEIC/HDR 文件', 'error'); return; }
 
-        if (this.dom.loaderSubTitle) this.dom.loaderSubTitle.textContent = 'DECODING HEIF / P3 GAMUT & WAVEFORM...';
         this.dom.globalLoader.classList.add('active');
-        await new Promise(r => setTimeout(r, 80));
+        await new Promise(r => setTimeout(r, 60));
 
-        if (this.state.images.length === 0) {
+        if (!this.state.images.length) {
             this.dom.emptyState.style.display = 'none';
             this.dom.controlPanel.classList.remove('opacity-40', 'pointer-events-none');
-            this.dom.btnDownloadCurrent.classList.remove('hidden');
-            this.dom.btnDownloadAll.classList.remove('hidden');
-            this.dom.btnDownloadCurrent.classList.add('flex');
-            this.dom.btnDownloadAll.classList.add('flex');
+            this.dom.btnDownloadCurrent.classList.replace('hidden', 'flex');
+            this.dom.btnDownloadAll.classList.replace('hidden', 'flex');
         }
 
-        let firstNewId = null;
-        let hdrCount = 0;
+        let firstNewId = null, hdrCount = 0;
 
-        for (let file of files) {
+        for (const file of files) {
             try {
-                let exifData = null;
+                let exif = null;
                 try {
-                    if (typeof exifr !== 'undefined') {
-                        exifData = await exifr.parse(file, { gps: true, tiff: true, exif: true, icc: true });
-                    }
-                } catch (err) { console.warn("EXIF 解析跳过:", err); }
+                    if (typeof exifr !== 'undefined') exif = await exifr.parse(file, { gps: true, tiff: true, exif: true, icc: true });
+                } catch (e) {}
 
-                const hdrInfo = await this.detectHdrAndColorProfile(file, exifData);
+                const hdrInfo = await this.detectHdrAndColorProfile(file, exif);
                 if (hdrInfo.isHDR) hdrCount++;
 
                 const { url, imgObj } = await this.decodeImageFile(file);
 
-                let camera = 'DIGITAL CAMERA';
-                if (exifData?.Make || exifData?.Model) {
-                    let make = exifData.Make || ''; let model = exifData.Model || '';
-                    camera = model.toUpperCase().startsWith(make.toUpperCase())
-                        ? model.toUpperCase()
-                        : `${make} ${model}`.trim().toUpperCase();
-                }
+                const make = (exif?.Make || '').trim(), model = (exif?.Model || '').trim();
+                const camera = (model.toUpperCase().startsWith(make.toUpperCase()) ? model : `${make} ${model}`).trim().toUpperCase() || 'DIGITAL CAMERA';
+                const lens = (exif?.LensModel || '24MM F/2.8').toUpperCase();
+                const focal = exif?.FocalLength ? `${parseFloat(Number(exif.FocalLength).toFixed(1))}mm` : '24mm';
+                const fnum = exif?.FNumber ? `f/${parseFloat(Number(exif.FNumber).toFixed(1))}` : 'f/2.8';
+                const exp = exif?.ExposureTime ? (exif.ExposureTime >= 1 ? `${exif.ExposureTime}s` : `1/${Math.round(1 / exif.ExposureTime)}s`) : '1/125s';
+                const iso = exif?.ISO ? `ISO ${exif.ISO}` : 'ISO 400';
+                const params = `${focal}   ${fnum}   ${exp}   ${iso}`;
 
-                let lens = exifData?.LensModel ? exifData.LensModel.toUpperCase() : '24MM F/2.8';
-                let focal = exifData?.FocalLength ? `${parseFloat(Number(exifData.FocalLength).toFixed(1))}mm` : '24mm';
-                let fnumber = exifData?.FNumber ? `f/${parseFloat(Number(exifData.FNumber).toFixed(1))}` : 'f/2.8';
-                let exposure = exifData?.ExposureTime
-                    ? (exifData.ExposureTime >= 1 ? `${exifData.ExposureTime}s` : `1/${Math.round(1/exifData.ExposureTime)}s`)
-                    : '1/125s';
-                let iso = exifData?.ISO ? `ISO ${exifData.ISO}` : 'ISO 400';
-                let params = [focal, fnumber, exposure, iso].filter(Boolean).join('   ') || '24mm   f/2.8   1/125s   ISO 400';
-
-                let dateStr = 'PHOTOGRAPHED IN : OCT 15, 2026';
-                let timeStr = '12 FEB 2026';
-                if (exifData?.DateTimeOriginal) {
-                    try {
-                        const d = new Date(exifData.DateTimeOriginal);
-                        const options = { month: 'short', day: 'numeric', year: 'numeric' };
-                        dateStr = 'PHOTOGRAPHED IN : ' + d.toLocaleDateString('en-US', options).toUpperCase();
+                let dateStr = 'PHOTOGRAPHED IN : OCT 15, 2026', timeStr = '12 FEB 2026';
+                if (exif?.DateTimeOriginal) {
+                    const d = new Date(exif.DateTimeOriginal);
+                    if (!isNaN(d)) {
+                        dateStr = 'PHOTOGRAPHED IN : ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
                         timeStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase();
-                    } catch(e) {}
+                    }
                 }
 
                 let locationStr = "38° 55' 00\" N    121° 38' 00\" E";
-                if (typeof exifData?.latitude === 'number' && typeof exifData?.longitude === 'number') {
-                    const formatDMS = (deg, isLat) => {
-                        const d = Math.abs(deg);
-                        const degInt = Math.floor(d);
-                        const minFloat = (d - degInt) * 60;
-                        const minInt = Math.floor(minFloat);
-                        const secInt = Math.round((minFloat - minInt) * 60);
-                        const dir = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W');
-                        return `${degInt}° ${minInt}' ${secInt}" ${dir}`;
+                if (typeof exif?.latitude === 'number' && typeof exif?.longitude === 'number') {
+                    const dms = (deg, isLat) => {
+                        const d = Math.abs(deg), degI = Math.floor(d), minF = (d - degI) * 60, minI = Math.floor(minF), secI = Math.round((minF - minI) * 60);
+                        return `${degI}° ${minI}' ${secI}" ${isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W')}`;
                     };
-                    locationStr = `${formatDMS(exifData.latitude, true)}    ${formatDMS(exifData.longitude, false)}`;
+                    locationStr = `${dms(exif.latitude, true)}    ${dms(exif.longitude, false)}`;
                 }
 
-                const defaultTitle = file.name.split('.')[0].replace(/[-_]/g, ' ').toUpperCase() || 'UNTITLED ARTWORK';
-                const palette = this.extractPalette(imgObj);
-                const histogram = this.computeHistogram(imgObj);
-
                 const newImg = {
-                    id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                    id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
                     file, url, imgObj,
                     width: imgObj.width, height: imgObj.height,
-                    textLeft: defaultTitle,
+                    textLeft: file.name.split('.')[0].replace(/[-_]/g, ' ').toUpperCase() || 'UNTITLED ARTWORK',
                     textRight: '© XIANGVISUALS',
                     exifTime: timeStr,
                     location: locationStr,
@@ -811,8 +633,8 @@ class AppController {
                     exifParams: params,
                     exifDate: dateStr,
                     filmName: 'FUJIFILM RVP50',
-                    palette,
-                    histogram,
+                    palette: this.extractPalette(imgObj),
+                    histogram: this.computeHistogram(imgObj),
                     isHDR: hdrInfo.isHDR,
                     hdrType: hdrInfo.hdrType,
                     colorProfile: hdrInfo.colorProfile
@@ -822,7 +644,7 @@ class AppController {
                 this.addThumbnail(newImg);
                 if (!firstNewId) firstNewId = newImg.id;
             } catch (e) {
-                console.error("加载失败:", file.name, e);
+                console.error('加载失败:', file.name, e);
                 this.showToast(`无法解码 ${file.name}`, 'error');
             }
         }
@@ -830,19 +652,14 @@ class AppController {
         this.updateGalleryCounter();
         this.dom.globalLoader.classList.remove('active');
         if (firstNewId) this.setActiveImage(firstNewId);
+        if (window.innerWidth < 768) this.switchToTab(1, 'tab-templates');
 
-        if (window.innerWidth < 768) {
-            this.switchToTab(1, 'tab-templates');
-        }
         triggerHaptic('success');
-        const hdrMsg = hdrCount > 0 ? ` (${hdrCount} HDR/P3)` : '';
-        this.showToast(`LOADED ${files.length} ARTWORKS${hdrMsg} // 已解析入库`, 'success');
+        this.showToast(`LOADED ${files.length} ARTWORKS${hdrCount ? ` (${hdrCount} HDR)` : ''}`, 'success');
     }
 
     updateGalleryCounter() {
-        if (this.dom.galleryCount) {
-            this.dom.galleryCount.textContent = `${this.state.images.length} ITEMS`;
-        }
+        if (this.dom.galleryCount) this.dom.galleryCount.textContent = `${this.state.images.length} ITEMS`;
     }
 
     loadImage(url) {
@@ -860,14 +677,11 @@ class AppController {
         div.className = 'thumb-item relative shrink-0 w-full aspect-square overflow-hidden bg-xv-light group';
         div.dataset.id = imgData.id;
 
-        const hdrBadgeHtml = imgData.isHDR
-            ? `<span class="absolute bottom-1 left-1 px-1 py-0.2 bg-black/85 text-amber-300 font-mono text-[8px] font-bold tracking-wider z-10 border border-white/20">HDR</span>`
-            : (imgData.colorProfile === 'DISPLAY-P3' ? `<span class="absolute bottom-1 left-1 px-1 py-0.2 bg-black/75 text-white font-mono text-[8px] font-medium tracking-wider z-10">P3</span>` : '');
+        const badge = imgData.isHDR
+            ? `<span class="absolute bottom-1 left-1 px-1 bg-black/85 text-amber-300 font-mono text-[8px] font-bold z-10">HDR</span>`
+            : (imgData.colorProfile === 'DISPLAY-P3' ? `<span class="absolute bottom-1 left-1 px-1 bg-black/75 text-white font-mono text-[8px] z-10">P3</span>` : '');
 
-        div.innerHTML = `
-            <img src="${imgData.url}" class="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover:scale-105">
-            ${hdrBadgeHtml}
-        `;
+        div.innerHTML = `<img src="${imgData.url}" class="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover:scale-105">${badge}`;
 
         const delBtn = document.createElement('button');
         delBtn.className = 'absolute top-1 right-1 w-5 h-5 bg-xv-black/80 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10';
@@ -888,33 +702,28 @@ class AppController {
 
     removeImage(id) {
         const index = this.state.images.findIndex(img => img.id === id);
-        if (index > -1) {
-            URL.revokeObjectURL(this.state.images[index].url);
-            this.state.images.splice(index, 1);
-            const thumb = document.querySelector(`.thumb-item[data-id="${id}"]`);
-            if (thumb) thumb.remove();
-            this.updateGalleryCounter();
+        if (index === -1) return;
+        URL.revokeObjectURL(this.state.images[index].url);
+        this.state.images.splice(index, 1);
+        document.querySelector(`.thumb-item[data-id="${id}"]`)?.remove();
+        this.updateGalleryCounter();
 
-            if (this.state.images.length === 0) {
-                this.resetUI();
-            } else if (this.state.activeId === id) {
-                const nextIndex = Math.min(index, this.state.images.length - 1);
-                this.setActiveImage(this.state.images[nextIndex].id);
-            }
-            if (this.state.settings.style === 'film_strip') {
-                this.renderPreview(true);
-            }
+        if (!this.state.images.length) {
+            this.resetUI();
+        } else if (this.state.activeId === id) {
+            this.setActiveImage(this.state.images[Math.min(index, this.state.images.length - 1)].id);
         }
+        if (this.state.settings.style === 'film_strip') this.renderPreview(true);
     }
 
     resetUI() {
         this.state.activeId = null;
         this.dom.emptyState.style.display = 'flex';
         this.dom.controlPanel.classList.add('opacity-40', 'pointer-events-none');
-        this.dom.btnDownloadCurrent.classList.add('hidden');
-        this.dom.btnDownloadAll.classList.add('hidden');
+        this.dom.btnDownloadCurrent.classList.replace('flex', 'hidden');
+        this.dom.btnDownloadAll.classList.replace('flex', 'hidden');
         this.dom.previewCanvas.classList.remove('loaded');
-        if (this.dom.hudHdrBadge) this.dom.hudHdrBadge.classList.add('hidden');
+        this.dom.hudHdrBadge?.classList.add('hidden');
         this.ctx.clearRect(0, 0, this.dom.previewCanvas.width, this.dom.previewCanvas.height);
         this.dom.imgDimensions.textContent = '-- × -- PX';
         if (window.innerWidth < 768) this.switchToTab(0);
@@ -927,9 +736,7 @@ class AppController {
         const imgData = this.getActiveImage();
         if (!imgData) return;
 
-        document.querySelectorAll('.thumb-item').forEach(el => {
-            el.classList.toggle('active', el.dataset.id === id);
-        });
+        document.querySelectorAll('.thumb-item').forEach(el => el.classList.toggle('active', el.dataset.id === id));
 
         this.dom.inputLeft.value = imgData.textLeft || '';
         this.dom.inputRight.value = imgData.textRight || '';
@@ -942,14 +749,10 @@ class AppController {
         this.dom.imgDimensions.textContent = `${imgData.width} × ${imgData.height} PX · ${imgData.colorProfile}`;
 
         if (this.dom.hudHdrBadge) {
-            if (imgData.isHDR || imgData.colorProfile === 'DISPLAY-P3') {
-                this.dom.hudHdrBadge.classList.remove('hidden');
-                this.dom.hudHdrBadge.classList.add('flex');
-                this.dom.hudHdrText.textContent = imgData.isHDR ? `${imgData.hdrType} · P3` : 'DISPLAY-P3';
-            } else {
-                this.dom.hudHdrBadge.classList.add('hidden');
-                this.dom.hudHdrBadge.classList.remove('flex');
-            }
+            const showHdr = imgData.isHDR || imgData.colorProfile === 'DISPLAY-P3';
+            this.dom.hudHdrBadge.classList.toggle('hidden', !showHdr);
+            this.dom.hudHdrBadge.classList.toggle('flex', showHdr);
+            this.dom.hudHdrText.textContent = imgData.isHDR ? `${imgData.hdrType} · P3` : 'DISPLAY-P3';
         }
         if (this.dom.inspectorColorSpace) {
             this.dom.inspectorColorSpace.textContent = imgData.isHDR ? imgData.hdrType : imgData.colorProfile;
@@ -973,39 +776,32 @@ class AppController {
         const hasWall = ['polaroid', 'film35mm', 'film_strip'].includes(style);
         const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'aura_blur'].includes(style);
 
+        document.getElementById('section-vector').style.display = isVector ? 'block' : 'none';
+        document.getElementById('ctrl-grain').style.display = isFilm ? 'block' : 'none';
+        document.getElementById('section-materials').style.display = hasWall ? 'block' : 'none';
+
         const secLayout = document.getElementById('section-layout');
-        const ctrlMargin = document.getElementById('ctrl-margin');
-        const ctrlShadow = document.getElementById('ctrl-shadow');
-        const secVector = document.getElementById('section-vector');
-        const secMaterials = document.getElementById('section-materials');
-        const ctrlGrain = document.getElementById('ctrl-grain');
-
-        if (secVector) secVector.style.display = isVector ? 'block' : 'none';
-        if (ctrlGrain) ctrlGrain.style.display = isFilm ? 'block' : 'none';
-        if (secMaterials) secMaterials.style.display = hasWall ? 'block' : 'none';
-
-        if (style === 'film4x5' || style === 'film_xpan' || style === 'vector_field') {
-            if (secLayout) secLayout.style.display = 'none';
+        if (['film4x5', 'film_xpan', 'vector_field'].includes(style)) {
+            secLayout.style.display = 'none';
         } else {
-            if (secLayout) secLayout.style.display = 'block';
-            if (ctrlMargin) ctrlMargin.style.display = 'block';
-            if (ctrlShadow) ctrlShadow.style.display = hasShadow ? 'block' : 'none';
+            secLayout.style.display = 'block';
+            document.getElementById('ctrl-margin').style.display = 'block';
+            document.getElementById('ctrl-shadow').style.display = hasShadow ? 'block' : 'none';
         }
     }
 
     createFilmGrainPattern(ctx) {
         if (this.state.grainPattern) return this.state.grainPattern;
-        const patternCanvas = document.createElement('canvas');
-        const size = 128;
-        patternCanvas.width = size; patternCanvas.height = size;
-        const pCtx = patternCanvas.getContext('2d');
-        const imgData = pCtx.createImageData(size, size);
+        const cvs = document.createElement('canvas');
+        cvs.width = 128; cvs.height = 128;
+        const pCtx = cvs.getContext('2d');
+        const imgData = pCtx.createImageData(128, 128);
         for (let i = 0; i < imgData.data.length; i += 4) {
-            const val = Math.random() * 255;
-            imgData.data[i] = val; imgData.data[i+1] = val; imgData.data[i+2] = val; imgData.data[i+3] = 40;
+            const v = Math.random() * 255;
+            imgData.data[i] = v; imgData.data[i+1] = v; imgData.data[i+2] = v; imgData.data[i+3] = 40;
         }
         pCtx.putImageData(imgData, 0, 0);
-        this.state.grainPattern = ctx.createPattern(patternCanvas, 'repeat');
+        this.state.grainPattern = ctx.createPattern(cvs, 'repeat');
         return this.state.grainPattern;
     }
 
@@ -1023,63 +819,50 @@ class AppController {
         const hdrBoost = this.state.settings.hdrBoost || 0;
         if (bwAmount === 0 && invertAmount === 0 && hdrBoost === 0 && !modeOverride) return imgDataObj.imgObj;
 
-        const rw = Math.max(1, Math.round(w));
-        const rh = Math.max(1, Math.round(h));
+        const rw = Math.max(1, Math.round(w)), rh = Math.max(1, Math.round(h));
         const cacheKey = `${bwAmount.toFixed(2)}_${invertAmount.toFixed(2)}_${hdrBoost.toFixed(2)}_${modeOverride || 'std'}_${rw}_${rh}`;
-        if (imgDataObj.filterCache && imgDataObj.filterCache.key === cacheKey) return imgDataObj.filterCache.canvas;
+        if (imgDataObj.filterCache?.key === cacheKey) return imgDataObj.filterCache.canvas;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = rw; canvas.height = rh;
-        const ctx = this.getCanvasContext(canvas, { willReadFrequently: true });
+        const cvs = document.createElement('canvas');
+        cvs.width = rw; cvs.height = rh;
+        const ctx = this.getCanvasContext(cvs, { willReadFrequently: true });
         ctx.drawImage(imgDataObj.imgObj, 0, 0, rw, rh);
         const imgPixels = ctx.getImageData(0, 0, rw, rh);
-        const data = imgPixels.data;
+        const d = imgPixels.data;
 
-        for (let i = 0; i < data.length; i += 4) {
-            let r = data[i], g = data[i+1], b = data[i+2];
+        for (let i = 0; i < d.length; i += 4) {
+            let r = d[i], g = d[i+1], b = d[i+2];
 
             if (hdrBoost > 0) {
-                const nr = r / 255, ng = g / 255, nb = b / 255;
-                const lum = 0.299 * nr + 0.587 * ng + 0.114 * nb;
-                const highlightCurve = lum + hdrBoost * 0.28 * Math.sin(lum * Math.PI) * Math.pow(lum, 0.85);
-                const scale = lum > 0.001 ? (highlightCurve / lum) : 1;
-                r = Math.min(255, r * scale);
-                g = Math.min(255, g * scale);
-                b = Math.min(255, b * scale);
+                const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                const lift = lum + hdrBoost * 0.28 * Math.sin(lum * Math.PI) * Math.pow(lum, 0.85);
+                const sc = lum > 0.001 ? lift / lum : 1;
+                r = Math.min(255, r * sc); g = Math.min(255, g * sc); b = Math.min(255, b * sc);
             }
 
             if (modeOverride === 'cyanotype') {
-                const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                const cLum = Math.pow(lum, 0.92);
+                const cLum = Math.pow((0.299 * r + 0.587 * g + 0.114 * b) / 255, 0.92);
                 if (cLum < 0.5) {
                     const t = cLum * 2;
-                    r = 7 + (29 - 7) * t;
-                    g = 30 + (86 - 30) * t;
-                    b = 61 + (126 - 61) * t;
+                    r = 7 + 22 * t; g = 30 + 56 * t; b = 61 + 65 * t;
                 } else {
                     const t = (cLum - 0.5) * 2;
-                    r = 29 + (244 - 29) * t;
-                    g = 86 + (241 - 86) * t;
-                    b = 126 + (234 - 126) * t;
+                    r = 29 + 215 * t; g = 86 + 155 * t; b = 126 + 108 * t;
                 }
             }
 
             if (bwAmount > 0) {
                 const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                r += (gray - r) * bwAmount;
-                g += (gray - g) * bwAmount;
-                b += (gray - b) * bwAmount;
+                r += (gray - r) * bwAmount; g += (gray - g) * bwAmount; b += (gray - b) * bwAmount;
             }
             if (invertAmount > 0) {
-                r += (255 - r * 2) * invertAmount;
-                g += (255 - g * 2) * invertAmount;
-                b += (255 - b * 2) * invertAmount;
+                r += (255 - r * 2) * invertAmount; g += (255 - g * 2) * invertAmount; b += (255 - b * 2) * invertAmount;
             }
-            data[i] = r; data[i+1] = g; data[i+2] = b;
+            d[i] = r; d[i+1] = g; d[i+2] = b;
         }
         ctx.putImageData(imgPixels, 0, 0);
-        imgDataObj.filterCache = { key: cacheKey, canvas };
-        return canvas;
+        imgDataObj.filterCache = { key: cacheKey, canvas: cvs };
+        return cvs;
     }
 
     async renderScene(ctx, imgData, targetWidth, targetHeight) {
@@ -1089,22 +872,16 @@ class AppController {
     async renderPreview(animate = true) {
         const imgData = this.getActiveImage();
         if (!imgData && this.state.settings.style !== 'film_strip') return;
-        if (this.state.settings.style === 'film_strip' && this.state.images.length === 0) return;
+        if (this.state.settings.style === 'film_strip' && !this.state.images.length) return;
 
         if (animate) this.dom.previewCanvas.classList.remove('loaded');
 
-        const dpr = window.devicePixelRatio || 1;
-        const containerW = Math.max(300, this.dom.workspace.clientWidth - 40);
-        const containerH = Math.max(300, this.dom.workspace.clientHeight - 40);
-        const safeDpr = Math.min(dpr, 2);
+        const safeDpr = Math.min(window.devicePixelRatio || 1, 2);
+        const containerW = Math.max(280, this.dom.workspace.clientWidth - 32);
+        const containerH = Math.max(280, this.dom.workspace.clientHeight - 32);
 
-        const dataToRender = imgData || this.state.images[0];
-        await this.renderScene(this.ctx, dataToRender, containerW * safeDpr, containerH * safeDpr);
+        await this.renderScene(this.ctx, imgData || this.state.images[0], containerW * safeDpr, containerH * safeDpr);
 
-        this.dom.previewCanvas.style.width = 'auto';
-        this.dom.previewCanvas.style.height = 'auto';
-        this.dom.previewCanvas.style.maxWidth = '100%';
-        this.dom.previewCanvas.style.maxHeight = '100%';
         if (animate) {
             requestAnimationFrame(() => requestAnimationFrame(() => this.dom.previewCanvas.classList.add('loaded')));
         } else {
@@ -1117,12 +894,11 @@ class AppController {
             const originalStyle = this.state.settings.style;
             if (styleOverride) this.state.settings.style = styleOverride;
 
-            const offscreenCanvas = document.createElement('canvas');
-            const offCtx = this.getCanvasContext(offscreenCanvas, { alpha: false });
-
+            const offCanvas = document.createElement('canvas');
+            const offCtx = this.getCanvasContext(offCanvas, { alpha: false });
             await this.renderScene(offCtx, imgData, null, null);
 
-            offscreenCanvas.toBlob((blob) => {
+            offCanvas.toBlob((blob) => {
                 if (styleOverride) this.state.settings.style = originalStyle;
                 resolve(blob);
             }, 'image/jpeg', 0.96);
@@ -1130,8 +906,7 @@ class AppController {
     }
 
     async downloadCurrent() {
-        const imgData = this.getActiveImage();
-        const dataToRender = imgData || this.state.images[0];
+        const dataToRender = this.getActiveImage() || this.state.images[0];
         if (!dataToRender || this.state.isProcessing) return;
 
         this.state.isProcessing = true;
@@ -1139,16 +914,13 @@ class AppController {
         this.dom.btnDownloadCurrent.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>RENDERING</span>';
 
         try {
-            await new Promise(r => setTimeout(r, 50));
+            await new Promise(r => setTimeout(r, 40));
             const blob = await this.renderHighResBlob(dataToRender);
             const url = URL.createObjectURL(blob);
-
             const link = document.createElement('a');
-            const styleName = this.state.settings.style.toUpperCase();
-            link.download = `XIANGVISUALS_${styleName}_${Date.now()}.jpg`;
+            link.download = `XIANGVISUALS_${this.state.settings.style.toUpperCase()}_${Date.now()}.jpg`;
             link.href = url;
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
-
             setTimeout(() => URL.revokeObjectURL(url), 1000);
             triggerHaptic('success');
             this.showToast('HIGH-RES ARCHIVE EXPORTED // 高清作品已导出', 'success');
@@ -1161,14 +933,14 @@ class AppController {
     }
 
     async downloadAll() {
-        if (this.state.images.length === 0 || this.state.isProcessing) return;
+        if (!this.state.images.length || this.state.isProcessing) return;
 
         this.state.isProcessing = true;
         this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
 
         const stylesToGen = [
-            'swiss_grid', 'optical_histogram', 'aura_blur', 'halation_lab',
-            'cyanotype', 'vector_field', 'exif_palette', 'exif_minimal'
+            'exif_palette', 'exif_minimal', 'editorial_magazine', 'glass_overlay',
+            'gallery_passepartout', 'swiss_grid', 'optical_histogram', 'aura_blur'
         ];
         const totalTasks = this.state.images.length * stylesToGen.length;
         let currentTask = 0;
@@ -1180,10 +952,10 @@ class AppController {
             const zip = new JSZip();
             for (let i = 0; i < this.state.images.length; i++) {
                 const img = this.state.images[i];
-                const baseName = img.file.name.substring(0, img.file.name.lastIndexOf('.')) || `Artwork_${i+1}`;
+                const baseName = img.file.name.replace(/\.[^/.]+$/, '') || `Artwork_${i+1}`;
                 const folder = zip.folder(baseName);
 
-                for (let style of stylesToGen) {
+                for (const style of stylesToGen) {
                     const blob = await this.renderHighResBlob(img, style);
                     folder.file(`${baseName}_${style.toUpperCase()}.jpg`, blob);
                     currentTask++;
@@ -1193,8 +965,7 @@ class AppController {
             }
 
             this.dom.progressTitle.textContent = 'COMPRESSING ZIP ARCHIVE...';
-            const zipContent = await zip.generateAsync({ type: "blob" });
-
+            const zipContent = await zip.generateAsync({ type: 'blob' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(zipContent);
             link.download = `XIANGVISUALS_Archive_${Date.now()}.zip`;
@@ -1211,22 +982,18 @@ class AppController {
     }
 
     updateProgress(current, total) {
-        const percent = Math.floor((current / total) * 100);
-        this.dom.progressBar.style.width = `${percent}%`;
+        this.dom.progressBar.style.width = `${Math.floor((current / total) * 100)}%`;
         this.dom.progressCount.textContent = `${current} / ${total} EDITIONS`;
     }
 
     showToast(message, type = 'info') {
         const toast = document.createElement('div');
-        toast.className = `toast pointer-events-auto`;
-        let icon = 'fa-square-full';
-        if (type === 'success') icon = 'fa-check';
-        if (type === 'error') icon = 'fa-triangle-exclamation';
-
-        toast.innerHTML = `<i class="fa-solid ${icon} text-[10px] text-white"></i><span class="tracking-widest">${message}</span>`;
+        toast.className = 'toast pointer-events-auto';
+        const icon = type === 'success' ? 'fa-check' : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-square-full');
+        toast.innerHTML = `<i class="fa-solid ${icon} text-[10px]"></i><span class="tracking-widest">${message}</span>`;
         this.dom.toastContainer.appendChild(toast);
 
-        requestAnimationFrame(() => requestAnimationFrame(() => this.dom.toastContainer && toast.classList.add('show')));
+        requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 400);
