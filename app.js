@@ -1,8 +1,6 @@
 /**
- * XIANG FRAME 4.0 GLASS EDITION - Core Controller
- * - 极简呼吸一线载入动画（0.75s 轻盈揭幕）
- * - 0px 磨砂玻璃深/浅双模式切换（无自动变黑 Bug）
- * - iPhone HEIC/HEIF + Display-P3 + HDR GainMap 支持
+ * XIANG FRAME 4.5 PRO - Studio Core Controller
+ * 100% 完整独立版：处理启动序幕、HEIC/HDR、P3 色域解码、画布缩放对比与交互色卡
  */
 function triggerHaptic(type = 'light') {
     if (!navigator.vibrate) return;
@@ -13,13 +11,44 @@ function triggerHaptic(type = 'light') {
     } catch(e) {}
 }
 
-// 极简一线呼吸载入动画：0.75 秒内轻盈淡出
+// 2.6 秒五幕装裱开机动画与遥测读数逻辑
 function runBootSequence() {
     const preloader = document.getElementById('bootPreloader');
-    setTimeout(() => {
-        if (preloader) preloader.classList.add('dismissed');
+    const telemetryEl = document.getElementById('bootTelemetryNum');
+    const skipBtn = document.getElementById('btnSkipBoot');
+    if (!preloader) return;
+
+    let dismissed = false;
+    const finishBoot = () => {
+        if (dismissed) return;
+        dismissed = true;
+        preloader.classList.add('dismissed');
         document.body.classList.add('app-ready');
-    }, 760);
+    };
+
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            triggerHaptic('light');
+            finishBoot();
+        });
+    }
+
+    const start = performance.now();
+    const duration = 2550;
+    const tick = (now) => {
+        if (dismissed) return;
+        const p = Math.min(1, (now - start) / duration);
+        const ease = 1 - Math.pow(1 - p, 3);
+        if (telemetryEl) {
+            telemetryEl.textContent = `${(ease * 420).toFixed(1).padStart(5, '0')} MM`;
+        }
+        if (p < 1) {
+            requestAnimationFrame(tick);
+        } else {
+            setTimeout(finishBoot, 120);
+        }
+    };
+    requestAnimationFrame(tick);
 }
 
 class AppController {
@@ -28,6 +57,11 @@ class AppController {
             images: [],
             activeId: null,
             darkMode: false,
+            zoom: 1,
+            panX: 0,
+            panY: 0,
+            exportFormat: 'image/jpeg',
+            isComparingRaw: false,
             settings: {
                 style: 'exif',
                 wallColor: '#ffffff',
@@ -151,7 +185,6 @@ class AppController {
         }
     }
 
-    // 全站磨砂深/浅色模式切换
     toggleDarkMode(forceState = null) {
         this.state.darkMode = forceState !== null ? forceState : !this.state.darkMode;
         document.body.classList.toggle('dark-mode', this.state.darkMode);
@@ -265,7 +298,6 @@ class AppController {
             if (!this.state.isProcessing && e.dataTransfer.files.length > 0) this.handleFiles(e.dataTransfer.files);
         });
 
-        // 切换版式：保持用户当前深浅主题，绝不强制变黑
         this.dom.styleBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 triggerHaptic('light');
@@ -305,6 +337,7 @@ class AppController {
         });
 
         const bindSlider = (slider, key, label, fmt) => {
+            if (!slider) return;
             slider.addEventListener('input', (e) => {
                 if (this.isRendering) return;
                 this.isRendering = true;
@@ -337,7 +370,9 @@ class AppController {
             ['inputExifParams', 'exifParams'], ['inputFilmName', 'filmName']
         ];
         textMap.forEach(([domKey, prop]) => {
-            this.dom[domKey].addEventListener('input', (e) => onTextChange(prop, e.target.value));
+            if (this.dom[domKey]) {
+                this.dom[domKey].addEventListener('input', (e) => onTextChange(prop, e.target.value));
+            }
         });
 
         this.dom.btnApplyTextToAll.addEventListener('click', () => {
@@ -353,73 +388,167 @@ class AppController {
         this.dom.btnDownloadCurrent.addEventListener('click', () => { triggerHaptic('medium'); this.downloadCurrent(); });
         this.dom.btnDownloadAll.addEventListener('click', () => { triggerHaptic('medium'); this.downloadAll(); });
 
-        // Contact Sheet Drag Reorder
-        const cvs = this.dom.previewCanvas;
-        const getCoords = (e) => {
-            const rect = cvs.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            const canvasRatio = cvs.width / cvs.height;
-            const rectRatio = rect.width / rect.height;
-            let renderW = rect.width, renderH = rect.height, offsetX = 0, offsetY = 0;
-            if (canvasRatio > rectRatio) {
-                renderH = rect.width / canvasRatio; offsetY = (rect.height - renderH) / 2;
-            } else {
-                renderW = rect.height * canvasRatio; offsetX = (rect.width - renderW) / 2;
-            }
-            const scale = cvs.width / renderW;
-            return { x: (clientX - rect.left - offsetX) * scale, y: (clientY - rect.top - offsetY) * scale };
+        // 画布缩放与平移操控坞绑定
+        const applyZoomTransform = () => {
+            const z = this.state.zoom;
+            const btnZoomReset = document.getElementById('btnZoomReset');
+            if (btnZoomReset) btnZoomReset.textContent = `${Math.round(z * 100)}%`;
+            this.dom.workspace.classList.toggle('is-zoomed', z > 1);
+            if (z === 1) { this.state.panX = 0; this.state.panY = 0; }
+            this.dom.previewCanvas.style.transform = `translate(${this.state.panX}px, ${this.state.panY}px) scale(${z})`;
         };
 
-        const handleDown = (e) => {
-            if (this.state.settings.style !== 'film_strip') return;
-            const coords = getCoords(e);
-            for (let i = this.hitboxes.length - 1; i >= 0; i--) {
-                const box = this.hitboxes[i];
-                if (coords.x >= box.x && coords.x <= box.x + box.w && coords.y >= box.y && coords.y <= box.y + box.h) {
-                    triggerHaptic('light');
-                    this.dragInfo = { active: true, id: box.id, offsetX: coords.x - box.x, offsetY: coords.y - box.y, currX: coords.x, currY: coords.y };
-                    cvs.style.cursor = 'grabbing';
-                    this.renderPreview(false);
-                    break;
-                }
-            }
+        const setZoom = (newZ) => {
+            this.state.zoom = Math.min(3.0, Math.max(0.8, Number(newZ.toFixed(2))));
+            applyZoomTransform();
         };
 
-        const handleMove = (e) => {
-            if (!this.dragInfo.active) return;
+        document.getElementById('btnZoomIn')?.addEventListener('click', () => { triggerHaptic('light'); setZoom(this.state.zoom + 0.25); });
+        document.getElementById('btnZoomOut')?.addEventListener('click', () => { triggerHaptic('light'); setZoom(this.state.zoom - 0.25); });
+        document.getElementById('btnZoomReset')?.addEventListener('click', () => { triggerHaptic('light'); setZoom(1); });
+        this.dom.workspace.addEventListener('dblclick', () => { triggerHaptic('light'); setZoom(this.state.zoom > 1 ? 1 : 1.75); });
+
+        this.dom.workspace.addEventListener('wheel', (e) => {
+            if (!this.state.images.length) return;
             e.preventDefault();
-            const coords = getCoords(e);
-            this.dragInfo.currX = coords.x; this.dragInfo.currY = coords.y;
+            setZoom(this.state.zoom + (e.deltaY < 0 ? 0.15 : -0.15));
+        }, { passive: false });
 
-            const targetBox = this.hitboxes.find(b => b.id !== this.dragInfo.id && coords.x >= b.x && coords.x <= b.x + b.w && coords.y >= b.y && coords.y <= b.y + b.h);
-            if (targetBox) {
-                const idx1 = this.state.images.findIndex(img => img.id === this.dragInfo.id);
-                const idx2 = this.state.images.findIndex(img => img.id === targetBox.id);
-                if (idx1 > -1 && idx2 > -1) {
-                    triggerHaptic('medium');
-                    [this.state.images[idx1], this.state.images[idx2]] = [this.state.images[idx2], this.state.images[idx1]];
-                    this.updateThumbnailsOrderDOM();
-                }
+        // 按住对比原片
+        const startCompare = () => {
+            const activeImg = this.getActiveImage();
+            if (!activeImg || this.state.isComparingRaw) return;
+            this.state.isComparingRaw = true;
+            triggerHaptic('light');
+            const cvs = this.dom.previewCanvas, ctx = this.ctx;
+            this._savedCanvasData = ctx.getImageData(0, 0, cvs.width, cvs.height);
+
+            ctx.fillStyle = this.state.darkMode ? '#09090b' : '#f4f4f5';
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+            const scale = Math.min(cvs.width / activeImg.width, cvs.height / activeImg.height);
+            const dw = activeImg.width * scale, dh = activeImg.height * scale;
+            ctx.drawImage(activeImg.imgObj, (cvs.width - dw) / 2, (cvs.height - dh) / 2, dw, dh);
+        };
+
+        const endCompare = () => {
+            if (!this.state.isComparingRaw) return;
+            this.state.isComparingRaw = false;
+            if (this._savedCanvasData) {
+                this.ctx.putImageData(this._savedCanvasData, 0, 0);
+                this._savedCanvasData = null;
             }
+        };
+
+        const btnCompareRaw = document.getElementById('btnCompareRaw');
+        if (btnCompareRaw) {
+            btnCompareRaw.addEventListener('mousedown', startCompare);
+            btnCompareRaw.addEventListener('touchstart', (e) => { e.preventDefault(); startCompare(); });
+            window.addEventListener('mouseup', endCompare);
+            window.addEventListener('touchend', endCompare);
+        }
+
+        // 交互式色卡微调器
+        const paletteContainer = document.getElementById('interactivePalette');
+        const btnShufflePalette = document.getElementById('btnShufflePalette');
+
+        const renderPaletteEditor = () => {
+            const activeImg = this.getActiveImage();
+            if (!paletteContainer || !activeImg || !activeImg.palette) return;
+            paletteContainer.innerHTML = '';
+
+            activeImg.palette.forEach((colorObj, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'palette-chip-wrapper';
+                wrap.style.backgroundColor = colorObj.hex || colorObj.rgbStr;
+                wrap.innerHTML = `
+                    <input type="color" class="palette-chip-input" value="${colorObj.hex || '#334155'}">
+                    <span class="palette-chip-hex">${(colorObj.hex || '').replace('#', '')}</span>
+                `;
+                wrap.querySelector('input').addEventListener('input', (e) => {
+                    const hex = e.target.value.toUpperCase();
+                    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+                    activeImg.palette[idx] = { hex, r, g, b, rgbStr: `rgb(${r}, ${g}, ${b})` };
+                    wrap.style.backgroundColor = hex;
+                    wrap.querySelector('.palette-chip-hex').textContent = hex.replace('#', '');
+                    this.renderPreview(false);
+                });
+                paletteContainer.appendChild(wrap);
+            });
+        };
+
+        btnShufflePalette?.addEventListener('click', () => {
+            const activeImg = this.getActiveImage();
+            if (!activeImg?.palette) return;
+            triggerHaptic('light');
+            activeImg.palette.push(activeImg.palette.shift());
+            renderPaletteEditor();
             this.renderPreview(false);
+        });
+
+        // 拦截 setActiveImage 与 resetUI
+        const origSetActive = this.setActiveImage.bind(this);
+        this.setActiveImage = (id) => {
+            origSetActive(id);
+            renderPaletteEditor();
+            const dock = document.getElementById('canvasDock');
+            if (dock) { dock.classList.remove('hidden'); dock.classList.add('flex'); }
         };
 
-        const handleUp = () => {
-            if (this.dragInfo.active) {
+        const origResetUI = this.resetUI.bind(this);
+        this.resetUI = () => {
+            origResetUI();
+            const dock = document.getElementById('canvasDock');
+            if (dock) { dock.classList.add('hidden'); dock.classList.remove('flex'); }
+        };
+
+        // 导出规格引擎按钮
+        document.querySelectorAll('.res-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 triggerHaptic('light');
-                this.dragInfo.active = false;
-                cvs.style.cursor = 'auto';
-                this.renderPreview(false);
-            }
-        };
+                const dim = parseInt(e.currentTarget.dataset.dim);
+                this.OUTPUT_MAX_DIMENSION = dim;
+                document.querySelectorAll('.res-btn').forEach(b => {
+                    const active = b === e.currentTarget;
+                    b.className = active
+                        ? 'res-btn py-1.5 border border-xv-black bg-xv-black text-white text-[9.5px] font-mono font-bold'
+                        : 'res-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray';
+                });
+                this.showToast(`EXPORT RESOLUTION: ${dim}PX`, 'info');
+            });
+        });
 
-        cvs.addEventListener('mousedown', handleDown);
-        cvs.addEventListener('mousemove', handleMove);
-        window.addEventListener('mouseup', handleUp);
-        cvs.addEventListener('touchstart', handleDown, { passive: false });
-        cvs.addEventListener('touchmove', handleMove, { passive: false });
-        window.addEventListener('touchend', handleUp);
+        document.querySelectorAll('.fmt-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                triggerHaptic('light');
+                this.state.exportFormat = e.currentTarget.dataset.fmt;
+                document.querySelectorAll('.fmt-btn').forEach(b => {
+                    const active = b === e.currentTarget;
+                    b.className = active
+                        ? 'fmt-btn py-1 border border-xv-black bg-xv-black text-white text-[9px] font-mono font-bold'
+                        : 'fmt-btn py-1 border border-xv-border text-[9px] font-mono font-semibold text-xv-gray';
+                });
+            });
+        });
+
+        // 快捷键支持
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault(); this.downloadCurrent(); return;
+            }
+            if (e.code === 'Space' && !e.repeat && this.state.images.length) {
+                e.preventDefault(); startCompare();
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                if (this.state.images.length < 2) return;
+                const idx = this.state.images.findIndex(i => i.id === this.state.activeId);
+                const next = e.key === 'ArrowRight' ? (idx + 1) % this.state.images.length : (idx - 1 + this.state.images.length) % this.state.images.length;
+                this.setActiveImage(this.state.images[next].id);
+            } else if (e.key.toLowerCase() === 'd') {
+                this.toggleDarkMode();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => { if (e.code === 'Space') endCompare(); });
     }
 
     debounce(func, wait) {
@@ -444,9 +573,7 @@ class AppController {
         const isAvif = ext === 'avif' || file.type.includes('avif');
 
         if (exifData) {
-            if (exifData.ColorSpace === 65535 || String(exifData.ProfileDescription || '').includes('P3')) {
-                colorProfile = 'DISPLAY-P3';
-            }
+            if (exifData.ColorSpace === 65535 || String(exifData.ProfileDescription || '').includes('P3')) colorProfile = 'DISPLAY-P3';
             if (exifData.CustomRendered === 3 || (exifData.Make && String(exifData.Make).toUpperCase().includes('APPLE') && isHeic)) {
                 isHDR = true; hdrType = 'APPLE EDR'; colorProfile = 'DISPLAY-P3';
             }
@@ -508,10 +635,7 @@ class AppController {
             }
             const norm = (arr) => {
                 const max = Math.max(...arr, 1);
-                return arr.map((_, i) => {
-                    const avg = (arr[Math.max(0, i - 1)] * 0.25 + arr[i] * 0.5 + arr[Math.min(bins - 1, i + 1)] * 0.25) / max;
-                    return Math.pow(avg, 0.75);
-                });
+                return arr.map((_, i) => Math.pow((arr[Math.max(0, i - 1)] * 0.25 + arr[i] * 0.5 + arr[Math.min(bins - 1, i + 1)] * 0.25) / max, 0.75));
             };
             return { r: norm(rH), g: norm(gH), b: norm(bH), l: norm(lH) };
         } catch (e) {
@@ -547,19 +671,11 @@ class AppController {
             const bins = Object.values(counts).sort((a, b) => b.count - a.count);
             if (!bins.length) return fallback;
 
-            const picked = bins.slice(0, 4).map(b => ({
-                r: Math.round(b.r / b.count),
-                g: Math.round(b.g / b.count),
-                b: Math.round(b.b / b.count)
-            }));
+            const picked = bins.slice(0, 4).map(b => ({ r: Math.round(b.r / b.count), g: Math.round(b.g / b.count), b: Math.round(b.b / b.count) }));
             while (picked.length < 4) picked.push(pool[picked.length] || { r: 120, g: 120, b: 120 });
 
             const toHex = (n) => n.toString(16).padStart(2, '0').toUpperCase();
-            return picked.map(c => ({
-                rgbStr: `rgb(${c.r}, ${c.g}, ${c.b})`,
-                hex: `#${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`,
-                r: c.r, g: c.g, b: c.b
-            }));
+            return picked.map(c => ({ rgbStr: `rgb(${c.r}, ${c.g}, ${c.b})`, hex: `#${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`, r: c.r, g: c.g, b: c.b }));
         } catch (e) {
             return fallback;
         }
@@ -580,19 +696,15 @@ class AppController {
         }
 
         let firstNewId = null, hdrCount = 0;
-
         for (const file of files) {
             try {
                 let exif = null;
-                try {
-                    if (typeof exifr !== 'undefined') exif = await exifr.parse(file, { gps: true, tiff: true, exif: true, icc: true });
-                } catch (e) {}
+                try { if (typeof exifr !== 'undefined') exif = await exifr.parse(file, { gps: true, tiff: true, exif: true, icc: true }); } catch (e) {}
 
                 const hdrInfo = await this.detectHdrAndColorProfile(file, exif);
                 if (hdrInfo.isHDR) hdrCount++;
 
                 const { url, imgObj } = await this.decodeImageFile(file);
-
                 const make = (exif?.Make || '').trim(), model = (exif?.Model || '').trim();
                 const camera = (model.toUpperCase().startsWith(make.toUpperCase()) ? model : `${make} ${model}`).trim().toUpperCase() || 'DIGITAL CAMERA';
                 const lens = (exif?.LensModel || '24MM F/2.8').toUpperCase();
@@ -613,10 +725,7 @@ class AppController {
 
                 let locationStr = "38° 55' 00\" N    121° 38' 00\" E";
                 if (typeof exif?.latitude === 'number' && typeof exif?.longitude === 'number') {
-                    const dms = (deg, isLat) => {
-                        const d = Math.abs(deg), degI = Math.floor(d), minF = (d - degI) * 60, minI = Math.floor(minF), secI = Math.round((minF - minI) * 60);
-                        return `${degI}° ${minI}' ${secI}" ${isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W')}`;
-                    };
+                    const dms = (deg, isLat) => `${Math.floor(Math.abs(deg))}° ${Math.floor((Math.abs(deg)-Math.floor(Math.abs(deg)))*60)}' ${Math.round(((Math.abs(deg)-Math.floor(Math.abs(deg)))*60-Math.floor((Math.abs(deg)-Math.floor(Math.abs(deg)))*60))*60)}" ${isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W')}`;
                     locationStr = `${dms(exif.latitude, true)}    ${dms(exif.longitude, false)}`;
                 }
 
@@ -624,20 +733,12 @@ class AppController {
                     id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
                     file, url, imgObj,
                     width: imgObj.width, height: imgObj.height,
-                    textLeft: file.name.split('.')[0].replace(/[-_]/g, ' ').toUpperCase() || 'UNTITLED ARTWORK',
+                    textLeft: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').toUpperCase() || 'UNTITLED ARTWORK',
                     textRight: '© XIANGVISUALS',
-                    exifTime: timeStr,
-                    location: locationStr,
-                    exifCamera: camera,
-                    exifLens: lens,
-                    exifParams: params,
-                    exifDate: dateStr,
-                    filmName: 'FUJIFILM RVP50',
-                    palette: this.extractPalette(imgObj),
-                    histogram: this.computeHistogram(imgObj),
-                    isHDR: hdrInfo.isHDR,
-                    hdrType: hdrInfo.hdrType,
-                    colorProfile: hdrInfo.colorProfile
+                    exifTime: timeStr, location: locationStr, exifCamera: camera,
+                    exifLens: lens, exifParams: params, exifDate: dateStr, filmName: 'FUJIFILM RVP50',
+                    palette: this.extractPalette(imgObj), histogram: this.computeHistogram(imgObj),
+                    isHDR: hdrInfo.isHDR, hdrType: hdrInfo.hdrType, colorProfile: hdrInfo.colorProfile
                 };
 
                 this.state.images.push(newImg);
@@ -659,7 +760,7 @@ class AppController {
     }
 
     updateGalleryCounter() {
-        if (this.dom.galleryCount) this.dom.galleryCount.textContent = `${this.state.images.length} ITEMS`;
+        if (this.dom.galleryCount) this.dom.galleryCount.textContent = `${this.state.images.length}`;
     }
 
     loadImage(url) {
@@ -677,26 +778,16 @@ class AppController {
         div.className = 'thumb-item relative shrink-0 w-full aspect-square overflow-hidden bg-xv-light group';
         div.dataset.id = imgData.id;
 
-        const badge = imgData.isHDR
-            ? `<span class="absolute bottom-1 left-1 px-1 bg-black/85 text-amber-300 font-mono text-[8px] font-bold z-10">HDR</span>`
-            : (imgData.colorProfile === 'DISPLAY-P3' ? `<span class="absolute bottom-1 left-1 px-1 bg-black/75 text-white font-mono text-[8px] z-10">P3</span>` : '');
-
+        const badge = imgData.isHDR ? `<span class="absolute bottom-1 left-1 px-1 bg-black/85 text-amber-300 font-mono text-[8px] font-bold z-10">HDR</span>` : (imgData.colorProfile === 'DISPLAY-P3' ? `<span class="absolute bottom-1 left-1 px-1 bg-black/75 text-white font-mono text-[8px] z-10">P3</span>` : '');
         div.innerHTML = `<img src="${imgData.url}" class="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover:scale-105">${badge}`;
 
         const delBtn = document.createElement('button');
         delBtn.className = 'absolute top-1 right-1 w-5 h-5 bg-xv-black/80 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10';
         delBtn.innerHTML = '<i class="fa-solid fa-xmark text-[10px]"></i>';
-        delBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            triggerHaptic('light');
-            this.removeImage(imgData.id);
-        });
+        delBtn.addEventListener('click', (e) => { e.stopPropagation(); triggerHaptic('light'); this.removeImage(imgData.id); });
 
         div.appendChild(delBtn);
-        div.addEventListener('click', () => {
-            triggerHaptic('light');
-            this.setActiveImage(imgData.id);
-        });
+        div.addEventListener('click', () => { triggerHaptic('light'); this.setActiveImage(imgData.id); });
         this.dom.thumbnailList.appendChild(div);
     }
 
@@ -725,7 +816,7 @@ class AppController {
         this.dom.previewCanvas.classList.remove('loaded');
         this.dom.hudHdrBadge?.classList.add('hidden');
         this.ctx.clearRect(0, 0, this.dom.previewCanvas.width, this.dom.previewCanvas.height);
-        this.dom.imgDimensions.textContent = '-- × -- PX';
+        this.dom.imgDimensions.textContent = '-- × --';
         if (window.innerWidth < 768) this.switchToTab(0);
     }
 
@@ -746,7 +837,7 @@ class AppController {
         this.dom.inputExifLens.value = imgData.exifLens || '';
         this.dom.inputExifParams.value = imgData.exifParams || '';
         this.dom.inputFilmName.value = imgData.filmName || '';
-        this.dom.imgDimensions.textContent = `${imgData.width} × ${imgData.height} PX · ${imgData.colorProfile}`;
+        this.dom.imgDimensions.textContent = `${imgData.width} × ${imgData.height}`;
 
         if (this.dom.hudHdrBadge) {
             const showHdr = imgData.isHDR || imgData.colorProfile === 'DISPLAY-P3';
@@ -757,6 +848,29 @@ class AppController {
         if (this.dom.inspectorColorSpace) {
             this.dom.inspectorColorSpace.textContent = imgData.isHDR ? imgData.hdrType : imgData.colorProfile;
         }
+
+        const paletteContainer = document.getElementById('interactivePalette');
+        if (paletteContainer && imgData.palette) {
+            paletteContainer.innerHTML = '';
+            imgData.palette.forEach((colorObj, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'palette-chip-wrapper';
+                wrap.style.backgroundColor = colorObj.hex || colorObj.rgbStr;
+                wrap.innerHTML = `<input type="color" class="palette-chip-input" value="${colorObj.hex || '#334155'}"><span class="palette-chip-hex">${(colorObj.hex || '').replace('#', '')}</span>`;
+                wrap.querySelector('input').addEventListener('input', (e) => {
+                    const hex = e.target.value.toUpperCase();
+                    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+                    imgData.palette[idx] = { hex, r, g, b, rgbStr: `rgb(${r}, ${g}, ${b})` };
+                    wrap.style.backgroundColor = hex;
+                    wrap.querySelector('.palette-chip-hex').textContent = hex.replace('#', '');
+                    this.renderPreview(false);
+                });
+                paletteContainer.appendChild(wrap);
+            });
+        }
+
+        const dock = document.getElementById('canvasDock');
+        if (dock) { dock.classList.remove('hidden'); dock.classList.add('flex'); }
 
         this.renderPreview(true);
     }
@@ -792,10 +906,8 @@ class AppController {
 
     createFilmGrainPattern(ctx) {
         if (this.state.grainPattern) return this.state.grainPattern;
-        const cvs = document.createElement('canvas');
-        cvs.width = 128; cvs.height = 128;
-        const pCtx = cvs.getContext('2d');
-        const imgData = pCtx.createImageData(128, 128);
+        const cvs = document.createElement('canvas'); cvs.width = 128; cvs.height = 128;
+        const pCtx = cvs.getContext('2d'), imgData = pCtx.createImageData(128, 128);
         for (let i = 0; i < imgData.data.length; i += 4) {
             const v = Math.random() * 255;
             imgData.data[i] = v; imgData.data[i+1] = v; imgData.data[i+2] = v; imgData.data[i+3] = 40;
@@ -808,8 +920,7 @@ class AppController {
     drawDXCode(ctx, x, y, width, height, seed) {
         ctx.fillStyle = 'rgba(250, 204, 21, 0.7)';
         for (let b = 0; b < 5; b++) {
-            const hash = Math.sin(seed + b * 1.3) * 10000;
-            if (hash - Math.floor(hash) > 0.4) {
+            if (Math.sin(seed + b * 1.3) * 10000 % 1 > 0.4) {
                 ctx.fillRect(x + b * width * 0.25, y, width * 0.18, height);
             }
         }
@@ -823,34 +934,24 @@ class AppController {
         const cacheKey = `${bwAmount.toFixed(2)}_${invertAmount.toFixed(2)}_${hdrBoost.toFixed(2)}_${modeOverride || 'std'}_${rw}_${rh}`;
         if (imgDataObj.filterCache?.key === cacheKey) return imgDataObj.filterCache.canvas;
 
-        const cvs = document.createElement('canvas');
-        cvs.width = rw; cvs.height = rh;
+        const cvs = document.createElement('canvas'); cvs.width = rw; cvs.height = rh;
         const ctx = this.getCanvasContext(cvs, { willReadFrequently: true });
         ctx.drawImage(imgDataObj.imgObj, 0, 0, rw, rh);
-        const imgPixels = ctx.getImageData(0, 0, rw, rh);
-        const d = imgPixels.data;
+        const imgPixels = ctx.getImageData(0, 0, rw, rh), d = imgPixels.data;
 
         for (let i = 0; i < d.length; i += 4) {
             let r = d[i], g = d[i+1], b = d[i+2];
-
             if (hdrBoost > 0) {
                 const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                 const lift = lum + hdrBoost * 0.28 * Math.sin(lum * Math.PI) * Math.pow(lum, 0.85);
                 const sc = lum > 0.001 ? lift / lum : 1;
                 r = Math.min(255, r * sc); g = Math.min(255, g * sc); b = Math.min(255, b * sc);
             }
-
             if (modeOverride === 'cyanotype') {
                 const cLum = Math.pow((0.299 * r + 0.587 * g + 0.114 * b) / 255, 0.92);
-                if (cLum < 0.5) {
-                    const t = cLum * 2;
-                    r = 7 + 22 * t; g = 30 + 56 * t; b = 61 + 65 * t;
-                } else {
-                    const t = (cLum - 0.5) * 2;
-                    r = 29 + 215 * t; g = 86 + 155 * t; b = 126 + 108 * t;
-                }
+                if (cLum < 0.5) { const t = cLum * 2; r = 7 + 22 * t; g = 30 + 56 * t; b = 61 + 65 * t; }
+                else { const t = (cLum - 0.5) * 2; r = 29 + 215 * t; g = 86 + 155 * t; b = 126 + 108 * t; }
             }
-
             if (bwAmount > 0) {
                 const gray = 0.299 * r + 0.587 * g + 0.114 * b;
                 r += (gray - r) * bwAmount; g += (gray - g) * bwAmount; b += (gray - b) * bwAmount;
@@ -875,7 +976,6 @@ class AppController {
         if (this.state.settings.style === 'film_strip' && !this.state.images.length) return;
 
         if (animate) this.dom.previewCanvas.classList.remove('loaded');
-
         const safeDpr = Math.min(window.devicePixelRatio || 1, 2);
         const containerW = Math.max(280, this.dom.workspace.clientWidth - 32);
         const containerH = Math.max(280, this.dom.workspace.clientHeight - 32);
@@ -893,15 +993,13 @@ class AppController {
         return new Promise(async (resolve) => {
             const originalStyle = this.state.settings.style;
             if (styleOverride) this.state.settings.style = styleOverride;
-
             const offCanvas = document.createElement('canvas');
             const offCtx = this.getCanvasContext(offCanvas, { alpha: false });
             await this.renderScene(offCtx, imgData, null, null);
-
             offCanvas.toBlob((blob) => {
                 if (styleOverride) this.state.settings.style = originalStyle;
                 resolve(blob);
-            }, 'image/jpeg', 0.96);
+            }, this.state.exportFormat || 'image/jpeg', 0.96);
         });
     }
 
@@ -918,9 +1016,9 @@ class AppController {
             const blob = await this.renderHighResBlob(dataToRender);
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.download = `XIANGVISUALS_${this.state.settings.style.toUpperCase()}_${Date.now()}.jpg`;
-            link.href = url;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const ext = this.state.exportFormat === 'image/png' ? 'png' : 'jpg';
+            link.download = `XIANGVISUALS_${this.state.settings.style.toUpperCase()}_${Date.now()}.${ext}`;
+            link.href = url; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(url), 1000);
             triggerHaptic('success');
             this.showToast('HIGH-RES ARCHIVE EXPORTED // 高清作品已导出', 'success');
@@ -938,10 +1036,7 @@ class AppController {
         this.state.isProcessing = true;
         this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
 
-        const stylesToGen = [
-            'exif_palette', 'exif_minimal', 'editorial_magazine', 'glass_overlay',
-            'gallery_passepartout', 'swiss_grid', 'optical_histogram', 'aura_blur'
-        ];
+        const stylesToGen = ['exif_palette', 'exif_minimal', 'editorial_magazine', 'glass_overlay', 'gallery_passepartout', 'swiss_grid', 'optical_histogram', 'aura_blur'];
         const totalTasks = this.state.images.length * stylesToGen.length;
         let currentTask = 0;
 
@@ -954,10 +1049,11 @@ class AppController {
                 const img = this.state.images[i];
                 const baseName = img.file.name.replace(/\.[^/.]+$/, '') || `Artwork_${i+1}`;
                 const folder = zip.folder(baseName);
+                const ext = this.state.exportFormat === 'image/png' ? 'png' : 'jpg';
 
                 for (const style of stylesToGen) {
                     const blob = await this.renderHighResBlob(img, style);
-                    folder.file(`${baseName}_${style.toUpperCase()}.jpg`, blob);
+                    folder.file(`${baseName}_${style.toUpperCase()}.${ext}`, blob);
                     currentTask++;
                     this.updateProgress(currentTask, totalTasks);
                     await new Promise(r => requestAnimationFrame(r));
@@ -970,7 +1066,6 @@ class AppController {
             link.href = URL.createObjectURL(zipContent);
             link.download = `XIANGVISUALS_Archive_${Date.now()}.zip`;
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
-
             triggerHaptic('success');
             this.showToast('BATCH ARCHIVE EXPORTED // 批量画册已打包', 'success');
         } catch (e) {

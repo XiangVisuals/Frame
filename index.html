@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>XIANG FRAME 4.0 | XIANGVISUALS 数字画廊与 HDR 视觉档案系统</title>
+    <title>XIANG FRAME 4.5 PRO | XIANGVISUALS</title>
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect x='2' y='2' width='20' height='20' stroke='%230a0a0a' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='5' stroke='%230a0a0a' stroke-width='1.5'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect x='2' y='2' width='20' height='20' stroke='%230a0a0a' stroke-width='2'/%3E%3Crect x='6' y='5' width='12' height='11' stroke='%230a0a0a' stroke-width='1.5'/%3E%3C/svg%3E">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,7 +16,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -45,48 +45,101 @@
 </head>
 <body class="flex flex-col font-sans select-none">
 
-    <!-- ULTRA-MINIMAL WHISPER PRELOADER (极简一线呼吸载入动画) -->
+    <!-- 5-ACT CURATORIAL FRAMING CHOREOGRAPHY (五幕剧·画廊精工装裱动画) -->
     <div id="bootPreloader">
-        <div class="minimal-loader-brand">XIANG FRAME</div>
-        <div class="minimal-loader-line-track">
-            <div class="minimal-loader-line-fill"></div>
+        <div class="curator-stage">
+            <!-- 第一幕：建筑激光测绘延长线与四角准星 -->
+            <div class="guide-line guide-h-top"></div>
+            <div class="guide-line guide-h-bot"></div>
+            <div class="guide-line guide-v-left"></div>
+            <div class="guide-line guide-v-right"></div>
+            
+            <div class="crop-tick tick-tl"></div>
+            <div class="crop-tick tick-tr"></div>
+            <div class="crop-tick tick-bl"></div>
+            <div class="crop-tick tick-br"></div>
+
+            <!-- 顶部留白比例测绘标尺 -->
+            <div class="dimension-ruler">
+                <span>MAT 1:1.4</span>
+                <i></i>
+                <span>P3 · HDR</span>
+            </div>
+
+            <!-- 第二 & 三幕：纯白斜切装裱相框与长曝光海景原片 -->
+            <div class="artwork-frame">
+                <div class="bevel-window">
+                    <div class="silver-photo">
+                        <div class="photo-sun"></div>
+                        <div class="photo-horizon"></div>
+                        <div class="photo-reflection"></div>
+                        <div class="optical-laser"></div>
+                    </div>
+                </div>
+
+                <!-- 第四幕：底部 EXIF 展签、四色光谱与红章压印 -->
+                <div class="frame-colophon">
+                    <div class="colophon-left">
+                        <div class="colophon-title"></div>
+                        <div class="colophon-specs">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                    <div class="colophon-right">
+                        <div class="swatch-strip">
+                            <i class="sw-1"></i>
+                            <i class="sw-2"></i>
+                            <i class="sw-3"></i>
+                            <i class="sw-4"></i>
+                        </div>
+                        <div class="zen-seal"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部极细进度游标 -->
+            <div class="curator-progress">
+                <div class="curator-progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- 底部毫米级装裱遥测读数与跳过按钮 -->
+        <div class="preloader-footer">
+            <div class="telemetry-readout">
+                <span>OPTICAL CALIBRATION</span>
+                <strong id="bootTelemetryNum">000.0 MM</strong>
+            </div>
+            <button id="btnSkipBoot" class="skip-boot-btn">SKIP ↗</button>
         </div>
     </div>
 
-    <!-- TOP ARCHITECTURAL FROSTED HEADER -->
+    <!-- TOP HEADER -->
     <header style="padding-top: var(--s-top);" class="stagger-enter glass-surface flex-shrink-0 z-30 border-b border-xv-border">
-        <div class="h-12 md:h-14 flex items-center justify-between px-3.5 md:px-6">
-            <div class="flex items-center gap-3">
-                <a href="https://xiangvisuals.com/" target="_blank" class="group flex items-center gap-2.5 focus:outline-none" title="访问 XIANGVISUALS.COM 主站">
-                    <div class="w-7 h-7 bg-xv-black flex items-center justify-center text-white transition-transform duration-300 group-hover:bg-neutral-800">
-                        <span class="font-bold text-[12px] font-mono tracking-tighter">XV</span>
-                    </div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center gap-1.5">
-                            <h1 class="text-xs font-bold text-xv-black tracking-[0.18em] uppercase font-mono">XIANG FRAME</h1>
-                            <span class="text-[9px] font-mono bg-xv-black text-white px-1 py-0.2 font-semibold">4.0</span>
-                        </div>
-                        <span class="text-[9px] font-mono text-xv-gray tracking-widest hidden sm:inline group-hover:text-xv-black transition-colors">XIANGVISUALS.COM ARCHIVE SYSTEM ↗</span>
-                    </div>
-                </a>
-            </div>
+        <div class="h-12 md:h-14 flex items-center justify-between px-4 md:px-6">
+            <a href="https://xiangvisuals.com/" target="_blank" class="group flex items-center gap-2.5 focus:outline-none">
+                <div class="w-7 h-7 bg-xv-black flex items-center justify-center text-white">
+                    <span class="font-bold text-[12px] font-mono tracking-tighter">XV</span>
+                </div>
+                <span class="text-xs font-bold text-xv-black tracking-[0.18em] uppercase font-mono">XIANG FRAME</span>
+                <span class="text-[9px] font-mono bg-xv-black text-white px-1 font-semibold">4.5</span>
+            </a>
             
-            <div class="flex items-center gap-1.5 md:gap-2">
-                <div id="hdrEngineBadge" class="hidden sm:flex items-center gap-1.5 px-2.5 h-8 glass-card text-[9px] font-mono text-xv-gray tracking-wider" title="Display-P3 广色域与 HEIC/HDR 解码管线已激活">
+            <div class="flex items-center gap-2">
+                <div id="hdrEngineBadge" class="hidden sm:flex items-center gap-1.5 px-2.5 h-8 glass-card text-[9px] font-mono text-xv-gray tracking-wider">
                     <span class="w-1.5 h-1.5 bg-emerald-500"></span>
                     <span>P3 · HDR</span>
                 </div>
-                <button id="btnStudioTheme" class="h-8 w-8 glass-card text-xv-black text-xs hover:bg-white transition-all flex items-center justify-center" title="切换深色/浅色磨砂主题">
+                <button id="btnStudioTheme" class="h-8 w-8 glass-card text-xv-black text-xs flex items-center justify-center" title="明暗主题 (快捷键: D)">
                     <i class="fa-solid fa-moon text-[11px]"></i>
                 </button>
-                <button id="btnAddFiles" class="btn-xv h-8 px-3 md:px-4 glass-card border-xv-black text-xv-black text-[11px] font-mono uppercase tracking-wider font-semibold hover:bg-xv-black hover:text-white flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-plus text-[10px]"></i> <span class="hidden md:inline">IMPORT 导入</span><span class="md:hidden">导入</span>
+                <button id="btnAddFiles" class="btn-xv h-8 px-3.5 md:px-4 glass-card border-xv-black text-xv-black text-[11px] font-mono uppercase tracking-wider font-semibold hover:bg-xv-black hover:text-white flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-plus text-[10px]"></i> <span>导入</span>
                 </button>
-                <button id="btnDownloadAll" class="hidden btn-xv h-8 px-2.5 md:px-4 glass-card text-xv-black text-[11px] font-mono uppercase tracking-wider font-medium hover:border-xv-black items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-layer-group text-[10px]"></i> <span class="hidden md:inline">BATCH 批量</span>
+                <button id="btnDownloadAll" class="hidden btn-xv h-8 px-3 md:px-4 glass-card text-xv-black text-[11px] font-mono uppercase tracking-wider font-medium hover:border-xv-black items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-layer-group text-[10px]"></i> <span class="hidden sm:inline">批量</span>
                 </button>
-                <button id="btnDownloadCurrent" class="hidden btn-xv h-8 px-3.5 md:px-5 bg-xv-black hover:bg-neutral-800 text-white text-[11px] font-mono uppercase tracking-wider font-semibold items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-arrow-down text-[10px]"></i> <span class="hidden md:inline">EXPORT 导出</span><span class="md:hidden">导出</span>
+                <button id="btnDownloadCurrent" class="hidden btn-xv h-8 px-4 md:px-5 bg-xv-black hover:bg-neutral-800 text-white text-[11px] font-mono uppercase tracking-wider font-semibold items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrow-down text-[10px]"></i> <span>导出</span>
                 </button>
             </div>
         </div>
@@ -94,46 +147,56 @@
 
     <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative w-full">
         
-        <!-- PANEL 2: CANVAS/PREVIEW -->
+        <!-- PANEL 2: CANVAS -->
         <section id="panel-canvas" class="stagger-enter delay-2 w-full shrink-0 md:h-full md:flex-1 md:order-2 relative z-20 border-b border-xv-border md:border-none">
             <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center z-10 p-5">
-                <div class="max-w-md w-full glass-card p-7 md:p-10 text-center relative group hover:border-xv-black transition-colors duration-500">
-                    <div class="text-[9px] font-mono uppercase tracking-[0.25em] text-xv-gray mb-3">ARCHIVE GENERATOR // EDITION 4.0 GLASS</div>
-                    <div class="w-11 h-11 mx-auto border border-xv-black flex items-center justify-center mb-4 text-xv-black transition-transform duration-500 group-hover:scale-105">
+                <div onclick="document.getElementById('fileInput').click();" class="max-w-xs w-full glass-card p-8 text-center cursor-pointer group hover:border-xv-black transition-all duration-300">
+                    <div class="w-11 h-11 mx-auto border border-xv-black flex items-center justify-center mb-4 text-xv-black transition-transform duration-300 group-hover:scale-105">
                         <i class="fa-solid fa-crop-simple text-base"></i>
                     </div>
-                    <h2 class="text-base md:text-xl font-serif font-semibold text-xv-black tracking-wide mb-2">构建您的数字摄影档案</h2>
-                    <p class="text-[11px] text-xv-gray mb-4 leading-relaxed font-sans">
-                        全面支持 <strong>iPhone HEIC/HEIF、Display-P3 广色域与 HDR 高动态原片</strong>。内置 21 款画廊级装裱、先锋杂志、瑞士网格与暗房胶片版式。
-                    </p>
-                    <div class="flex flex-wrap items-center justify-center gap-1.5 mb-5 text-[8.5px] font-mono text-xv-gray">
-                        <span class="px-2 py-0.5 glass-card">HEIC / HEIF</span>
-                        <span class="px-2 py-0.5 glass-card">DISPLAY-P3</span>
-                        <span class="px-2 py-0.5 glass-card">21 TEMPLATES</span>
-                    </div>
-                    <button onclick="document.getElementById('fileInput').click();" class="btn-xv w-full sm:w-auto px-6 py-2.5 bg-xv-black text-white text-[11px] font-mono uppercase tracking-widest font-semibold hover:bg-neutral-800">
-                        + 导入作品原片 (支持 HEIC/HDR)
-                    </button>
+                    <h2 class="text-base font-serif font-semibold text-xv-black tracking-widest mb-1.5">导入摄影作品</h2>
+                    <p class="text-[9.5px] font-mono text-xv-gray tracking-wider uppercase mb-5">HEIC · P3 HDR · RAW · JPEG</p>
+                    <span class="inline-block px-6 py-2.5 bg-xv-black text-white text-[10.5px] font-mono uppercase tracking-widest font-semibold">
+                        + 选择图片
+                    </span>
                 </div>
             </div>
 
-            <div id="workspace" class="flex-1 relative canvas-bg w-full h-full flex items-center justify-center p-3.5 md:p-10 overflow-hidden">
+            <div id="workspace" class="flex-1 relative canvas-bg w-full h-full flex items-center justify-center p-4 md:p-10 overflow-hidden">
                 <canvas id="previewCanvas"></canvas>
             </div>
             
-            <!-- Floating Technical HUD -->
-            <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-20 pointer-events-none">
+            <!-- Top Floating HUD -->
+            <div class="absolute top-3 left-3 flex items-center gap-1.5 z-20 pointer-events-none">
                 <div class="glass-surface px-2.5 py-1 flex items-center gap-1.5 border border-xv-border">
                     <span class="w-1.5 h-1.5 bg-xv-black inline-block"></span>
-                    <span id="hudStyleName" class="text-[9.5px] font-mono uppercase tracking-widest text-xv-black font-semibold">EXIF RAW</span>
+                    <span id="hudStyleName" class="text-[9.5px] font-mono uppercase tracking-widest text-xv-black font-semibold">EXIF</span>
                 </div>
                 <div id="hudHdrBadge" class="hidden hdr-pill px-2 py-1 text-[9px] font-mono font-bold tracking-widest uppercase items-center gap-1">
                     <i class="fa-solid fa-sun text-[9px] text-amber-300"></i>
-                    <span id="hudHdrText">HDR · P3</span>
+                    <span id="hudHdrText">HDR</span>
                 </div>
             </div>
-            <div class="absolute top-2.5 right-2.5 glass-surface border border-xv-border px-2.5 py-1 z-20 pointer-events-none hidden sm:flex items-center gap-2">
-                <span id="imgDimensions" class="text-[9.5px] font-mono font-medium text-xv-gray">-- × -- PX</span>
+            <div class="absolute top-3 right-3 glass-surface border border-xv-border px-2.5 py-1 z-20 pointer-events-none hidden sm:flex items-center">
+                <span id="imgDimensions" class="text-[9.5px] font-mono text-xv-gray">-- × --</span>
+            </div>
+
+            <!-- Bottom Floating Canvas Dock (缩放与按住对比原片) -->
+            <div id="canvasDock" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 glass-surface border border-xv-border px-2 py-1 z-20 items-center gap-1 shadow-sm">
+                <button id="btnZoomOut" class="w-6 h-6 flex items-center justify-center text-xv-gray hover:text-xv-black text-[10px]" title="缩小">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <button id="btnZoomReset" class="px-2 h-6 font-mono text-[9.5px] font-bold text-xv-black hover:bg-black/5" title="点击复位缩放">
+                    100%
+                </button>
+                <button id="btnZoomIn" class="w-6 h-6 flex items-center justify-center text-xv-gray hover:text-xv-black text-[10px]" title="放大检视细节">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <span class="w-[1px] h-3.5 bg-xv-border mx-1"></span>
+                <button id="btnCompareRaw" class="px-2.5 h-6 flex items-center gap-1.5 font-mono text-[9.5px] font-semibold text-xv-black hover:bg-black/5 select-none" title="按住对比未加框原片 (快捷键: Space)">
+                    <i class="fa-regular fa-eye text-[10px]"></i>
+                    <span>按住对比</span>
+                </button>
             </div>
         </section>
 
@@ -143,15 +206,15 @@
                 <!-- PANEL 1: GALLERY -->
                 <aside id="panel-gallery" class="stagger-enter delay-1 view-panel md:order-1">
                     <div class="px-4 py-3 flex items-center justify-between shrink-0 border-b border-xv-border hidden md:flex">
-                        <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-[0.15em]">01 / ARCHIVE QUEUE</h3>
-                        <span id="galleryCount" class="text-[10px] font-mono text-xv-gray">0 ITEMS</span>
+                        <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-widest">QUEUE</h3>
+                        <span id="galleryCount" class="text-[10px] font-mono text-xv-gray">0</span>
                     </div>
                     <div class="native-scroll flex-1 p-3 pb-20 md:pb-4">
                         <div id="thumbnailList" class="grid grid-cols-4 md:grid-cols-2 gap-2"></div>
                     </div>
                 </aside>
 
-                <!-- PANEL 3: CONTROLS/INSPECTOR -->
+                <!-- PANEL 3: CONTROLS -->
                 <aside id="panel-controls" class="stagger-enter delay-3 view-panel md:order-3">
                     <div class="border-b border-xv-border z-10 shrink-0 hidden md:block">
                         <div class="grid grid-cols-3 divide-x divide-xv-border">
@@ -161,174 +224,173 @@
                         </div>
                     </div>
 
-                    <div id="controlPanel" class="native-scroll flex-1 p-3.5 md:p-4 pb-24 md:pb-6 opacity-40 pointer-events-none transition-opacity duration-300">
+                    <div id="controlPanel" class="native-scroll flex-1 p-4 pb-24 md:pb-6 opacity-40 pointer-events-none transition-opacity duration-300">
                         
-                        <!-- TAB 1: REORGANIZED 5-CATEGORY TEMPLATES (21 款精修版式) -->
+                        <!-- TAB 1: LARGE STYLIZED TEMPLATES -->
                         <div id="tab-templates" class="tab-pane block space-y-4" id="styleGroup">
                             
-                            <!-- CATEGORY 01: 经典画廊与 EXIF 展签 (最常用高频置顶) -->
+                            <!-- 01 画廊 -->
                             <div>
                                 <div class="category-header">
-                                    <span class="text-[9px] font-mono text-xv-black uppercase tracking-[0.15em] font-bold">01 / Gallery EXIF · 经典画廊展签</span>
+                                    <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">01 / 画廊</span>
                                     <span class="text-[9px] font-mono text-xv-gray">05</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <button class="style-btn active" data-style="exif">
                                         <i class="fa-solid fa-align-left icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">EXIF 原生</span>
-                                        <span class="subtext pointer-events-none">Classic Raw</span>
+                                        <span class="title pointer-events-none">原生</span>
+                                        <span class="subtext pointer-events-none">EXIF Raw</span>
                                     </button>
                                     <button class="style-btn" data-style="exif_palette">
-                                        <span class="badge-new">REFINED</span>
+                                        <span class="badge-tag pointer-events-none">HEX</span>
                                         <i class="fa-solid fa-palette icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">高定色卡档案</span>
-                                        <span class="subtext pointer-events-none">Chromatic Spec</span>
+                                        <span class="title pointer-events-none">色卡</span>
+                                        <span class="subtext pointer-events-none">Palette</span>
                                     </button>
                                     <button class="style-btn" data-style="exif_minimal">
-                                        <span class="badge-new">REFINED</span>
-                                        <i class="fa-solid fa-compress icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">黄金极简对角</span>
-                                        <span class="subtext pointer-events-none">Editorial Diagonal</span>
+                                        <i class="fa-solid fa-expand icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">对角</span>
+                                        <span class="subtext pointer-events-none">Diagonal</span>
                                     </button>
                                     <button class="style-btn" data-style="swiss_grid">
-                                        <span class="badge-trend">SWISS</span>
+                                        <span class="badge-tag pointer-events-none">GRID</span>
                                         <i class="fa-solid fa-border-all icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">瑞士网格展签</span>
-                                        <span class="subtext pointer-events-none">Grid Spec Sheet</span>
+                                        <span class="title pointer-events-none">瑞士</span>
+                                        <span class="subtext pointer-events-none">Swiss Spec</span>
                                     </button>
                                     <button class="style-btn col-span-2" data-style="optical_histogram">
-                                        <span class="badge-trend">WAVEFORM</span>
+                                        <span class="badge-tag pointer-events-none">IRE</span>
                                         <i class="fa-solid fa-chart-area icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">光学测光直方图档案 (实时 RGB 与明度波形)</span>
-                                        <span class="subtext pointer-events-none">Live Luminance &amp; RGB Waveform</span>
+                                        <span class="title pointer-events-none">直方波形</span>
+                                        <span class="subtext pointer-events-none">RGB Waveform</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- CATEGORY 02: 2026 流行社论与流体玻璃 (新增 3 款热门版式) -->
+                            <!-- 02 先锋 -->
                             <div>
                                 <div class="category-header">
-                                    <span class="text-[9px] font-mono text-xv-black uppercase tracking-[0.15em] font-bold">02 / 2026 Editorial · 先锋社论与流光</span>
+                                    <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">02 / 先锋</span>
                                     <span class="text-[9px] font-mono text-xv-gray">05</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <button class="style-btn" data-style="editorial_magazine">
-                                        <span class="badge-new">NEW</span>
+                                        <span class="badge-tag pointer-events-none">ISSUE</span>
                                         <i class="fa-solid fa-book-open icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">杂志社论跨页</span>
-                                        <span class="subtext pointer-events-none">Kinfolk Editorial</span>
+                                        <span class="title pointer-events-none">社论</span>
+                                        <span class="subtext pointer-events-none">Magazine</span>
                                     </button>
                                     <button class="style-btn" data-style="glass_overlay">
-                                        <span class="badge-new">NEW</span>
+                                        <span class="badge-tag pointer-events-none">HUD</span>
                                         <i class="fa-solid fa-window-maximize icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">磨砂玻璃内嵌</span>
-                                        <span class="subtext pointer-events-none">Frosted HUD Pill</span>
+                                        <span class="title pointer-events-none">内嵌</span>
+                                        <span class="subtext pointer-events-none">Glass Pill</span>
                                     </button>
                                     <button class="style-btn" data-style="aura_blur">
-                                        <span class="badge-trend">AURA</span>
+                                        <span class="badge-tag pointer-events-none">GLOW</span>
                                         <i class="fa-solid fa-wand-magic-sparkles icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">弥散光感画境</span>
-                                        <span class="subtext pointer-events-none">Atmospheric Glow</span>
+                                        <span class="title pointer-events-none">流光</span>
+                                        <span class="subtext pointer-events-none">Aura Blur</span>
                                     </button>
                                     <button class="style-btn" data-style="immersive_color">
                                         <i class="fa-solid fa-droplet icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">沉浸主色卡</span>
-                                        <span class="subtext pointer-events-none">Solid Atmosphere</span>
+                                        <span class="title pointer-events-none">色境</span>
+                                        <span class="subtext pointer-events-none">Solid Field</span>
                                     </button>
                                     <button class="style-btn col-span-2" data-style="triptych_watermark">
                                         <i class="fa-solid fa-table-columns icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">三联画廊电影海报</span>
-                                        <span class="subtext pointer-events-none">Cinema Triptych Poster</span>
+                                        <span class="title pointer-events-none">三联海报</span>
+                                        <span class="subtext pointer-events-none">Triptych</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- CATEGORY 03: 博物馆典藏装裱 (新增斜切卡纸与日式侘寂) -->
+                            <!-- 03 装裱 -->
                             <div>
                                 <div class="category-header">
-                                    <span class="text-[9px] font-mono text-xv-black uppercase tracking-[0.15em] font-bold">03 / Museum Mount · 博物馆典藏装裱</span>
+                                    <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">03 / 装裱</span>
                                     <span class="text-[9px] font-mono text-xv-gray">04</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <button class="style-btn" data-style="gallery_passepartout">
-                                        <span class="badge-new">NEW</span>
+                                        <span class="badge-tag pointer-events-none">45°</span>
                                         <i class="fa-solid fa-vector-square icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">博物馆斜切卡纸</span>
-                                        <span class="subtext pointer-events-none">Bevel Passepartout</span>
+                                        <span class="title pointer-events-none">卡纸</span>
+                                        <span class="subtext pointer-events-none">Bevel Mat</span>
                                     </button>
                                     <button class="style-btn" data-style="japanese_zen">
-                                        <span class="badge-new">NEW</span>
+                                        <span class="badge-tag pointer-events-none">印</span>
                                         <i class="fa-solid fa-feather-pointed icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">日式侘寂留白</span>
-                                        <span class="subtext pointer-events-none">Wabi-Sabi Seal</span>
+                                        <span class="title pointer-events-none">侘寂</span>
+                                        <span class="subtext pointer-events-none">Wabi-Sabi</span>
                                     </button>
                                     <button class="style-btn" data-style="minimal_line">
                                         <i class="fa-regular fa-square icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">极简细线留白</span>
-                                        <span class="subtext pointer-events-none">Fine Art Line</span>
+                                        <span class="title pointer-events-none">细线</span>
+                                        <span class="subtext pointer-events-none">Fine Line</span>
                                     </button>
                                     <button class="style-btn" data-style="polaroid">
                                         <i class="fa-solid fa-camera icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">复古拍立得</span>
-                                        <span class="subtext pointer-events-none">Instant Frame</span>
+                                        <span class="title pointer-events-none">宝丽来</span>
+                                        <span class="subtext pointer-events-none">Polaroid</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- CATEGORY 04: 暗房胶片与古典印相 -->
+                            <!-- 04 暗房 -->
                             <div>
                                 <div class="category-header">
-                                    <span class="text-[9px] font-mono text-xv-black uppercase tracking-[0.15em] font-bold">04 / Analog Darkroom · 暗房胶片与印相</span>
+                                    <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">04 / 暗房</span>
                                     <span class="text-[9px] font-mono text-xv-gray">06</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <button class="style-btn" data-style="halation_lab">
-                                        <span class="badge-trend">800T</span>
+                                        <span class="badge-tag pointer-events-none">800T</span>
                                         <i class="fa-solid fa-fire-flame-curved icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">暗房高光溢光</span>
-                                        <span class="subtext pointer-events-none">CineStill Halation</span>
+                                        <span class="title pointer-events-none">溢光</span>
+                                        <span class="subtext pointer-events-none">Halation</span>
                                     </button>
                                     <button class="style-btn" data-style="cyanotype">
-                                        <span class="badge-trend">1842</span>
+                                        <span class="badge-tag pointer-events-none">1842</span>
                                         <i class="fa-solid fa-scroll icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">古典蓝晒印相</span>
-                                        <span class="subtext pointer-events-none">Prussian Cyanotype</span>
+                                        <span class="title pointer-events-none">蓝晒</span>
+                                        <span class="subtext pointer-events-none">Cyanotype</span>
                                     </button>
                                     <button class="style-btn" data-style="film35mm">
                                         <i class="fa-solid fa-film icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">35mm 单张</span>
-                                        <span class="subtext pointer-events-none">Standard 135</span>
+                                        <span class="title pointer-events-none">135</span>
+                                        <span class="subtext pointer-events-none">35mm Film</span>
                                     </button>
                                     <button class="style-btn" data-style="film4x5">
-                                        <i class="fa-solid fa-expand icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">4×5 大画幅</span>
-                                        <span class="subtext pointer-events-none">Large Format</span>
+                                        <i class="fa-solid fa-crop icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">4×5</span>
+                                        <span class="subtext pointer-events-none">Large Sheet</span>
                                     </button>
                                     <button class="style-btn" data-style="film_xpan">
                                         <i class="fa-solid fa-panorama icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">XPan 宽幅</span>
-                                        <span class="subtext pointer-events-none">65:24 Cinematic</span>
+                                        <span class="title pointer-events-none">宽幅</span>
+                                        <span class="subtext pointer-events-none">65:24 XPan</span>
                                     </button>
                                     <button class="style-btn" data-style="film_strip">
                                         <i class="fa-solid fa-grip-lines icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">长卷接触印相</span>
-                                        <span class="subtext pointer-events-none">Contact Sheet</span>
+                                        <span class="title pointer-events-none">印相</span>
+                                        <span class="subtext pointer-events-none">Contact</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- CATEGORY 05: 生成式光学艺术 -->
+                            <!-- 05 矩阵 -->
                             <div>
                                 <div class="category-header">
-                                    <span class="text-[9px] font-mono text-xv-black uppercase tracking-[0.15em] font-bold">05 / Generative Lab · 生成式光学矩阵</span>
+                                    <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">05 / 矩阵</span>
                                     <span class="text-[9px] font-mono text-xv-gray">01</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <button class="style-btn col-span-2" data-style="vector_field">
-                                        <span class="badge-new">70 COLS</span>
+                                        <span class="badge-tag pointer-events-none">70 COLS</span>
                                         <i class="fa-solid fa-compass icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">光学矢量矩阵 (无边框高密明度场)</span>
-                                        <span class="subtext pointer-events-none">Borderless Luminance Vector Matrix</span>
+                                        <span class="title pointer-events-none">光学矢量场</span>
+                                        <span class="subtext pointer-events-none">Luminance Vector Matrix</span>
                                     </button>
                                 </div>
                             </div>
@@ -336,67 +398,55 @@
                         </div>
 
                         <!-- TAB 2: ADJUSTMENTS -->
-                        <div id="tab-adjust" class="tab-pane hidden space-y-4">
-                            <section class="space-y-3 glass-card p-3.5">
-                                <div class="flex items-center justify-between">
-                                    <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-widest">
-                                        <i class="fa-solid fa-sun mr-1"></i> HDR &amp; P3 Tone Mapping
-                                    </h3>
-                                    <span id="inspectorColorSpace" class="text-[9px] font-mono bg-xv-black text-white px-1.5 py-0.5 font-bold">DISPLAY-P3</span>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between items-center mb-1.5">
-                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-gray font-bold">EDR 高光动态激发 / Highlight Roll-off</label>
-                                        <span class="text-[10px] font-mono text-xv-black bg-xv-border px-1.5 py-0.5 font-bold" id="hdrBoostVal">0%</span>
+                        <div id="tab-adjust" class="tab-pane hidden space-y-3.5">
+                            <section class="glass-card p-3.5">
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label class="text-[10px] font-mono uppercase tracking-wider text-xv-black font-bold">HDR 激发</label>
+                                    <div class="flex items-center gap-1.5">
+                                        <span id="inspectorColorSpace" class="text-[8.5px] font-mono text-xv-gray">P3</span>
+                                        <span class="text-[10px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold" id="hdrBoostVal">0%</span>
                                     </div>
-                                    <input type="range" id="hdrBoostSlider" min="0" max="1" step="0.05" value="0">
-                                    <p class="text-[9px] font-mono text-xv-gray mt-1 leading-relaxed">
-                                        针对 iPhone HEIC/HDR 原片进行高光微对比度延展与 P3 广色域通透度增强。
-                                    </p>
                                 </div>
+                                <input type="range" id="hdrBoostSlider" min="0" max="1" step="0.05" value="0">
                             </section>
 
                             <section id="section-layout" class="space-y-3.5">
                                 <div id="ctrl-margin" class="glass-card p-3.5">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-black font-bold">留白与版面比例 / Scale</label>
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-black font-bold">留白比例</label>
                                         <span class="text-[10px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold" id="matSizeVal">100%</span>
                                     </div>
                                     <input type="range" id="matSizeSlider" min="0.4" max="2.2" step="0.1" value="1.0">
                                 </div>
                                 <div id="ctrl-shadow" class="glass-card p-3.5">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-black font-bold">阴影深度 / Shadow Depth</label>
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-black font-bold">阴影深度</label>
                                         <span class="text-[10px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold" id="shadowVal">100%</span>
                                     </div>
                                     <input type="range" id="shadowSlider" min="0" max="3" step="0.1" value="1.0">
                                 </div>
                             </section>
 
-                            <section id="section-vector" class="space-y-3.5 glass-card p-3.5" style="display: none;">
-                                <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-widest mb-1"><i class="fa-solid fa-compass mr-1"></i> Vector Matrix 无边框高密矢量场</h3>
-                                <div>
-                                    <div class="flex justify-between items-center mb-2">
-                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-gray font-bold">箭头密集度 / Grid Columns</label>
-                                        <span class="text-[10px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold" id="vectorColsVal">70 列</span>
-                                    </div>
-                                    <input type="range" id="vectorColsSlider" min="20" max="120" step="2" value="70">
+                            <section id="section-vector" class="glass-card p-3.5" style="display: none;">
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label class="text-[10px] font-mono uppercase tracking-wider text-xv-black font-bold">矩阵密度</label>
+                                    <span class="text-[10px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold" id="vectorColsVal">70 列</span>
                                 </div>
+                                <input type="range" id="vectorColsSlider" min="20" max="120" step="2" value="70">
                             </section>
 
                             <section id="section-optical" class="space-y-3.5 glass-card p-3.5">
-                                <h3 class="text-[10px] font-mono font-bold text-xv-black uppercase tracking-widest mb-2"><i class="fa-solid fa-sliders mr-1"></i> Optical Lab 光学与暗房</h3>
                                 <div class="flex gap-2">
                                     <button id="btnToggleBW" class="filter-btn flex-1 py-2 border border-xv-border text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 text-xv-black">
-                                        <i class="fa-solid fa-circle-half-stroke"></i> MONO 黑白
+                                        <i class="fa-solid fa-circle-half-stroke text-[10px]"></i> 黑白
                                     </button>
                                     <button id="btnToggleInvert" class="filter-btn btn-invert flex-1 py-2 border border-xv-border text-[11px] font-mono font-bold flex items-center justify-center gap-1.5">
-                                        <i class="fa-solid fa-circle-left"></i> NEGATIVE 负片
+                                        <i class="fa-solid fa-circle-left text-[10px]"></i> 负片
                                     </button>
                                 </div>
                                 <div id="ctrl-grain" class="pt-1">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-gray font-bold">银盐颗粒 / Silver Grain</label>
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-gray font-bold">银盐颗粒</label>
                                         <span class="text-[10px] font-mono text-xv-black bg-xv-border px-1.5 py-0.5 font-bold" id="grainVal">15%</span>
                                     </div>
                                     <input type="range" id="grainSlider" min="0" max="1" step="0.05" value="0.15">
@@ -404,55 +454,80 @@
                             </section>
                             
                             <section id="section-materials" style="display: none;">
-                                <div class="p-3.5 glass-card">
-                                    <label class="block text-[10px] font-mono text-xv-black mb-2.5 font-bold uppercase tracking-widest">Backdrop / 展墙底色</label>
+                                <div class="p-3.5 glass-card flex items-center justify-between">
+                                    <label class="text-[10px] font-mono text-xv-black font-bold uppercase tracking-wider">底色</label>
                                     <div class="flex gap-3">
-                                        <button class="wall-btn w-7 h-7 border border-xv-border ring-2 ring-offset-2 ring-xv-black transition-transform hover:scale-105" style="background-color: #ffffff;" data-wall="#ffffff" title="纯白画廊"></button>
-                                        <button class="wall-btn w-7 h-7 border border-xv-border transition-transform hover:scale-105" style="background-color: #f4f4f5;" data-wall="#f4f4f5" title="浅灰水泥"></button>
-                                        <button class="wall-btn w-7 h-7 border border-xv-border transition-transform hover:scale-105" style="background-color: #f5f3ee;" data-wall="#f5f3ee" title="温暖棉纸"></button>
-                                        <button class="wall-btn w-7 h-7 border border-xv-border transition-transform hover:scale-105" style="background-color: #0a0a0a;" data-wall="#0a0a0a" title="深邃暗房"></button>
+                                        <button class="wall-btn w-6 h-6 border border-xv-border ring-2 ring-offset-1 ring-xv-black" style="background-color: #ffffff;" data-wall="#ffffff"></button>
+                                        <button class="wall-btn w-6 h-6 border border-xv-border" style="background-color: #f4f4f5;" data-wall="#f4f4f5"></button>
+                                        <button class="wall-btn w-6 h-6 border border-xv-border" style="background-color: #f5f3ee;" data-wall="#f5f3ee"></button>
+                                        <button class="wall-btn w-6 h-6 border border-xv-border" style="background-color: #0a0a0a;" data-wall="#0a0a0a"></button>
                                     </div>
+                                </div>
+                            </section>
+
+                            <!-- 导出画质与格式规格引擎 -->
+                            <section class="glass-card p-3.5 space-y-2.5">
+                                <label class="block text-[10px] font-mono text-xv-black font-bold uppercase tracking-wider">导出规格 / Export Spec</label>
+                                <div class="grid grid-cols-3 gap-1.5" id="exportResGroup">
+                                    <button type="button" class="res-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray" data-dim="2560">2.5K 社交</button>
+                                    <button type="button" class="res-btn py-1.5 border border-xv-black bg-xv-black text-white text-[9.5px] font-mono font-bold" data-dim="4200">4.2K 画廊</button>
+                                    <button type="button" class="res-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray" data-dim="6000">6.0K 微喷</button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-1.5 pt-1" id="exportFmtGroup">
+                                    <button type="button" class="fmt-btn py-1 border border-xv-black bg-xv-black text-white text-[9px] font-mono font-bold" data-fmt="image/jpeg">JPEG (96% P3)</button>
+                                    <button type="button" class="fmt-btn py-1 border border-xv-border text-[9px] font-mono font-semibold text-xv-gray" data-fmt="image/png">PNG (100% 无损)</button>
                                 </div>
                             </section>
                         </div>
 
                         <!-- TAB 3: METADATA -->
                         <div id="tab-metadata" class="tab-pane hidden space-y-3">
+                            <!-- 交互式四色色卡微调器 -->
+                            <div class="glass-card p-3 mb-2">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-[9px] font-mono uppercase tracking-wider text-xv-gray font-bold">档案色卡 (点击可改色)</label>
+                                    <button id="btnShufflePalette" type="button" class="text-[9px] font-mono text-xv-black hover:opacity-70 flex items-center gap-1" title="重排色卡顺序">
+                                        <i class="fa-solid fa-shuffle text-[9px]"></i> 重排
+                                    </button>
+                                </div>
+                                <div id="interactivePalette" class="grid grid-cols-4 gap-2 h-7"></div>
+                            </div>
+
                             <div>
-                                <label class="input-label">Artwork Title / 作品标题</label>
-                                <input type="text" id="inputLeft" class="input-elegant font-semibold" placeholder="如: UNTITLED ARTWORK">
+                                <label class="input-label">标题</label>
+                                <input type="text" id="inputLeft" class="input-elegant font-semibold" placeholder="UNTITLED">
                             </div>
                             <div>
-                                <label class="input-label">Copyright / 版权展签</label>
-                                <input type="text" id="inputRight" class="input-elegant font-mono" placeholder="如: © XIANGVISUALS">
-                            </div>
-                            <div class="pt-2 border-t border-xv-border">
-                                <label class="input-label">Date & Time / 拍摄日期</label>
-                                <input type="text" id="inputExifTime" class="input-elegant font-mono" placeholder="如: 12 FEB 2026">
+                                <label class="input-label">署名</label>
+                                <input type="text" id="inputRight" class="input-elegant font-mono" placeholder="© XIANGVISUALS">
                             </div>
                             <div>
-                                <label class="input-label">GPS Coordinates / 地理经纬度</label>
-                                <input type="text" id="inputLocation" class="input-elegant font-mono" placeholder="如: 38° 55' 00&quot; N    121° 38' 00&quot; E">
+                                <label class="input-label">日期</label>
+                                <input type="text" id="inputExifTime" class="input-elegant font-mono" placeholder="12 FEB 2026">
                             </div>
                             <div>
-                                <label class="input-label">Camera Body / 相机型号</label>
-                                <input type="text" id="inputExifCamera" class="input-elegant font-mono" placeholder="如: CANON EOS R6">
+                                <label class="input-label">坐标</label>
+                                <input type="text" id="inputLocation" class="input-elegant font-mono" placeholder="38° 55' N  121° 38' E">
                             </div>
                             <div>
-                                <label class="input-label">Lens Model / 镜头规格</label>
-                                <input type="text" id="inputExifLens" class="input-elegant font-mono" placeholder="如: RF 24-70MM F2.8 L IS USM">
+                                <label class="input-label">机身</label>
+                                <input type="text" id="inputExifCamera" class="input-elegant font-mono" placeholder="CANON EOS R6">
                             </div>
                             <div>
-                                <label class="input-label">Exposure / 曝光参数</label>
-                                <input type="text" id="inputExifParams" class="input-elegant font-mono" placeholder="如: 24mm   f/2.8   1/125s   ISO 400">
+                                <label class="input-label">镜头</label>
+                                <input type="text" id="inputExifLens" class="input-elegant font-mono" placeholder="RF 24-70MM F2.8 L">
                             </div>
                             <div>
-                                <label class="input-label">Film Stock / 胶片卷标</label>
-                                <input type="text" id="inputFilmName" class="input-elegant font-mono font-bold" placeholder="如: FUJIFILM RVP50">
+                                <label class="input-label">曝光</label>
+                                <input type="text" id="inputExifParams" class="input-elegant font-mono" placeholder="24mm  f/2.8  1/125s  ISO 400">
+                            </div>
+                            <div>
+                                <label class="input-label">胶卷</label>
+                                <input type="text" id="inputFilmName" class="input-elegant font-mono font-bold" placeholder="FUJIFILM RVP50">
                             </div>
 
                             <button id="btnApplyTextToAll" class="btn-xv mt-3 w-full py-2.5 bg-xv-black hover:bg-neutral-800 text-white text-[11px] font-mono uppercase tracking-widest font-bold flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-check-double"></i> 同步档案至全部作品
+                                <i class="fa-solid fa-check-double text-[10px]"></i> 同步全部
                             </button>
                         </div>
 
@@ -462,24 +537,24 @@
         </div>
     </main>
 
-    <!-- Mobile Frosted Bottom Nav -->
+    <!-- Mobile Bottom Nav -->
     <div style="padding-bottom: var(--s-bottom);" class="mobile-nav glass-surface fixed bottom-0 left-0 right-0 border-t border-xv-border z-40 md:hidden">
         <div class="flex items-center h-[52px]">
             <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full relative text-xv-gray active-nav" data-index="0" data-target="gallery">
-                <i class="fa-solid fa-images text-[13px] mb-1"></i>
-                <span class="text-[9px] font-mono uppercase tracking-wider font-bold">01 图库</span>
+                <i class="fa-solid fa-images text-[13px] mb-0.5"></i>
+                <span class="text-[9px] font-mono font-bold">图库</span>
             </button>
             <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full relative text-xv-gray border-l border-xv-border" data-index="1" data-target="tab-templates">
-                <i class="fa-solid fa-table-cells-large text-[13px] mb-1"></i>
-                <span class="text-[9px] font-mono uppercase tracking-wider font-bold">02 版式</span>
+                <i class="fa-solid fa-table-cells-large text-[13px] mb-0.5"></i>
+                <span class="text-[9px] font-mono font-bold">版式</span>
             </button>
             <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full relative text-xv-gray border-l border-xv-border" data-index="1" data-target="tab-adjust">
-                <i class="fa-solid fa-sliders text-[13px] mb-1"></i>
-                <span class="text-[9px] font-mono uppercase tracking-wider font-bold">03 调节</span>
+                <i class="fa-solid fa-sliders text-[13px] mb-0.5"></i>
+                <span class="text-[9px] font-mono font-bold">调节</span>
             </button>
             <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full relative text-xv-gray border-l border-xv-border" data-index="1" data-target="tab-metadata">
-                <i class="fa-solid fa-code text-[13px] mb-1"></i>
-                <span class="text-[9px] font-mono uppercase tracking-wider font-bold">04 档案</span>
+                <i class="fa-solid fa-code text-[13px] mb-0.5"></i>
+                <span class="text-[9px] font-mono font-bold">档案</span>
             </button>
         </div>
     </div>
@@ -488,25 +563,50 @@
     
     <div id="toastContainer" style="top: max(16px, var(--s-top)); left: 50%; transform: translateX(-50%);"></div>
 
-    <!-- Minimalist Frosted Import Loader -->
-    <div id="globalLoader" class="fixed inset-0 flex flex-col items-center justify-center">
-        <div class="font-mono text-[10px] font-bold tracking-[0.35em] uppercase mb-3" id="loaderMainTitle">READING OPTICAL ARCHIVE</div>
-        <div class="w-12 h-[1px] bg-black/15 overflow-hidden relative">
-            <div class="w-full h-full bg-xv-black animate-pulse"></div>
+    <!-- 导入解析照片时的五幕装裱动画遮罩 -->
+    <div id="globalLoader">
+        <div class="curator-stage is-looping">
+            <div class="guide-line guide-h-top"></div>
+            <div class="guide-line guide-h-bot"></div>
+            <div class="guide-line guide-v-left"></div>
+            <div class="guide-line guide-v-right"></div>
+            <div class="crop-tick tick-tl"></div>
+            <div class="crop-tick tick-tr"></div>
+            <div class="crop-tick tick-bl"></div>
+            <div class="crop-tick tick-br"></div>
+            <div class="artwork-frame">
+                <div class="bevel-window">
+                    <div class="silver-photo">
+                        <div class="photo-sun"></div>
+                        <div class="photo-horizon"></div>
+                        <div class="photo-reflection"></div>
+                        <div class="optical-laser"></div>
+                    </div>
+                </div>
+                <div class="frame-colophon">
+                    <div class="colophon-left">
+                        <div class="colophon-title"></div>
+                        <div class="colophon-specs"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="colophon-right">
+                        <div class="swatch-strip"><i class="sw-1"></i><i class="sw-2"></i><i class="sw-3"></i><i class="sw-4"></i></div>
+                        <div class="zen-seal"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p id="loaderSubTitle" class="text-[9px] text-xv-gray mt-2.5 font-mono tracking-widest uppercase">EXTRACTING EXIF &amp; P3 PROFILE...</p>
+        <span id="loaderMainTitle" class="hidden"></span>
+        <span id="loaderSubTitle" class="hidden"></span>
     </div>
 
     <!-- Batch Progress Modal -->
-    <div id="progressModal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 text-white">
-        <div class="w-80 max-w-[85%] border border-white/15 p-6 bg-black/90">
-            <div class="text-[9px] font-mono uppercase tracking-[0.25em] text-neutral-400 mb-2 text-center">BATCH RENDER ENGINE</div>
-            <h3 class="text-sm font-mono uppercase tracking-widest font-bold mb-2 text-center" id="progressTitle">正在渲染高清画册...</h3>
-            <p class="text-[10px] text-neutral-400 mb-5 text-center font-mono">DISPLAY-P3 HIGH BITRATE EXPORT</p>
+    <div id="progressModal" class="fixed inset-0 bg-black/75 backdrop-blur-xl z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 text-white">
+        <div class="w-64 border border-white/15 p-5 bg-black/90 text-center">
+            <div class="text-[10px] font-mono uppercase tracking-widest mb-3" id="progressTitle">RENDERING...</div>
             <div class="w-full h-[1.5px] bg-neutral-800 overflow-hidden">
                 <div id="progressBar" class="h-full bg-white transition-all duration-300 w-0"></div>
             </div>
-            <p class="text-[10px] text-neutral-400 mt-3 text-center tracking-widest font-mono font-bold" id="progressCount">0 / 0</p>
+            <p class="text-[10px] text-neutral-400 mt-2.5 tracking-widest font-mono" id="progressCount">0 / 0</p>
         </div>
     </div>
 
