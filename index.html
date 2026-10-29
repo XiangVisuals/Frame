@@ -102,15 +102,6 @@
                 <div class="curator-progress-bar"></div>
             </div>
         </div>
-
-        <!-- 底部毫米级装裱遥测读数与跳过按钮 -->
-        <div class="preloader-footer">
-            <div class="telemetry-readout">
-                <span>OPTICAL CALIBRATION</span>
-                <strong id="bootTelemetryNum">000.0 MM</strong>
-            </div>
-            <button id="btnSkipBoot" class="skip-boot-btn">SKIP ↗</button>
-        </div>
     </div>
 
     <!-- TOP HEADER -->
@@ -181,23 +172,6 @@
                 <span id="imgDimensions" class="text-[9.5px] font-mono text-xv-gray">-- × --</span>
             </div>
 
-            <!-- Bottom Floating Canvas Dock (缩放与按住对比原片) -->
-            <div id="canvasDock" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 glass-surface border border-xv-border px-2 py-1 z-20 items-center gap-1 shadow-sm">
-                <button id="btnZoomOut" class="w-6 h-6 flex items-center justify-center text-xv-gray hover:text-xv-black text-[10px]" title="缩小">
-                    <i class="fa-solid fa-minus"></i>
-                </button>
-                <button id="btnZoomReset" class="px-2 h-6 font-mono text-[9.5px] font-bold text-xv-black hover:bg-black/5" title="点击复位缩放">
-                    100%
-                </button>
-                <button id="btnZoomIn" class="w-6 h-6 flex items-center justify-center text-xv-gray hover:text-xv-black text-[10px]" title="放大检视细节">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-                <span class="w-[1px] h-3.5 bg-xv-border mx-1"></span>
-                <button id="btnCompareRaw" class="px-2.5 h-6 flex items-center gap-1.5 font-mono text-[9.5px] font-semibold text-xv-black hover:bg-black/5 select-none" title="按住对比未加框原片 (快捷键: Space)">
-                    <i class="fa-regular fa-eye text-[10px]"></i>
-                    <span>按住对比</span>
-                </button>
-            </div>
         </section>
 
         <div class="mobile-pager-wrapper">
@@ -227,7 +201,7 @@
                     <div id="controlPanel" class="native-scroll flex-1 p-4 pb-24 md:pb-6 opacity-40 pointer-events-none transition-opacity duration-300">
                         
                         <!-- TAB 1: LARGE STYLIZED TEMPLATES -->
-                        <div id="tab-templates" class="tab-pane block space-y-4" id="styleGroup">
+                        <div id="tab-templates" class="tab-pane block space-y-4">
                             
                             <!-- 01 画廊 -->
                             <div>

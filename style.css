@@ -250,40 +250,6 @@ html, body {
     animation-iteration-count: infinite !important;
 }
 
-/* 底部遥测读数与跳过按钮 */
-.preloader-footer {
-    position: absolute;
-    bottom: max(28px, var(--s-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    width: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-family: "JetBrains Mono", monospace;
-    opacity: 0;
-    animation: rulerFadeIn 2.6s var(--ease-out-expo) 0.1s forwards;
-}
-.telemetry-readout {
-    display: flex; flex-direction: column; gap: 2px;
-}
-.telemetry-readout span {
-    font-size: 7.5px; letter-spacing: 0.16em; color: #71717a;
-}
-.telemetry-readout strong {
-    font-size: 11px; letter-spacing: 0.08em; color: #0a0a0a; font-weight: 700;
-}
-.skip-boot-btn {
-    font-size: 8.5px; font-family: "JetBrains Mono", monospace; font-weight: 600;
-    letter-spacing: 0.12em; padding: 4px 8px;
-    border: 1px solid rgba(10, 10, 10, 0.18);
-    background: rgba(255, 255, 255, 0.6); color: #0a0a0a;
-    cursor: pointer; transition: all 0.2s ease;
-}
-.skip-boot-btn:hover {
-    background: #0a0a0a; color: #ffffff; border-color: #0a0a0a;
-}
-
 @keyframes drawGuideX {
     0% { transform: scaleX(0); opacity: 0; }
     18%, 85% { transform: scaleX(1); opacity: 1; }
@@ -498,80 +464,92 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; bac
     background: rgba(10, 10, 10, 0.08); color: #0a0a0a; font-weight: 700; letter-spacing: 0.05em;
 }
 
-/* 专属风格化模版按钮 */
-.style-btn[data-style="exif_palette"] {
+/* 专属风格化模版按钮（未激活态） */
+.style-btn[data-style="exif_palette"]:not(.active) {
     border-bottom: 2.5px solid transparent;
     border-image: linear-gradient(90deg, #0ea5e9 25%, #f59e0b 25% 50%, #10b981 50% 75%, #6366f1 75%) 1;
 }
-.style-btn[data-style="swiss_grid"] {
+.style-btn[data-style="swiss_grid"]:not(.active) {
     background-image: 
         linear-gradient(to right, rgba(0,0,0,0.045) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(0,0,0,0.045) 1px, transparent 1px);
     background-size: 12px 12px;
 }
-.style-btn[data-style="editorial_magazine"] { background: rgba(251, 249, 243, 0.88); }
+.style-btn[data-style="editorial_magazine"]:not(.active) { background: rgba(251, 249, 243, 0.88); }
 .style-btn[data-style="editorial_magazine"] .title {
     font-family: "Cormorant Garamond", "Noto Serif SC", serif;
     font-style: italic; font-weight: 700; font-size: 13px;
 }
-.style-btn[data-style="aura_blur"] {
+.style-btn[data-style="aura_blur"]:not(.active) {
     background: linear-gradient(135deg, rgba(253, 230, 138, 0.28) 0%, rgba(244, 114, 182, 0.24) 50%, rgba(96, 165, 250, 0.28) 100%);
 }
-.style-btn[data-style="aura_blur"] .icon-wrapper { color: #db2777; }
-.style-btn[data-style="gallery_passepartout"] {
+.style-btn[data-style="aura_blur"]:not(.active) .icon-wrapper { color: #db2777; }
+.style-btn[data-style="gallery_passepartout"]:not(.active) {
     background: rgba(246, 244, 239, 0.88);
     box-shadow: inset 0 0 0 3px #ffffff, inset 0 0 0 4px rgba(10,10,10,0.12);
 }
-.style-btn[data-style="japanese_zen"] { background: rgba(247, 245, 240, 0.9); }
-.style-btn[data-style="japanese_zen"] .badge-tag { background: #b91c1c; color: #ffffff; }
+.style-btn[data-style="japanese_zen"]:not(.active) { background: rgba(247, 245, 240, 0.9); }
+.style-btn[data-style="japanese_zen"]:not(.active) .badge-tag { background: #b91c1c; color: #ffffff; }
 
-.style-btn[data-style="halation_lab"] {
-    background: rgba(16, 12, 14, 0.92) !important;
-    border-color: rgba(239, 68, 68, 0.35) !important;
+.style-btn[data-style="halation_lab"]:not(.active) {
+    background: rgba(16, 12, 14, 0.92);
+    border-color: rgba(239, 68, 68, 0.35);
 }
-.style-btn[data-style="halation_lab"] .icon-wrapper { color: #ef4444 !important; filter: drop-shadow(0 0 5px rgba(239,68,68,0.6)); }
-.style-btn[data-style="halation_lab"] .title { color: #fecaca !important; }
-.style-btn[data-style="halation_lab"] .subtext { color: #f87171 !important; opacity: 0.8; }
-.style-btn[data-style="halation_lab"] .badge-tag { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+.style-btn[data-style="halation_lab"]:not(.active) .icon-wrapper { color: #ef4444; filter: drop-shadow(0 0 5px rgba(239,68,68,0.6)); }
+.style-btn[data-style="halation_lab"]:not(.active) .title { color: #fecaca; }
+.style-btn[data-style="halation_lab"]:not(.active) .subtext { color: #f87171; opacity: 0.85; }
+.style-btn[data-style="halation_lab"]:not(.active) .badge-tag { background: rgba(239, 68, 68, 0.22); color: #fca5a5; }
 
-.style-btn[data-style="cyanotype"] {
-    background: rgba(12, 45, 72, 0.92) !important;
-    border-color: rgba(125, 211, 252, 0.35) !important;
+.style-btn[data-style="cyanotype"]:not(.active) {
+    background: rgba(12, 45, 72, 0.92);
+    border-color: rgba(125, 211, 252, 0.35);
 }
-.style-btn[data-style="cyanotype"] .icon-wrapper { color: #7dd3fc !important; }
-.style-btn[data-style="cyanotype"] .title { color: #f0f9ff !important; }
-.style-btn[data-style="cyanotype"] .subtext { color: #93c5fd !important; }
-.style-btn[data-style="cyanotype"] .badge-tag { background: rgba(255,255,255,0.15); color: #e0f2fe; }
+.style-btn[data-style="cyanotype"]:not(.active) .icon-wrapper { color: #7dd3fc; }
+.style-btn[data-style="cyanotype"]:not(.active) .title { color: #f0f9ff; }
+.style-btn[data-style="cyanotype"]:not(.active) .subtext { color: #93c5fd; }
+.style-btn[data-style="cyanotype"]:not(.active) .badge-tag { background: rgba(255,255,255,0.15); color: #e0f2fe; }
 
-.style-btn[data-style^="film"] {
-    background: rgba(18, 18, 20, 0.92) !important;
-    border-color: rgba(250, 204, 21, 0.28) !important;
+.style-btn[data-style^="film"]:not(.active) {
+    background: rgba(18, 18, 20, 0.92);
+    border-color: rgba(250, 204, 21, 0.28);
 }
-.style-btn[data-style^="film"] .icon-wrapper { color: #facc15 !important; }
-.style-btn[data-style^="film"] .title { color: #fef08a !important; }
-.style-btn[data-style^="film"] .subtext { color: #a1a1aa !important; }
+.style-btn[data-style^="film"]:not(.active) .icon-wrapper { color: #facc15; }
+.style-btn[data-style^="film"]:not(.active) .title { color: #fef08a; }
+.style-btn[data-style^="film"]:not(.active) .subtext { color: #a1a1aa; }
 
-.style-btn[data-style="vector_field"] {
-    background-color: #09090b !important;
-    background-image: radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px) !important;
-    background-size: 8px 8px !important;
-    border-color: rgba(255,255,255,0.24) !important;
+.style-btn[data-style="vector_field"]:not(.active) {
+    background-color: #09090b;
+    background-image: radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px);
+    background-size: 8px 8px;
+    border-color: rgba(255,255,255,0.24);
 }
-.style-btn[data-style="vector_field"] .icon-wrapper,
-.style-btn[data-style="vector_field"] .title { color: #ffffff !important; }
-.style-btn[data-style="vector_field"] .subtext { color: #a1a1aa !important; }
-.style-btn[data-style="vector_field"] .badge-tag { background: #ffffff; color: #09090b; }
+.style-btn[data-style="vector_field"]:not(.active) .icon-wrapper,
+.style-btn[data-style="vector_field"]:not(.active) .title { color: #ffffff; }
+.style-btn[data-style="vector_field"]:not(.active) .subtext { color: #a1a1aa; }
+.style-btn[data-style="vector_field"]:not(.active) .badge-tag { background: #ffffff; color: #09090b; }
 
+/* 浅色模式激活态 */
 .style-btn.active {
     border-color: #0a0a0a !important;
+    border-image: none !important;
     background: #0a0a0a !important;
+    background-image: none !important;
     color: #ffffff !important;
     box-shadow: 4px 4px 0px rgba(10, 10, 10, 0.16) !important;
 }
 .style-btn.active .icon-wrapper,
-.style-btn.active .title { color: #ffffff !important; }
-.style-btn.active .subtext { color: #a1a1aa !important; }
-.style-btn.active .badge-tag { background: #ffffff !important; color: #0a0a0a !important; }
+.style-btn.active .title {
+    color: #ffffff !important;
+    filter: none !important;
+}
+.style-btn.active .subtext {
+    color: #a1a1aa !important;
+    opacity: 1 !important;
+}
+.style-btn.active .badge-tag {
+    background: #ffffff !important;
+    color: #0a0a0a !important;
+}
 
 .filter-btn { transition: all 0.25s var(--ease-out-expo); background: rgba(255,255,255,0.65); }
 .filter-btn.active-bw { background-color: #0a0a0a; color: #fff; border-color: #0a0a0a; }
@@ -656,7 +634,7 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; bac
 body.dark-mode {
     --glass-bg: rgba(16, 16, 20, 0.82);
     --glass-card: rgba(26, 26, 32, 0.68);
-    --glass-border: rgba(255, 255, 255, 0.09);
+    --glass-border: rgba(255, 255, 255, 0.11);
     --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
     background: radial-gradient(circle at 20% 15%, #18181d 0%, #0d0d10 60%, #070709 100%) !important;
     color: #f4f4f5 !important;
@@ -671,13 +649,6 @@ body.dark-mode .dimension-ruler i,
 body.dark-mode .curator-progress { background: rgba(255,255,255,0.14); }
 body.dark-mode .crop-tick { border-color: #f4f4f5; }
 body.dark-mode .curator-progress-bar { background: #f4f4f5; }
-body.dark-mode .telemetry-readout strong { color: #f4f4f5; }
-body.dark-mode .skip-boot-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #f4f4f5;
-}
-body.dark-mode .skip-boot-btn:hover { background: #f4f4f5; color: #09090b; }
 
 body.dark-mode header,
 body.dark-mode .view-panel,
@@ -709,36 +680,86 @@ body.dark-mode #btnAddFiles { background: rgba(255,255,255,0.06) !important; bor
 body.dark-mode #btnDownloadAll { background: rgba(255,255,255,0.06) !important; color: #f4f4f5 !important; }
 body.dark-mode #btnDownloadCurrent,
 body.dark-mode #btnApplyTextToAll,
-body.dark-mode #emptyState button { background: #f4f4f5 !important; color: #09090b !important; }
+body.dark-mode #emptyState span { background: #f4f4f5 !important; color: #09090b !important; }
 
 body.dark-mode .tab-btn { color: #71717a !important; }
 body.dark-mode .tab-btn.bg-xv-black { background: #f4f4f5 !important; color: #09090b !important; }
 
-body.dark-mode .style-btn:not([data-style^="film"]):not([data-style="halation_lab"]):not([data-style="cyanotype"]):not([data-style="vector_field"]) {
+/* 深色模式下模版按钮：解决暗底黑色冲突与悬停/激活文字反色问题 */
+body.dark-mode .style-btn:not(.active):not([data-style^="film"]):not([data-style="halation_lab"]):not([data-style="cyanotype"]):not([data-style="vector_field"]) {
     background: var(--glass-card) !important;
     border-color: var(--glass-border) !important;
 }
-body.dark-mode .style-btn .title { color: #f4f4f5; }
-body.dark-mode .style-btn .subtext { color: #a1a1aa; }
-body.dark-mode .style-btn .icon-wrapper { color: #d4d4d8; }
-body.dark-mode .style-btn .badge-tag { background: rgba(255,255,255,0.12); color: #f4f4f5; }
+body.dark-mode .style-btn[data-style="swiss_grid"]:not(.active) {
+    background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px) !important;
+    background-size: 12px 12px !important;
+}
+body.dark-mode .style-btn[data-style="gallery_passepartout"]:not(.active) {
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,0.08), inset 0 0 0 4px rgba(255,255,255,0.16) !important;
+}
+body.dark-mode .style-btn[data-style="aura_blur"]:not(.active) {
+    background: linear-gradient(135deg, rgba(253, 230, 138, 0.14) 0%, rgba(244, 114, 182, 0.14) 50%, rgba(96, 165, 250, 0.16) 100%) !important;
+}
+body.dark-mode .style-btn[data-style="vector_field"]:not(.active) {
+    background-color: #121216 !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+}
+body.dark-mode .style-btn[data-style^="film"]:not(.active) {
+    background: rgba(20, 20, 24, 0.95) !important;
+    border-color: rgba(250, 204, 21, 0.35) !important;
+}
 
+body.dark-mode .style-btn:not(.active):hover {
+    border-color: rgba(255, 255, 255, 0.42) !important;
+    background-color: rgba(38, 38, 46, 0.92) !important;
+}
+body.dark-mode .style-btn::after {
+    background: #f4f4f5;
+}
+
+body.dark-mode .style-btn:not(.active) .title { color: #f4f4f5; }
+body.dark-mode .style-btn:not(.active) .subtext { color: #a1a1aa; }
+body.dark-mode .style-btn:not(.active) .icon-wrapper { color: #d4d4d8; }
+body.dark-mode .style-btn:not(.active) .badge-tag { background: rgba(255,255,255,0.12); color: #f4f4f5; }
+body.dark-mode .style-btn[data-style="japanese_zen"]:not(.active) .badge-tag { background: #b91c1c; color: #ffffff; }
+
+/* 深色模式激活态：高对比度纯白底 + 刀锋深黑字（覆盖所有特殊暗房/矩阵按钮） */
 body.dark-mode .style-btn.active {
     background: #f4f4f5 !important;
+    background-image: none !important;
     border-color: #f4f4f5 !important;
+    border-image: none !important;
     color: #09090b !important;
-    box-shadow: 4px 4px 0px rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 4px 4px 0px rgba(255, 255, 255, 0.2) !important;
 }
 body.dark-mode .style-btn.active .icon-wrapper,
-body.dark-mode .style-btn.active .title { color: #09090b !important; }
-body.dark-mode .style-btn.active .subtext { color: #52525b !important; }
-body.dark-mode .style-btn.active .badge-tag { background: #09090b !important; color: #f4f4f5 !important; }
+body.dark-mode .style-btn.active .title {
+    color: #09090b !important;
+    filter: none !important;
+}
+body.dark-mode .style-btn.active .subtext {
+    color: #52525b !important;
+    opacity: 1 !important;
+}
+body.dark-mode .style-btn.active .badge-tag {
+    background: #09090b !important;
+    color: #f4f4f5 !important;
+}
+
+/* 深色模式下画布底色按钮选中环反转，防止选黑色底色时与深色面板冲突 */
+body.dark-mode .wall-btn.ring-xv-black {
+    --tw-ring-color: #f4f4f5 !important;
+    --tw-ring-offset-color: #18181d !important;
+}
 
 body.dark-mode .glass-card { background: var(--glass-card) !important; border-color: var(--glass-border) !important; }
 body.dark-mode input[type=range]::-webkit-slider-thumb { background: #f4f4f5 !important; }
 body.dark-mode input[type=range]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2) !important; }
 body.dark-mode .filter-btn { background: rgba(255,255,255,0.05) !important; border-color: var(--glass-border) !important; color: #e4e4e7 !important; }
-body.dark-mode .filter-btn.active-bw { background: #f4f4f5 !important; color: #09090b !important; }
+body.dark-mode .filter-btn.active-bw { background: #f4f4f5 !important; color: #09090b !important; border-color: #f4f4f5 !important; }
+body.dark-mode .btn-invert.active-invert { background: #facc15 !important; color: #09090b !important; border-color: #facc15 !important; }
 
 body.dark-mode .res-btn.bg-xv-black,
 body.dark-mode .fmt-btn.bg-xv-black {

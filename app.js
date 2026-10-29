@@ -1,6 +1,6 @@
 /**
  * XIANG FRAME 4.5 PRO - Studio Core Controller
- * 100% 完整独立版：处理启动序幕、HEIC/HDR、P3 色域解码、画布缩放对比与交互色卡
+ * 100% 完整独立版：处理启动序幕、HEIC/HDR、P3 色域解码与交互色卡
  */
 function triggerHaptic(type = 'light') {
     if (!navigator.vibrate) return;
@@ -11,11 +11,9 @@ function triggerHaptic(type = 'light') {
     } catch(e) {}
 }
 
-// 2.6 秒五幕装裱开机动画与遥测读数逻辑
+// 2.6 秒五幕装裱开机动画逻辑
 function runBootSequence() {
     const preloader = document.getElementById('bootPreloader');
-    const telemetryEl = document.getElementById('bootTelemetryNum');
-    const skipBtn = document.getElementById('btnSkipBoot');
     if (!preloader) return;
 
     let dismissed = false;
@@ -26,29 +24,7 @@ function runBootSequence() {
         document.body.classList.add('app-ready');
     };
 
-    if (skipBtn) {
-        skipBtn.addEventListener('click', () => {
-            triggerHaptic('light');
-            finishBoot();
-        });
-    }
-
-    const start = performance.now();
-    const duration = 2550;
-    const tick = (now) => {
-        if (dismissed) return;
-        const p = Math.min(1, (now - start) / duration);
-        const ease = 1 - Math.pow(1 - p, 3);
-        if (telemetryEl) {
-            telemetryEl.textContent = `${(ease * 420).toFixed(1).padStart(5, '0')} MM`;
-        }
-        if (p < 1) {
-            requestAnimationFrame(tick);
-        } else {
-            setTimeout(finishBoot, 120);
-        }
-    };
-    requestAnimationFrame(tick);
+    setTimeout(finishBoot, 2600);
 }
 
 class AppController {
@@ -57,11 +33,7 @@ class AppController {
             images: [],
             activeId: null,
             darkMode: false,
-            zoom: 1,
-            panX: 0,
-            panY: 0,
             exportFormat: 'image/jpeg',
-            isComparingRaw: false,
             settings: {
                 style: 'exif',
                 wallColor: '#ffffff',
@@ -317,8 +289,8 @@ class AppController {
                 triggerHaptic('light');
                 const color = e.target.dataset.wall;
                 this.updateSettings({ wallColor: color }, false);
-                this.dom.wallBtns.forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-xv-black'));
-                e.target.classList.add('ring-2', 'ring-offset-2', 'ring-xv-black');
+                this.dom.wallBtns.forEach(b => b.classList.remove('ring-2', 'ring-offset-1', 'ring-offset-2', 'ring-xv-black'));
+                e.target.classList.add('ring-2', 'ring-offset-1', 'ring-xv-black');
             });
         });
 
@@ -388,65 +360,6 @@ class AppController {
         this.dom.btnDownloadCurrent.addEventListener('click', () => { triggerHaptic('medium'); this.downloadCurrent(); });
         this.dom.btnDownloadAll.addEventListener('click', () => { triggerHaptic('medium'); this.downloadAll(); });
 
-        // 画布缩放与平移操控坞绑定
-        const applyZoomTransform = () => {
-            const z = this.state.zoom;
-            const btnZoomReset = document.getElementById('btnZoomReset');
-            if (btnZoomReset) btnZoomReset.textContent = `${Math.round(z * 100)}%`;
-            this.dom.workspace.classList.toggle('is-zoomed', z > 1);
-            if (z === 1) { this.state.panX = 0; this.state.panY = 0; }
-            this.dom.previewCanvas.style.transform = `translate(${this.state.panX}px, ${this.state.panY}px) scale(${z})`;
-        };
-
-        const setZoom = (newZ) => {
-            this.state.zoom = Math.min(3.0, Math.max(0.8, Number(newZ.toFixed(2))));
-            applyZoomTransform();
-        };
-
-        document.getElementById('btnZoomIn')?.addEventListener('click', () => { triggerHaptic('light'); setZoom(this.state.zoom + 0.25); });
-        document.getElementById('btnZoomOut')?.addEventListener('click', () => { triggerHaptic('light'); setZoom(this.state.zoom - 0.25); });
-        document.getElementById('btnZoomReset')?.addEventListener('click', () => { triggerHaptic('light'); setZoom(1); });
-        this.dom.workspace.addEventListener('dblclick', () => { triggerHaptic('light'); setZoom(this.state.zoom > 1 ? 1 : 1.75); });
-
-        this.dom.workspace.addEventListener('wheel', (e) => {
-            if (!this.state.images.length) return;
-            e.preventDefault();
-            setZoom(this.state.zoom + (e.deltaY < 0 ? 0.15 : -0.15));
-        }, { passive: false });
-
-        // 按住对比原片
-        const startCompare = () => {
-            const activeImg = this.getActiveImage();
-            if (!activeImg || this.state.isComparingRaw) return;
-            this.state.isComparingRaw = true;
-            triggerHaptic('light');
-            const cvs = this.dom.previewCanvas, ctx = this.ctx;
-            this._savedCanvasData = ctx.getImageData(0, 0, cvs.width, cvs.height);
-
-            ctx.fillStyle = this.state.darkMode ? '#09090b' : '#f4f4f5';
-            ctx.fillRect(0, 0, cvs.width, cvs.height);
-            const scale = Math.min(cvs.width / activeImg.width, cvs.height / activeImg.height);
-            const dw = activeImg.width * scale, dh = activeImg.height * scale;
-            ctx.drawImage(activeImg.imgObj, (cvs.width - dw) / 2, (cvs.height - dh) / 2, dw, dh);
-        };
-
-        const endCompare = () => {
-            if (!this.state.isComparingRaw) return;
-            this.state.isComparingRaw = false;
-            if (this._savedCanvasData) {
-                this.ctx.putImageData(this._savedCanvasData, 0, 0);
-                this._savedCanvasData = null;
-            }
-        };
-
-        const btnCompareRaw = document.getElementById('btnCompareRaw');
-        if (btnCompareRaw) {
-            btnCompareRaw.addEventListener('mousedown', startCompare);
-            btnCompareRaw.addEventListener('touchstart', (e) => { e.preventDefault(); startCompare(); });
-            window.addEventListener('mouseup', endCompare);
-            window.addEventListener('touchend', endCompare);
-        }
-
         // 交互式色卡微调器
         const paletteContainer = document.getElementById('interactivePalette');
         const btnShufflePalette = document.getElementById('btnShufflePalette');
@@ -485,22 +398,6 @@ class AppController {
             this.renderPreview(false);
         });
 
-        // 拦截 setActiveImage 与 resetUI
-        const origSetActive = this.setActiveImage.bind(this);
-        this.setActiveImage = (id) => {
-            origSetActive(id);
-            renderPaletteEditor();
-            const dock = document.getElementById('canvasDock');
-            if (dock) { dock.classList.remove('hidden'); dock.classList.add('flex'); }
-        };
-
-        const origResetUI = this.resetUI.bind(this);
-        this.resetUI = () => {
-            origResetUI();
-            const dock = document.getElementById('canvasDock');
-            if (dock) { dock.classList.add('hidden'); dock.classList.remove('flex'); }
-        };
-
         // 导出规格引擎按钮
         document.querySelectorAll('.res-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -536,9 +433,7 @@ class AppController {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
                 e.preventDefault(); this.downloadCurrent(); return;
             }
-            if (e.code === 'Space' && !e.repeat && this.state.images.length) {
-                e.preventDefault(); startCompare();
-            } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                 if (this.state.images.length < 2) return;
                 const idx = this.state.images.findIndex(i => i.id === this.state.activeId);
                 const next = e.key === 'ArrowRight' ? (idx + 1) % this.state.images.length : (idx - 1 + this.state.images.length) % this.state.images.length;
@@ -547,8 +442,6 @@ class AppController {
                 this.toggleDarkMode();
             }
         });
-
-        window.addEventListener('keyup', (e) => { if (e.code === 'Space') endCompare(); });
     }
 
     debounce(func, wait) {
@@ -868,9 +761,6 @@ class AppController {
                 paletteContainer.appendChild(wrap);
             });
         }
-
-        const dock = document.getElementById('canvasDock');
-        if (dock) { dock.classList.remove('hidden'); dock.classList.add('flex'); }
 
         this.renderPreview(true);
     }
