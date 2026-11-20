@@ -480,10 +480,6 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; bac
     font-family: "Cormorant Garamond", "Noto Serif SC", serif;
     font-style: italic; font-weight: 700; font-size: 13px;
 }
-.style-btn[data-style="aura_blur"]:not(.active) {
-    background: linear-gradient(135deg, rgba(253, 230, 138, 0.28) 0%, rgba(244, 114, 182, 0.24) 50%, rgba(96, 165, 250, 0.28) 100%);
-}
-.style-btn[data-style="aura_blur"]:not(.active) .icon-wrapper { color: #db2777; }
 .style-btn[data-style="gallery_passepartout"]:not(.active) {
     background: rgba(246, 244, 239, 0.88);
     box-shadow: inset 0 0 0 3px #ffffff, inset 0 0 0 4px rgba(10,10,10,0.12);
@@ -534,16 +530,23 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; bac
 
 .style-btn[data-style="xhs_editorial"]:not(.active) {
     background: rgba(250, 248, 244, 0.92);
-    border-color: rgba(244, 63, 94, 0.28);
+    border-color: rgba(10, 10, 10, 0.16);
 }
-.style-btn[data-style="xhs_editorial"]:not(.active) .icon-wrapper { color: #f43f5e; }
-.style-btn[data-style="xhs_editorial"]:not(.active) .badge-tag { background: #f43f5e; color: #ffffff; }
+.style-btn[data-style="xhs_editorial"]:not(.active) .icon-wrapper { color: #18181b; }
+.style-btn[data-style="xhs_editorial"]:not(.active) .badge-tag { background: #18181b; color: #ffffff; }
 
-.style-btn[data-style="glass_card_blur"]:not(.active) {
-    background: linear-gradient(135deg, rgba(165, 180, 252, 0.25) 0%, rgba(251, 207, 232, 0.24) 52%, rgba(167, 243, 208, 0.25) 100%);
-    border-color: rgba(99, 102, 241, 0.28);
+.style-btn[data-style="newspaper_press"]:not(.active) {
+    background: rgba(243, 239, 230, 0.94);
+    border-top: 2.5px double #1c1917;
+    border-color: rgba(28, 25, 23, 0.22);
 }
-.style-btn[data-style="glass_card_blur"]:not(.active) .icon-wrapper { color: #4f46e5; }
+.style-btn[data-style="newspaper_press"]:not(.active) .icon-wrapper { color: #1c1917; }
+.style-btn[data-style="newspaper_press"] .title {
+    font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+    font-weight: 700;
+    font-size: 13px;
+}
+.style-btn[data-style="newspaper_press"]:not(.active) .badge-tag { background: #1c1917; color: #f3efe6; }
 
 .style-btn[data-style="cinema_scope"]:not(.active) {
     background: rgba(12, 12, 14, 0.94);
@@ -761,12 +764,11 @@ body.dark-mode .style-btn:not(.active):not([data-style^="film"]):not([data-style
     border-color: var(--glass-border) !important;
 }
 body.dark-mode .style-btn[data-style="ins_45_story"]:not(.active) .icon-wrapper { color: #f472b6 !important; }
-body.dark-mode .style-btn[data-style="xhs_editorial"]:not(.active) .icon-wrapper { color: #fb7185 !important; }
-body.dark-mode .style-btn[data-style="xhs_editorial"]:not(.active) .badge-tag { background: #f43f5e !important; color: #ffffff !important; }
-body.dark-mode .style-btn[data-style="glass_card_blur"]:not(.active) {
-    background: linear-gradient(135deg, rgba(129, 140, 248, 0.16) 0%, rgba(244, 114, 182, 0.14) 50%, rgba(52, 211, 153, 0.14) 100%) !important;
-}
-body.dark-mode .style-btn[data-style="glass_card_blur"]:not(.active) .icon-wrapper { color: #a5b4fc !important; }
+body.dark-mode .style-btn[data-style="xhs_editorial"]:not(.active) .icon-wrapper { color: #e4e4e7 !important; }
+body.dark-mode .style-btn[data-style="xhs_editorial"]:not(.active) .badge-tag { background: rgba(255,255,255,0.16) !important; color: #f4f4f5 !important; }
+body.dark-mode .style-btn[data-style="newspaper_press"]:not(.active) { border-top: 2.5px double rgba(244, 244, 245, 0.65) !important; }
+body.dark-mode .style-btn[data-style="newspaper_press"]:not(.active) .icon-wrapper { color: #e7e5e4 !important; }
+body.dark-mode .style-btn[data-style="newspaper_press"]:not(.active) .badge-tag { background: #e7e5e4 !important; color: #1c1917 !important; }
 body.dark-mode .style-btn[data-style="magazine_cover"]:not(.active) { border-top: 2.5px solid #f4f4f5 !important; }
 body.dark-mode .style-btn[data-style="gallery_placard"]:not(.active) { border-left: 3px solid #f4f4f5 !important; }
 body.dark-mode .style-btn[data-style="raw_protect"]:not(.active) {
@@ -783,9 +785,6 @@ body.dark-mode .style-btn[data-style="swiss_grid"]:not(.active) {
 }
 body.dark-mode .style-btn[data-style="gallery_passepartout"]:not(.active) {
     box-shadow: inset 0 0 0 3px rgba(255,255,255,0.08), inset 0 0 0 4px rgba(255,255,255,0.16) !important;
-}
-body.dark-mode .style-btn[data-style="aura_blur"]:not(.active) {
-    background: linear-gradient(135deg, rgba(253, 230, 138, 0.14) 0%, rgba(244, 114, 182, 0.14) 50%, rgba(96, 165, 250, 0.16) 100%) !important;
 }
 body.dark-mode .style-btn[data-style="vector_field"]:not(.active) {
     background-color: #121216 !important;

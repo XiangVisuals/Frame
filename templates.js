@@ -629,60 +629,7 @@ window.XiangTemplates = {
                 }
             };
 
-        // 9. 弥散光感画境 (AURA BLUR)
-        } else if (style === 'aura_blur') {
-            wallPaddingX = 0; wallPaddingY = 0;
-            const padX = shortEdge * 0.14 * matMultiplier;
-            const padTop = shortEdge * 0.14 * matMultiplier;
-            const padBot = shortEdge * 0.22 * matMultiplier;
-            sceneW = imgW + padX * 2;
-            sceneH = imgH + padTop + padBot;
-
-            drawLogic = (scale) => {
-                const sW = sceneW * scale, sH = sceneH * scale;
-                const iX = padX * scale, iY = padTop * scale, iW = imgW * scale, iH = imgH * scale;
-                const fImg = app.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-
-                const blurCanvas = document.createElement('canvas');
-                blurCanvas.width = 96; blurCanvas.height = 96;
-                const bCtx = app.getCanvasContext(blurCanvas);
-                bCtx.filter = 'blur(14px) saturate(165%) brightness(0.92)';
-                bCtx.drawImage(fImg, -12, -12, 120, 120);
-
-                ctx.drawImage(blurCanvas, 0, 0, sW, sH);
-                ctx.fillStyle = 'rgba(0,0,0,0.18)';
-                ctx.fillRect(0, 0, sW, sH);
-
-                ctx.save();
-                ctx.shadowColor = `rgba(0, 0, 0, ${0.42 * shadowMultiplier})`;
-                ctx.shadowBlur = shortEdge * 0.065 * scale * shadowMultiplier;
-                ctx.shadowOffsetY = shortEdge * 0.025 * scale * shadowMultiplier;
-                ctx.drawImage(fImg, iX, iY, iW, iH);
-                ctx.restore();
-
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
-                ctx.lineWidth = Math.max(1, shortEdge * 0.0018 * scale);
-                ctx.strokeRect(iX, iY, iW, iH);
-
-                if (matMultiplier > 0.35) {
-                    const fBase = shortEdge * 0.015 * scale;
-                    const centerY = iY + iH + (padBot * scale * 0.52);
-
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-                    ctx.font = `600 ${fBase * 1.15}px "Cormorant Garamond", "Noto Serif SC", serif`;
-                    setTrack(fBase * 0.22);
-                    ctx.fillText((textLeft || 'UNTITLED ARTWORK').toUpperCase(), sW / 2, centerY - fBase * 0.85);
-
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
-                    ctx.font = `400 ${fBase * 0.75}px "JetBrains Mono", monospace`;
-                    setTrack(fBase * 0.12);
-                    ctx.fillText(`${(exifCamera || 'CAMERA').toUpperCase()}   ·   ${exifParams || ''}`, sW / 2, centerY + fBase * 1.05);
-                    setTrack(0);
-                }
-            };
-
-        // 10. 暗房高光溢光 (HALATION LAB)
+        // 9. 暗房高光溢光 (HALATION LAB)
         } else if (style === 'halation_lab') {
             wallPaddingX = 0; wallPaddingY = 0;
             const padX = shortEdge * 0.09 * matMultiplier;
@@ -980,7 +927,7 @@ window.XiangTemplates = {
                     ctx.fillStyle = '#71717a';
                     ctx.font = `400 ${fBase * 0.72}px "JetBrains Mono", monospace`;
                     setTrack(fBase * 0.16);
-                    ctx.fillText(`${(exifTime || '2026').toUpperCase()}  ·  ${(textRight || '© XIANGVISUALS').toUpperCase()}`, pX + pW / 2, chinCenterY + fBase * 1.15);
+                    ctx.fillText((exifTime || '2026').toUpperCase(), pX + pW / 2, chinCenterY + fBase * 1.15);
                     setTrack(0);
                 }
             };
@@ -1299,15 +1246,15 @@ window.XiangTemplates = {
                     ctx.fillStyle = isDarkWall ? '#a1a1aa' : '#71717a';
                     ctx.font = `400 ${fBase * 0.78}px "JetBrains Mono", monospace`;
                     setTrack(fBase * 0.14);
-                    ctx.fillText(fitText(`${exifParams || '35mm  f/1.4  1/250s  ISO 100'}   ·   ${(textRight || '© XIANGVISUALS').toUpperCase()}`, sW * 0.86), sW / 2, footY + fBase * 0.85);
+                    ctx.fillText(fitText(`${(exifLens || 'LENS').toUpperCase()}   ·   ${exifParams || '35mm  f/1.4  1/250s  ISO 100'}`, sW * 0.86), sW / 2, footY + fBase * 0.85);
                     setTrack(0);
                 }
             };
 
-        // 23. 小红书 3:4 胶片情绪卡片 (XHS EDITORIAL CARD - NEW)
+        // 23. 3:4 画报卡片 (EDITORIAL CARD)
         } else if (style === 'xhs_editorial') {
             wallPaddingX = 0; wallPaddingY = 0;
-            // Strict 3:4 Xiaohongshu native full-screen vertical ratio
+            // Strict 3:4 vertical ratio
             const baseW = 1500, baseH = 2000;
             sceneW = baseW;
             sceneH = baseH;
@@ -1325,14 +1272,14 @@ window.XiangTemplates = {
                 const fBase = baseW * 0.0145 * scale;
                 const innerW = sW - pad * 2;
 
-                // Top header bar: minimalist tag + date pill
+                // Top header bar: minimalist issue tag + date pill
                 ctx.textBaseline = 'middle';
                 const topY = pad + headerH * 0.35;
                 ctx.textAlign = 'left';
                 ctx.fillStyle = '#18181b';
                 ctx.font = `700 ${fBase * 0.85}px "JetBrains Mono", monospace`;
                 setTrack(fBase * 0.18);
-                ctx.fillText((textRight || '© XIANGVISUALS').toUpperCase(), pad, topY);
+                ctx.fillText('NO. 01  //  VISUAL ARCHIVE', pad, topY);
                 setTrack(0);
 
                 // Right date pill
@@ -1420,100 +1367,183 @@ window.XiangTemplates = {
                 ctx.fillText(fitText(exifParams || '35mm  f/2.0  1/250s  ISO 100', innerW * 0.4), pad + innerW, specY);
             };
 
-        // 24. 弥散毛玻璃卡片 (FROSTED GLASS CARD - NEW)
-        } else if (style === 'glass_card_blur') {
+        // 24. 复古报纸头版 (THE DAILY PRESS - NEW)
+        } else if (style === 'newspaper_press') {
             wallPaddingX = 0; wallPaddingY = 0;
-            const padOuter = shortEdge * 0.12 * matMultiplier;
-            const cardPad = shortEdge * 0.045 * matMultiplier;
-            const cardBot = shortEdge * 0.165 * matMultiplier;
-            sceneW = imgW + (padOuter + cardPad) * 2;
-            sceneH = imgH + (padOuter + cardPad) * 2 + cardBot - cardPad;
+            // Authentic broadsheet portrait ratio (3:4)
+            const baseW = 1500, baseH = 2000;
+            sceneW = baseW;
+            sceneH = baseH;
 
             drawLogic = (scale) => {
                 const sW = sceneW * scale, sH = sceneH * scale;
-                const sOut = padOuter * scale, sCardPad = cardPad * scale;
-                const cX = sOut, cY = sOut, cW = sW - sOut * 2, cH = sH - sOut * 2;
-                const iX = cX + sCardPad, iY = cY + sCardPad, iW = imgW * scale, iH = imgH * scale;
+                const pad = baseW * 0.065 * Math.min(1.35, Math.max(0.65, matMultiplier)) * scale;
+                const innerW = sW - pad * 2;
+                const fBase = baseW * 0.0145 * scale;
 
-                const fImg = app.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-
-                // 1. Rich saturated ambient blur backdrop
-                const bgBlur = document.createElement('canvas');
-                bgBlur.width = 96; bgBlur.height = 96;
-                const bgCtx = app.getCanvasContext(bgBlur);
-                bgCtx.filter = 'blur(16px) saturate(185%) brightness(0.84)';
-                bgCtx.drawImage(fImg, -16, -16, 128, 128);
-                ctx.drawImage(bgBlur, 0, 0, sW, sH);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+                // Warm vintage newsprint stock
+                ctx.fillStyle = '#f3efe6';
                 ctx.fillRect(0, 0, sW, sH);
 
-                // 2. Floating Frosted Glass Card with crisp specular border
+                // Subtle newsprint paper fiber grain
                 ctx.save();
-                ctx.shadowColor = `rgba(0, 0, 0, ${0.36 * shadowMultiplier})`;
-                ctx.shadowBlur = shortEdge * 0.06 * scale * shadowMultiplier;
-                ctx.shadowOffsetY = shortEdge * 0.022 * scale * shadowMultiplier;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
-                ctx.fillRect(cX, cY, cW, cH);
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.fillStyle = app.createFilmGrainPattern(ctx);
+                ctx.globalAlpha = 0.22;
+                ctx.fillRect(0, 0, sW, sH);
                 ctx.restore();
 
-                // Secondary subtle translucent glass fill + diagonal specular sheen + luminous top edge
-                ctx.fillStyle = 'rgba(18, 18, 22, 0.32)';
-                ctx.fillRect(cX, cY, cW, cH);
-                const sheen = ctx.createLinearGradient(cX, cY, cX + cW, cY + cH);
-                sheen.addColorStop(0, 'rgba(255, 255, 255, 0.14)');
-                sheen.addColorStop(0.45, 'rgba(255, 255, 255, 0.03)');
-                sheen.addColorStop(1, 'rgba(255, 255, 255, 0.08)');
-                ctx.fillStyle = sheen;
-                ctx.fillRect(cX, cY, cW, cH);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
-                ctx.lineWidth = Math.max(1, shortEdge * 0.0016 * scale);
-                ctx.strokeRect(cX, cY, cW, cH);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.62)';
+                const ink = '#1c1917';
+                const inkMuted = '#57534e';
+
+                // Top broadsheet masthead border
+                let curY = pad * 0.85;
+                ctx.strokeStyle = ink;
+                ctx.lineWidth = Math.max(1.5, scale * 1.6);
                 ctx.beginPath();
-                ctx.moveTo(cX, cY); ctx.lineTo(cX + cW, cY);
+                ctx.moveTo(pad, curY); ctx.lineTo(pad + innerW, curY);
                 ctx.stroke();
 
-                // 3. Crisp inset photograph
-                ctx.drawImage(fImg, iX, iY, iW, iH);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-                ctx.lineWidth = Math.max(0.8, scale * 0.8);
-                ctx.strokeRect(iX, iY, iW, iH);
+                // Masthead title
+                curY += fBase * 1.0;
+                ctx.fillStyle = ink;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.font = `700 ${fBase * 3.55}px "Cormorant Garamond", "Noto Serif SC", Georgia, serif`;
+                setTrack(fBase * 0.24);
+                ctx.fillText('THE VISUAL CHRONICLE', sW / 2, curY);
+                setTrack(0);
 
-                // 4. Glass Card Footer Info
-                if (matMultiplier > 0.35) {
-                    const fBase = shortEdge * 0.0145 * scale;
-                    const footMidY = iY + iH + (cY + cH - (iY + iH)) * 0.5;
-                    ctx.textBaseline = 'middle';
+                // Double broadsheet rule + dateline bar
+                curY += fBase * 4.25;
+                ctx.strokeStyle = ink;
+                ctx.lineWidth = Math.max(2, scale * 2.2);
+                ctx.beginPath();
+                ctx.moveTo(pad, curY); ctx.lineTo(pad + innerW, curY);
+                ctx.stroke();
 
-                    ctx.textAlign = 'left';
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
-                    ctx.font = `700 ${fBase * 1.05}px "Inter", sans-serif`;
-                    ctx.fillText(fitText((exifCamera || 'DIGITAL CAMERA').toUpperCase(), iW * 0.56), iX, footMidY - fBase * 0.65);
+                const datelineH = fBase * 2.15;
+                const datelineMid = curY + datelineH * 0.54;
+                ctx.fillStyle = ink;
+                ctx.textBaseline = 'middle';
+                ctx.font = `600 ${fBase * 0.68}px "JetBrains Mono", monospace`;
+                setTrack(fBase * 0.12);
+                ctx.textAlign = 'left';
+                ctx.fillText('VOL. XIV · NO. 28', pad, datelineMid);
+                ctx.textAlign = 'center';
+                ctx.fillText((exifTime || 'NOVEMBER 20, 2026').toUpperCase(), sW / 2, datelineMid);
+                ctx.textAlign = 'right';
+                ctx.fillText('PHOTOGRAPHY EDITION', pad + innerW, datelineMid);
+                setTrack(0);
 
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.68)';
-                    ctx.font = `400 ${fBase * 0.78}px "JetBrains Mono", monospace`;
-                    ctx.fillText(fitText(`${(exifLens || 'LENS').toUpperCase()}  ·  ${exifParams || ''}`, iW * 0.62), iX, footMidY + fBase * 0.75);
+                curY += datelineH;
+                ctx.lineWidth = Math.max(1, scale * 1.0);
+                ctx.beginPath();
+                ctx.moveTo(pad, curY); ctx.lineTo(pad + innerW, curY);
+                ctx.stroke();
+                ctx.lineWidth = Math.max(0.75, scale * 0.7);
+                ctx.beginPath();
+                ctx.moveTo(pad, curY + fBase * 0.26); ctx.lineTo(pad + innerW, curY + fBase * 0.26);
+                ctx.stroke();
 
-                    ctx.textAlign = 'right';
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                    ctx.font = `600 ${fBase * 0.78}px "JetBrains Mono", monospace`;
-                    ctx.fillText((textRight || '© XIANGVISUALS').toUpperCase(), iX + iW, footMidY + fBase * 0.75);
+                // Lead Headline
+                curY += fBase * 1.1;
+                ctx.fillStyle = ink;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.font = `700 ${fBase * 2.45}px "Cormorant Garamond", "Noto Serif SC", Georgia, serif`;
+                ctx.fillText(fitText((textLeft || 'A Quiet Study in Light & Shadow'), innerW), pad, curY);
 
-                    if (imgData.palette && imgData.palette.length > 0) {
-                        const dotR = fBase * 0.42, dotGap = fBase * 0.35;
-                        imgData.palette.slice(0, 4).forEach((c, idx) => {
-                            const cx = iX + iW - dotR - idx * (dotR * 2 + dotGap);
-                            const cy = footMidY - fBase * 0.68;
-                            ctx.fillStyle = c.rgbStr || c.hex;
-                            ctx.beginPath();
-                            ctx.arc(cx, cy, dotR, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-                            ctx.lineWidth = Math.max(0.7, scale * 0.6);
-                            ctx.stroke();
-                        });
-                    }
+                // Sub-deck line
+                curY += fBase * 2.85;
+                ctx.fillStyle = inkMuted;
+                ctx.font = `italic 500 ${fBase * 1.05}px "Cormorant Garamond", "Noto Serif SC", Georgia, serif`;
+                ctx.fillText(fitText(`Field Dispatch — ${(exifCamera || 'Optical Camera').toUpperCase()}  ·  ${(exifLens || 'Prime Lens').toUpperCase()}`, innerW), pad, curY);
+
+                // Main Broadsheet Photograph
+                curY += fBase * 1.85;
+                const footerH = baseH * 0.155 * scale;
+                const photoH = sH - curY - footerH - pad * 0.55;
+                const photoW = innerW;
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(pad, curY, photoW, photoH);
+                ctx.clip();
+                const imgRatio = imgW / imgH;
+                const boxRatio = photoW / photoH;
+                let drawW = photoW, drawH = photoH, drawX = pad, drawY = curY;
+                if (imgRatio > boxRatio) {
+                    drawW = photoH * imgRatio;
+                    drawX = pad - (drawW - photoW) / 2;
+                } else {
+                    drawH = photoW / imgRatio;
+                    drawY = curY - (drawH - photoH) / 2;
                 }
+                const fImg = app.getFilteredImage(imgData, drawW, drawH, bwAmount, invertAmount);
+                ctx.drawImage(fImg, drawX, drawY, drawW, drawH);
+
+                if (grainAmount > 0) {
+                    ctx.globalCompositeOperation = 'overlay';
+                    ctx.fillStyle = app.createFilmGrainPattern(ctx);
+                    ctx.globalAlpha = Math.min(0.42, grainAmount * 0.9);
+                    ctx.fillRect(pad, curY, photoW, photoH);
+                }
+                ctx.restore();
+
+                // Crisp broadsheet ink frame around photo
+                ctx.strokeStyle = ink;
+                ctx.lineWidth = Math.max(1.2, scale * 1.2);
+                ctx.strokeRect(pad, curY, photoW, photoH);
+
+                // 2-Column Editorial Footer beneath photo
+                const footTop = curY + photoH + fBase * 1.15;
+                const footBot = sH - pad * 0.85;
+                const colSplitX = pad + innerW * 0.54;
+
+                // Vertical column divider
+                ctx.strokeStyle = 'rgba(28, 25, 23, 0.35)';
+                ctx.lineWidth = Math.max(0.8, scale * 0.8);
+                ctx.beginPath();
+                ctx.moveTo(colSplitX, footTop);
+                ctx.lineTo(colSplitX, footBot - fBase * 1.4);
+                ctx.stroke();
+
+                // Left column: Figure caption & technical telemetry
+                const c1MaxW = (colSplitX - pad) - fBase * 1.4;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = ink;
+                ctx.font = `700 ${fBase * 0.74}px "JetBrains Mono", monospace`;
+                ctx.fillText('FIG. 01 — TECHNICAL TELEMETRY', pad, footTop);
+
+                ctx.fillStyle = inkMuted;
+                ctx.font = `500 ${fBase * 0.78}px "JetBrains Mono", monospace`;
+                ctx.fillText(fitText(exifParams || '35mm   f/2.0   1/250s   ISO 400', c1MaxW), pad, footTop + fBase * 1.35);
+                ctx.font = `400 ${fBase * 0.7}px "JetBrains Mono", monospace`;
+                ctx.fillText(fitText(`COORDS: ${imgData.location || "38° 55' 00\" N  121° 38' 00\" E"}`, c1MaxW), pad, footTop + fBase * 2.7);
+                ctx.fillText(fitText(`FORMAT: ${imgData.width}×${imgData.height}PX  ·  ${imgData.colorProfile || 'P3'}`, c1MaxW), pad, footTop + fBase * 3.95);
+
+                // Right column: Archival press note
+                const c2X = colSplitX + fBase * 1.4;
+                const c2MaxW = (pad + innerW) - c2X;
+                ctx.fillStyle = ink;
+                ctx.font = `700 ${fBase * 0.74}px "JetBrains Mono", monospace`;
+                ctx.fillText('PRESS ARCHIVE NOTE', c2X, footTop);
+
+                ctx.fillStyle = inkMuted;
+                ctx.font = `italic 500 ${fBase * 0.98}px "Cormorant Garamond", "Noto Serif SC", Georgia, serif`;
+                ctx.fillText(fitText(`"${textLeft || 'Untitled'}" — Archival Press Proof`, c2MaxW), c2X, footTop + fBase * 1.3);
+                ctx.font = `400 ${fBase * 0.7}px "JetBrains Mono", monospace`;
+                ctx.fillText(fitText(`OPTICS: ${(exifCamera || 'CAMERA').toUpperCase()}`, c2MaxW), c2X, footTop + fBase * 2.75);
+                ctx.fillText(fitText(`LENS: ${(exifLens || 'STANDARD').toUpperCase()}`, c2MaxW), c2X, footTop + fBase * 3.95);
+
+                // Bottom broadsheet folio rule
+                ctx.strokeStyle = ink;
+                ctx.lineWidth = Math.max(1.2, scale * 1.2);
+                ctx.beginPath();
+                ctx.moveTo(pad, footBot); ctx.lineTo(pad + innerW, footBot);
+                ctx.stroke();
             };
 
         // 23. 电影宽银幕字幕 (2.39:1 CINEMA SCOPE - NEW)
@@ -1599,7 +1629,7 @@ window.XiangTemplates = {
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.42)';
                     ctx.font = `400 ${fBase * 0.52}px "JetBrains Mono", monospace`;
                     setTrack(fBase * 0.22);
-                    ctx.fillText(`${(textRight || '© XIANGVISUALS').toUpperCase()}  ·  ${(exifTime || '2026').toUpperCase()}`, sW / 2, botMidY + fBase * 0.92);
+                    ctx.fillText(`${(exifLens || 'ANAMORPHIC LENS').toUpperCase()}  ·  ${(exifTime || '2026').toUpperCase()}`, sW / 2, botMidY + fBase * 0.92);
                     setTrack(0);
                 }
             };
@@ -1674,7 +1704,7 @@ window.XiangTemplates = {
                     ctx.fillStyle = '#71717a';
                     ctx.font = `600 ${fBase * 0.62}px "JetBrains Mono", monospace`;
                     setTrack(fBase * 0.12);
-                    ctx.fillText(`CAT. 01  //  ${(textRight || 'XIANGVISUALS').replace('©', '').trim().toUpperCase()}`, cx, cardY + fBase * 0.9);
+                    ctx.fillText('CAT. 01  //  ARCHIVAL EDITION', cx, cardY + fBase * 0.9);
                     setTrack(0);
 
                     ctx.fillStyle = '#0a0a0a';
@@ -1727,8 +1757,7 @@ window.XiangTemplates = {
                 ctx.textAlign = 'center';
                 ctx.font = `700 ${fBase * 3.85}px "Cormorant Garamond", "Noto Serif SC", serif`;
                 setTrack(fBase * 0.35);
-                const mastName = (textRight || 'XIANGVISUALS').replace('©', '').trim().toUpperCase();
-                ctx.fillText(fitText(mastName, innerW), sW / 2, mastY);
+                ctx.fillText('MONOGRAPH', sW / 2, mastY);
                 setTrack(0);
 
                 // Architectural double rule
@@ -1974,7 +2003,7 @@ window.XiangTemplates = {
                     ctx.fillText(fitText(exifParams || '24mm f/2.8 1/125s ISO 400', rMaxW), splitX + bpPad, boxY + bpPad * 0.85);
                     ctx.fillStyle = '#7dd3fc';
                     ctx.font = `400 ${fBase * 0.7}px "JetBrains Mono", monospace`;
-                    ctx.fillText(fitText(`${(exifTime || '2026').toUpperCase()}  ·  ${(textRight || '© XIANGVISUALS').toUpperCase()}`, rMaxW), splitX + bpPad, boxY + bpPad * 2.55);
+                    ctx.fillText(fitText(`${(exifTime || '2026').toUpperCase()}  ·  OPTICAL ARCHIVE`, rMaxW), splitX + bpPad, boxY + bpPad * 2.55);
                 }
             };
 

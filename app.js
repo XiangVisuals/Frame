@@ -916,10 +916,10 @@ class AppController {
     }
 
     updateControlsVisibility(style) {
-        const isFilm = style.startsWith('film') || style === 'halation_lab' || style === 'cinema_scope' || style === 'ccd_timestamp';
+        const isFilm = style.startsWith('film') || style === 'halation_lab' || style === 'cinema_scope' || style === 'ccd_timestamp' || style === 'newspaper_press';
         const isVector = style === 'vector_field';
         const hasWall = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'ccd_timestamp'].includes(style);
-        const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'aura_blur', 'glass_card_blur', 'gallery_placard', 'ins_45_story'].includes(style);
+        const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story'].includes(style);
 
         document.getElementById('section-vector').style.display = isVector ? 'block' : 'none';
         document.getElementById('ctrl-grain').style.display = isFilm ? 'block' : 'none';
@@ -1366,7 +1366,7 @@ class AppController {
         this.state.isProcessing = true;
         this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
 
-        const stylesToGen = ['ins_45_story', 'xhs_editorial', 'glass_card_blur', 'magazine_cover', 'ccd_timestamp', 'exif_palette', 'editorial_magazine', 'cinema_scope', 'gallery_passepartout', 'swiss_grid'];
+        const stylesToGen = ['ins_45_story', 'xhs_editorial', 'newspaper_press', 'magazine_cover', 'ccd_timestamp', 'exif_palette', 'editorial_magazine', 'cinema_scope', 'gallery_passepartout', 'swiss_grid'];
         const totalTasks = this.state.images.length * stylesToGen.length;
         let currentTask = 0;
 
