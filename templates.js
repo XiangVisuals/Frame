@@ -262,266 +262,244 @@ window.XiangTemplates = {
                 }
             };
 
-        // 4. 光之切片 · 棱镜光谱档案 (PRISM SLIT-SCAN OPTICS — 独创艺术版式)
-        } else if (style === 'prism_slit') {
+        // 4. 黑胶唱片封套 · 12" LP (VINYL RECORD SLEEVE — 独创立体艺术版式)
+        } else if (style === 'vinyl_record') {
             wallPaddingX = 0; wallPaddingY = 0;
-            const padX = shortEdge * 0.085 * matMultiplier;
-            const padTop = shortEdge * 0.105 * matMultiplier;
-            const padBot = shortEdge * 0.255 * matMultiplier;
-            const prismGap = shortEdge * 0.024 * Math.max(0.6, matMultiplier);
-            const prismW = shortEdge * 0.072 * Math.max(0.65, matMultiplier);
-            const rightTickSpace = shortEdge * 0.042 * Math.max(0.6, matMultiplier);
-
-            sceneW = padX + imgW + prismGap + prismW + rightTickSpace + padX * 0.72;
-            sceneH = padTop + imgH + padBot;
+            const sleeve = 1400;
+            const discR = sleeve * 0.475;
+            const protrude = discR * 0.88; // ~44% of disc emerging from sleeve
+            const padX = sleeve * 0.16 * Math.min(1.5, Math.max(0.55, matMultiplier));
+            const padY = sleeve * 0.19 * Math.min(1.5, Math.max(0.55, matMultiplier));
+            sceneW = sleeve + protrude + padX * 2;
+            sceneH = sleeve + padY * 2;
 
             drawLogic = (scale) => {
                 const sW = sceneW * scale, sH = sceneH * scale;
-                const iX = padX * scale, iY = padTop * scale, iW = imgW * scale, iH = imgH * scale;
-                const sGap = prismGap * scale, sPrismW = prismW * scale;
-                const sTop = padTop * scale, sBot = padBot * scale;
-                const pX = iX + iW + sGap;
+                const sSleeve = sleeve * scale;
+                const sDiscR = discR * scale;
+                const sX = padX * scale;
+                const sY = padY * scale;
+                const discCX = sX + sSleeve + protrude * scale - sDiscR;
+                const discCY = sY + sSleeve * 0.5;
 
-                const isDark = wallColor === '#0a0a0a';
-                const bg = isDark ? '#0b0b0e' : (wallColor === '#ffffff' ? '#f8f7f3' : wallColor);
-                const ink = isDark ? '#f4f4f5' : '#0a0a0a';
-                const inkSub = isDark ? '#a1a1aa' : '#52525b';
-                const inkMute = isDark ? '#71717a' : '#8a8a93';
-                const ruleCol = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(10,10,10,0.12)';
-
-                ctx.fillStyle = bg;
+                // 1. Studio Wall Backdrop with subtle gallery overhead light gradient
+                const isDarkWall = wallColor === '#0a0a0a';
+                const baseWall = isDarkWall ? '#101013' : (wallColor === '#ffffff' ? '#f2f1ed' : wallColor);
+                ctx.fillStyle = baseWall;
                 ctx.fillRect(0, 0, sW, sH);
 
-                // 1. Main Photograph with subtle gallery lift shadow
-                const fImg = app.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
-                ctx.save();
-                if (shadowMultiplier > 0) {
-                    ctx.shadowColor = isDark ? `rgba(0,0,0,${0.55 * shadowMultiplier})` : `rgba(0,0,0,${0.1 * shadowMultiplier})`;
-                    ctx.shadowBlur = shortEdge * 0.032 * scale * shadowMultiplier;
-                    ctx.shadowOffsetY = shortEdge * 0.012 * scale * shadowMultiplier;
+                const wallLight = ctx.createRadialGradient(sW * 0.45, sH * 0.25, sSleeve * 0.1, sW * 0.5, sH * 0.5, Math.max(sW, sH) * 0.85);
+                if (isDarkWall) {
+                    wallLight.addColorStop(0, 'rgba(255, 255, 255, 0.06)');
+                    wallLight.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
+                } else {
+                    wallLight.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+                    wallLight.addColorStop(1, 'rgba(0, 0, 0, 0.06)');
                 }
-                ctx.drawImage(fImg, iX, iY, iW, iH);
+                ctx.fillStyle = wallLight;
+                ctx.fillRect(0, 0, sW, sH);
+
+                // 2. 12-Inch Glossy Black Vinyl Disc (emerging from right side of sleeve)
+                ctx.save();
+                // Realistic cast shadow of the vinyl disc onto the studio surface
+                ctx.shadowColor = isDarkWall ? `rgba(0, 0, 0, ${0.75 * shadowMultiplier})` : `rgba(0, 0, 0, ${0.26 * shadowMultiplier})`;
+                ctx.shadowBlur = sSleeve * 0.055 * shadowMultiplier;
+                ctx.shadowOffsetX = sSleeve * 0.014 * shadowMultiplier;
+                ctx.shadowOffsetY = sSleeve * 0.026 * shadowMultiplier;
+                ctx.fillStyle = '#0c0c0e';
+                ctx.beginPath();
+                ctx.arc(discCX, discCY, sDiscR, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.restore();
 
-                ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(10,10,10,0.14)';
-                ctx.lineWidth = Math.max(1, scale * 0.9);
-                ctx.strokeRect(iX, iY, iW, iH);
+                // Clip inside vinyl disc for grooves, anisotropic sheen & center label
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(discCX, discCY, sDiscR, 0, Math.PI * 2);
+                ctx.clip();
 
-                // 2. Real-Time Optical Slit-Scan Light Spectrum Ribbon (sampled row-by-row from photo)
-                try {
-                    const sRows = 128, sCols = 24;
-                    const sampleCvs = document.createElement('canvas');
-                    sampleCvs.width = sCols; sampleCvs.height = sRows;
-                    const sCtx = sampleCvs.getContext('2d', { willReadFrequently: true });
-                    sCtx.drawImage(fImg, 0, 0, sCols, sRows);
-                    const px = sCtx.getImageData(0, 0, sCols, sRows).data;
+                // Deep PVC vinyl radial base
+                const pvcGrad = ctx.createRadialGradient(discCX, discCY, sDiscR * 0.28, discCX, discCY, sDiscR);
+                pvcGrad.addColorStop(0, '#16161a');
+                pvcGrad.addColorStop(0.55, '#0b0b0d');
+                pvcGrad.addColorStop(0.95, '#131317');
+                pvcGrad.addColorStop(1, '#26262c');
+                ctx.fillStyle = pvcGrad;
+                ctx.fillRect(discCX - sDiscR, discCY - sDiscR, sDiscR * 2, sDiscR * 2);
 
-                    const rowR = new Float32Array(sRows);
-                    const rowG = new Float32Array(sRows);
-                    const rowB = new Float32Array(sRows);
-
-                    for (let y = 0; y < sRows; y++) {
-                        let rSum = 0, gSum = 0, bSum = 0, wSum = 0;
-                        for (let x = 0; x < sCols; x++) {
-                            const idx = (y * sCols + x) * 4;
-                            const r = px[idx], g = px[idx + 1], b = px[idx + 2];
-                            const maxC = Math.max(r, g, b), minC = Math.min(r, g, b);
-                            // Weight slightly toward richer chromatic pixels so light signature stays luminous
-                            const satWeight = 1 + ((maxC - minC) / 255) * 1.4;
-                            rSum += r * satWeight; gSum += g * satWeight; bSum += b * satWeight;
-                            wSum += satWeight;
-                        }
-                        rowR[y] = rSum / wSum;
-                        rowG[y] = gSum / wSum;
-                        rowB[y] = bSum / wSum;
-                    }
-
-                    // 3-pass vertical smoothing for liquid optical dispersion transition
-                    const smooth = (arr) => {
-                        const tmp = new Float32Array(arr.length);
-                        for (let pass = 0; pass < 3; pass++) {
-                            for (let y = 0; y < arr.length; y++) {
-                                const ym = Math.max(0, y - 1), yp = Math.min(arr.length - 1, y + 1);
-                                tmp[y] = arr[ym] * 0.25 + arr[y] * 0.5 + arr[yp] * 0.25;
-                            }
-                            arr.set(tmp);
-                        }
-                    };
-                    smooth(rowR); smooth(rowG); smooth(rowB);
-
-                    const stripCvs = document.createElement('canvas');
-                    stripCvs.width = 1; stripCvs.height = sRows;
-                    const stCtx = stripCvs.getContext('2d');
-                    const stImg = stCtx.createImageData(1, sRows);
-                    for (let y = 0; y < sRows; y++) {
-                        const o = y * 4;
-                        // Gentle vibrancy lift (+12% saturation) for optical prism glow
-                        const r = rowR[y], g = rowG[y], b = rowB[y];
-                        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-                        stImg.data[o]     = Math.max(0, Math.min(255, Math.round(lum + (r - lum) * 1.18)));
-                        stImg.data[o + 1] = Math.max(0, Math.min(255, Math.round(lum + (g - lum) * 1.18)));
-                        stImg.data[o + 2] = Math.max(0, Math.min(255, Math.round(lum + (b - lum) * 1.18)));
-                        stImg.data[o + 3] = 255;
-                    }
-                    stCtx.putImageData(stImg, 0, 0);
-
-                    ctx.save();
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
-                    ctx.drawImage(stripCvs, pX, iY, sPrismW, iH);
-
-                    // Cylindrical optical glass prism refraction sheen
-                    const glass = ctx.createLinearGradient(pX, iY, pX + sPrismW, iY);
-                    glass.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
-                    glass.addColorStop(0.18, 'rgba(255, 255, 255, 0.06)');
-                    glass.addColorStop(0.55, 'rgba(0, 0, 0, 0.0)');
-                    glass.addColorStop(0.86, 'rgba(255, 255, 255, 0.12)');
-                    glass.addColorStop(1, 'rgba(0, 0, 0, 0.22)');
-                    ctx.fillStyle = glass;
-                    ctx.fillRect(pX, iY, sPrismW, iH);
-                    ctx.restore();
-
-                    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.22)' : 'rgba(10,10,10,0.18)';
-                    ctx.lineWidth = Math.max(1, scale * 0.85);
-                    ctx.strokeRect(pX, iY, sPrismW, iH);
-                } catch (e) {}
-
-                if (matMultiplier > 0.35) {
-                    const fBase = shortEdge * 0.0142 * scale;
-                    const contentRight = pX + sPrismW;
-
-                    // 3. Wavelength Calibration Ticks flanking right edge of prism ribbon
-                    const tickX = contentRight + fBase * 0.45;
-                    const tickSteps = 16;
-                    ctx.strokeStyle = ruleCol;
-                    ctx.lineWidth = Math.max(0.75, scale * 0.75);
+                // Anisotropic studio specular light reflections (angled bow-tie sheen across vinyl grooves)
+                ctx.save();
+                ctx.translate(discCX, discCY);
+                ctx.rotate(-Math.PI * 0.22);
+                const drawSheenWedge = (angleStart, angleEnd, alpha) => {
+                    const g = ctx.createRadialGradient(0, 0, sDiscR * 0.32, 0, 0, sDiscR);
+                    g.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.5})`);
+                    g.addColorStop(0.55, `rgba(255, 255, 255, ${alpha})`);
+                    g.addColorStop(0.92, `rgba(255, 255, 255, ${alpha * 0.7})`);
+                    g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    ctx.fillStyle = g;
                     ctx.beginPath();
-                    for (let t = 0; t <= tickSteps; t++) {
-                        const ty = iY + (t / tickSteps) * iH;
-                        const isMajor = t === 0 || t === tickSteps / 2 || t === tickSteps;
-                        ctx.moveTo(tickX, ty);
-                        ctx.lineTo(tickX + (isMajor ? fBase * 0.75 : fBase * 0.38), ty);
-                    }
-                    ctx.stroke();
-
-                    ctx.fillStyle = inkMute;
-                    ctx.font = `500 ${fBase * 0.56}px "JetBrains Mono", monospace`;
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('380nm', tickX + fBase * 0.95, iY + fBase * 0.2);
-                    ctx.fillText('550nm', tickX + fBase * 0.95, iY + iH * 0.5);
-                    ctx.fillText('740nm', tickX + fBase * 0.95, iY + iH - fBase * 0.2);
-
-                    // 4. Top Curatorial Optical Header
-                    const topRuleY = iY - sTop * 0.26;
-                    ctx.strokeStyle = ruleCol;
-                    ctx.lineWidth = Math.max(0.8, scale * 0.8);
-                    ctx.beginPath();
-                    ctx.moveTo(iX, topRuleY);
-                    ctx.lineTo(contentRight, topRuleY);
-                    ctx.stroke();
-
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillStyle = inkMute;
-                    ctx.font = `600 ${fBase * 0.68}px "JetBrains Mono", monospace`;
-                    setTrack(fBase * 0.16);
-                    ctx.textAlign = 'left';
-                    ctx.fillText('OPTICAL SLIT-SCAN  //  SPECTRAL PLATE', iX, topRuleY - fBase * 0.45);
-                    ctx.textAlign = 'right';
-                    ctx.fillText((exifTime || '2026 ARCHIVE').toUpperCase(), contentRight, topRuleY - fBase * 0.45);
-                    setTrack(0);
-
-                    // 5. Bottom Colophon: Typography + Live Parametric 8-Blade Aperture Iris
-                    const botY = iY + iH + sBot * 0.22;
-                    const irisR = Math.min(sBot * 0.26, fBase * 2.55);
-                    const irisCX = contentRight - irisR;
-                    const irisCY = botY + fBase * 2.05;
-                    const leftMaxW = Math.max(fBase * 10, (irisCX - irisR - fBase * 2.2) - iX);
-
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'top';
-                    ctx.fillStyle = ink;
-                    ctx.font = `italic 600 ${fBase * 1.85}px "Cormorant Garamond", "Noto Serif SC", serif`;
-                    ctx.fillText(fitText(textLeft || 'Refraction of Light', leftMaxW), iX, botY - fBase * 0.25);
-
-                    ctx.fillStyle = ink;
-                    ctx.font = `600 ${fBase * 0.84}px "JetBrains Mono", monospace`;
-                    ctx.fillText(fitText(`${(exifCamera || 'OPTICAL CAMERA').toUpperCase()}  —  ${(exifLens || 'PRIME LENS').toUpperCase()}`, leftMaxW), iX, botY + fBase * 2.15);
-
-                    ctx.fillStyle = inkSub;
-                    ctx.font = `400 ${fBase * 0.78}px "JetBrains Mono", monospace`;
-                    ctx.fillText(fitText(`${exifParams || '35mm   f/2.0   1/250s   ISO 100'}   ·   ${imgData.location || ''}`, leftMaxW), iX, botY + fBase * 3.5);
-
-                    // Parse f-stop for authentic parametric iris opening
-                    const fMatch = (exifParams || '').match(/f\/(\d+(?:\.\d+)?)/i);
-                    const fStop = fMatch ? Math.max(1.2, Math.min(22, parseFloat(fMatch[1]))) : 2.8;
-                    const openRatio = Math.max(0.24, Math.min(0.72, 0.82 - Math.log2(fStop) * 0.14));
-                    const innerR = irisR * openRatio;
-
-                    // Draw precision 8-blade mechanical aperture iris
-                    ctx.save();
-                    ctx.translate(irisCX, irisCY);
-
-                    // Outer barrel ring & calibration ticks
-                    ctx.strokeStyle = ink;
-                    ctx.lineWidth = Math.max(1, fBase * 0.085);
-                    ctx.beginPath();
-                    ctx.arc(0, 0, irisR, 0, Math.PI * 2);
-                    ctx.stroke();
-
-                    ctx.strokeStyle = ruleCol;
-                    ctx.lineWidth = Math.max(0.75, fBase * 0.055);
-                    for (let k = 0; k < 16; k++) {
-                        const a = (k / 16) * Math.PI * 2;
-                        ctx.beginPath();
-                        ctx.moveTo(Math.cos(a) * (irisR * 1.08), Math.sin(a) * (irisR * 1.08));
-                        ctx.lineTo(Math.cos(a) * (irisR * 1.18), Math.sin(a) * (irisR * 1.18));
-                        ctx.stroke();
-                    }
-
-                    // 8 overlapping iris blades
-                    ctx.beginPath();
-                    ctx.arc(0, 0, irisR * 0.94, 0, Math.PI * 2);
-                    ctx.clip();
-
-                    const blades = 8;
-                    ctx.strokeStyle = isDark ? 'rgba(244,244,245,0.68)' : 'rgba(10,10,10,0.68)';
-                    ctx.lineWidth = Math.max(0.9, fBase * 0.065);
-                    for (let b = 0; b < blades; b++) {
-                        const a1 = (b / blades) * Math.PI * 2;
-                        const a2 = a1 + Math.PI * 0.42;
-                        const sx = Math.cos(a1) * innerR, sy = Math.sin(a1) * innerR;
-                        const ex = Math.cos(a2) * (irisR * 1.05), ey = Math.sin(a2) * (irisR * 1.05);
-                        ctx.beginPath();
-                        ctx.moveTo(sx, sy);
-                        ctx.lineTo(ex, ey);
-                        ctx.stroke();
-                    }
-
-                    // Inner octagonal aperture opening ring
-                    ctx.beginPath();
-                    for (let b = 0; b < blades; b++) {
-                        const a = (b / blades) * Math.PI * 2;
-                        const vx = Math.cos(a) * innerR, vy = Math.sin(a) * innerR;
-                        if (b === 0) ctx.moveTo(vx, vy);
-                        else ctx.lineTo(vx, vy);
-                    }
+                    ctx.moveTo(0, 0);
+                    ctx.arc(0, 0, sDiscR, angleStart, angleEnd);
                     ctx.closePath();
-                    ctx.strokeStyle = ink;
-                    ctx.lineWidth = Math.max(1, fBase * 0.075);
-                    ctx.stroke();
-                    ctx.restore();
+                    ctx.fill();
+                };
+                drawSheenWedge(-0.32, 0.32, 0.14);
+                drawSheenWedge(-0.12, 0.12, 0.12);
+                drawSheenWedge(Math.PI - 0.32, Math.PI + 0.32, 0.11);
+                drawSheenWedge(Math.PI - 0.12, Math.PI + 0.12, 0.09);
+                ctx.restore();
 
-                    // Aperture f-stop readout label beside the iris
-                    ctx.textAlign = 'right';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = ink;
-                    ctx.font = `700 ${fBase * 0.85}px "JetBrains Mono", monospace`;
-                    ctx.fillText(`f/${fStop.toFixed(1).replace(/\.0$/, '')}`, irisCX - irisR * 1.38, irisCY - fBase * 0.42);
-                    ctx.fillStyle = inkMute;
-                    ctx.font = `500 ${fBase * 0.58}px "JetBrains Mono", monospace`;
-                    ctx.fillText('IRIS APERTURE', irisCX - irisR * 1.38, irisCY + fBase * 0.58);
+                // Concentric micro-grooves + silent track separators
+                const innerGrooveR = sDiscR * 0.37;
+                const outerGrooveR = sDiscR * 0.965;
+                const grooveCount = 62;
+                for (let g = 0; g < grooveCount; g++) {
+                    const t = g / (grooveCount - 1);
+                    const r = innerGrooveR + t * (outerGrooveR - innerGrooveR);
+                    const isTrackGap = g === 18 || g === 39;
+                    ctx.beginPath();
+                    ctx.arc(discCX, discCY, r, 0, Math.PI * 2);
+                    if (isTrackGap) {
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.75)';
+                        ctx.lineWidth = Math.max(1.5, sDiscR * 0.008);
+                    } else {
+                        ctx.strokeStyle = (g % 2 === 0) ? 'rgba(255, 255, 255, 0.055)' : 'rgba(0, 0, 0, 0.42)';
+                        ctx.lineWidth = Math.max(0.6, sDiscR * 0.0022);
+                    }
+                    ctx.stroke();
                 }
+
+                // Crisp outer vinyl rim highlight
+                ctx.beginPath();
+                ctx.arc(discCX, discCY, sDiscR - Math.max(1, scale), 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+                ctx.lineWidth = Math.max(1, scale * 1.1);
+                ctx.stroke();
+
+                // 3. Center Record Label (colored dynamically from photo's dominant palette!)
+                const labelR = sDiscR * 0.335;
+                const pal = (imgData.palette && imgData.palette[0]) || { r: 185, g: 56, b: 42 };
+                const lblLuma = 0.299 * pal.r + 0.587 * pal.g + 0.114 * pal.b;
+                const lblInk = lblLuma > 155 ? '#111113' : '#fafaf9';
+                const lblSub = lblLuma > 155 ? 'rgba(17,17,19,0.68)' : 'rgba(250,250,249,0.74)';
+
+                ctx.fillStyle = `rgb(${pal.r}, ${pal.g}, ${pal.b})`;
+                ctx.beginPath();
+                ctx.arc(discCX, discCY, labelR, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Subtle pressed paper ring on center label
+                ctx.strokeStyle = lblLuma > 155 ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.28)';
+                ctx.lineWidth = Math.max(1, scale * 0.9);
+                ctx.beginPath();
+                ctx.arc(discCX, discCY, labelR * 0.86, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Center label typography (visible on the exposed right half!)
+                const lf = labelR * 0.125;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = lblInk;
+                ctx.font = `700 ${lf * 0.95}px "JetBrains Mono", monospace`;
+                ctx.fillText('SIDE A', discCX + labelR * 0.42, discCY - lf * 1.05);
+                ctx.fillStyle = lblSub;
+                ctx.font = `500 ${lf * 0.72}px "JetBrains Mono", monospace`;
+                ctx.fillText('33⅓ RPM', discCX + labelR * 0.42, discCY + lf * 0.1);
+                ctx.fillText('STEREO', discCX + labelR * 0.42, discCY + lf * 1.15);
+
+                // Center spindle hole (revealing wall color + dark rim)
+                const holeR = sDiscR * 0.044;
+                ctx.fillStyle = baseWall;
+                ctx.beginPath();
+                ctx.arc(discCX, discCY, holeR, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.45)';
+                ctx.lineWidth = Math.max(1, scale * 1.2);
+                ctx.stroke();
+                ctx.restore();
+
+                // 4. Square Cardboard Album Sleeve (cast shadow onto both wall AND vinyl disc!)
+                ctx.save();
+                ctx.shadowColor = isDarkWall ? `rgba(0, 0, 0, ${0.82 * shadowMultiplier})` : `rgba(0, 0, 0, ${0.3 * shadowMultiplier})`;
+                ctx.shadowBlur = sSleeve * 0.058 * shadowMultiplier;
+                ctx.shadowOffsetX = sSleeve * 0.018 * shadowMultiplier;
+                ctx.shadowOffsetY = sSleeve * 0.028 * shadowMultiplier;
+                ctx.fillStyle = '#18181b';
+                ctx.fillRect(sX, sY, sSleeve, sSleeve);
+                ctx.restore();
+
+                // Clip & cover-crop photograph cleanly into 1:1 album jacket
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(sX, sY, sSleeve, sSleeve);
+                ctx.clip();
+
+                const imgRatio = imgW / imgH;
+                let drawW = sSleeve, drawH = sSleeve, drawX = sX, drawY = sY;
+                if (imgRatio > 1) {
+                    drawW = sSleeve * imgRatio;
+                    drawX = sX - (drawW - sSleeve) / 2;
+                } else {
+                    drawH = sSleeve / imgRatio;
+                    drawY = sY - (drawH - sSleeve) / 2;
+                }
+                const fImg = app.getFilteredImage(imgData, drawW, drawH, bwAmount, invertAmount);
+                ctx.drawImage(fImg, drawX, drawY, drawW, drawH);
+
+                // Subtle cardboard sleeve surface sheen & physical ring-wear / spine crease
+                const spineX = sX + sSleeve * 0.024;
+                const spineGrad = ctx.createLinearGradient(sX, sY, spineX + sSleeve * 0.018, sY);
+                spineGrad.addColorStop(0, 'rgba(255, 255, 255, 0.16)');
+                spineGrad.addColorStop(0.42, 'rgba(0, 0, 0, 0.24)');
+                spineGrad.addColorStop(0.58, 'rgba(255, 255, 255, 0.14)');
+                spineGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = spineGrad;
+                ctx.fillRect(sX, sY, sSleeve * 0.045, sSleeve);
+
+                // Delicate soft dark scrim at bottom-left for razor-sharp cover typography
+                const scrim = ctx.createLinearGradient(sX, sY + sSleeve * 0.68, sX, sY + sSleeve);
+                scrim.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                scrim.addColorStop(1, 'rgba(0, 0, 0, 0.56)');
+                ctx.fillStyle = scrim;
+                ctx.fillRect(sX, sY + sSleeve * 0.68, sSleeve, sSleeve * 0.32);
+
+                if (grainAmount > 0) {
+                    ctx.globalCompositeOperation = 'overlay';
+                    ctx.fillStyle = app.createFilmGrainPattern(ctx);
+                    ctx.globalAlpha = Math.min(0.45, grainAmount * 0.85);
+                    ctx.fillRect(sX, sY, sSleeve, sSleeve);
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.globalAlpha = 1;
+                }
+
+                // Minimalist ECM / Art-House LP Cover Typography
+                const fBase = sSleeve * 0.019;
+                const covPad = sSleeve * 0.055;
+
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+                ctx.font = `italic 600 ${fBase * 2.25}px "Cormorant Garamond", "Noto Serif SC", serif`;
+                ctx.fillText(fitText(textLeft || 'Nocturne in Light', sSleeve * 0.72), sX + covPad, sY + sSleeve - covPad - fBase * 1.45);
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.74)';
+                ctx.font = `500 ${fBase * 0.72}px "JetBrains Mono", monospace`;
+                setTrack(fBase * 0.12);
+                ctx.fillText(fitText(`${(exifCamera || 'ANALOG STUDIO').toUpperCase()}  ·  ${exifParams || '35mm  f/2.0  1/250s'}`, sSleeve * 0.68), sX + covPad, sY + sSleeve - covPad);
+                setTrack(0);
+
+                // Right corner micro pressing mark
+                ctx.textAlign = 'right';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+                ctx.font = `600 ${fBase * 0.66}px "JetBrains Mono", monospace`;
+                ctx.fillText('12" LP · 33⅓', sX + sSleeve - covPad, sY + sSleeve - covPad);
+                ctx.restore();
+
+                // Crisp sleeve edge bevel
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+                ctx.lineWidth = Math.max(1, scale * 0.9);
+                ctx.strokeRect(sX, sY, sSleeve, sSleeve);
             };
 
         // 5. 博物馆斜切卡纸 (GALLERY PASSEPARTOUT)
