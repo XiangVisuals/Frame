@@ -988,7 +988,7 @@ window.XiangTemplates = {
         // 17. EXIF 原生 (EXIF RAW)
         } else if (style === 'exif') {
             wallPaddingX = 0; wallPaddingY = 0;
-            const padX = shortEdge * 0.06 * matMultiplier, padTop = shortEdge * 0.06 * matMultiplier, padBot = shortEdge * 0.25 * matMultiplier;
+            const padX = shortEdge * 0.06 * matMultiplier, padTop = shortEdge * 0.06 * matMultiplier, padBot = shortEdge * 0.28 * matMultiplier;
             sceneW = imgW + padX * 2; sceneH = imgH + padTop + padBot;
 
             drawLogic = (scale) => {
@@ -997,34 +997,17 @@ window.XiangTemplates = {
                 const fImg = app.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
                 ctx.drawImage(fImg, iX, iY, iW, iH);
 
-                ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = Math.max(1, shortEdge * 0.0018 * scale); ctx.strokeRect(iX, iY, iW, iH);
+                ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = Math.max(1, shortEdge * 0.002 * scale); ctx.strokeRect(iX, iY, iW, iH);
                 if (matMultiplier > 0.4) {
-                    const sBot = padBot * scale;
-                    const baseFontSize = shortEdge * 0.0155 * scale;
-                    const blockH = baseFontSize * 4.2;
-                    const textY = iY + iH + Math.max(baseFontSize * 1.4, (sBot - blockH) * 0.46);
-                    const leftMaxW = iW * 0.64;
-
+                    const textY = iY + iH + (shortEdge * 0.05 * scale * matMultiplier);
+                    const baseFontSize = shortEdge * 0.016 * scale;
                     ctx.fillStyle = '#0a0a0a'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-                    ctx.font = `700 ${baseFontSize * 1.15}px "JetBrains Mono", monospace`;
-                    ctx.fillText(fitText((exifCamera || 'DIGITAL CAMERA').toUpperCase(), leftMaxW), iX, textY);
-
-                    ctx.font = `400 ${baseFontSize * 0.84}px "JetBrains Mono", monospace`;
+                    ctx.font = `600 ${baseFontSize * 1.2}px "JetBrains Mono", monospace`;
+                    ctx.fillText((exifCamera || 'DIGITAL CAMERA').toUpperCase(), iX, textY);
+                    ctx.font = `400 ${baseFontSize * 0.85}px "JetBrains Mono", monospace`;
                     ctx.fillStyle = '#52525b';
-                    ctx.fillText(fitText((exifLens || 'STANDARD LENS').toUpperCase(), leftMaxW), iX, textY + baseFontSize * 2.05);
-                    ctx.fillText(fitText(exifParams || '50mm f/2.8 1/100s ISO100', leftMaxW), iX, textY + baseFontSize * 3.3);
-
-                    ctx.textAlign = 'right';
-                    ctx.fillStyle = '#0a0a0a';
-                    ctx.font = `600 ${baseFontSize * 0.86}px "JetBrains Mono", monospace`;
-                    ctx.fillText((textRight || '© XIANGVISUALS').toUpperCase(), iX + iW, textY + baseFontSize * 0.2);
-
-                    ctx.fillStyle = '#71717a';
-                    ctx.font = `400 ${baseFontSize * 0.78}px "JetBrains Mono", monospace`;
-                    ctx.fillText((exifTime || '2026').toUpperCase(), iX + iW, textY + baseFontSize * 2.05);
-                    ctx.fillStyle = '#a1a1aa';
-                    ctx.font = `400 ${baseFontSize * 0.7}px "JetBrains Mono", monospace`;
-                    ctx.fillText(`${imgData.width}×${imgData.height}PX`, iX + iW, textY + baseFontSize * 3.3);
+                    ctx.fillText((exifLens || 'STANDARD LENS').toUpperCase(), iX, textY + baseFontSize * 2.3);
+                    ctx.fillText((exifParams || '50mm f/2.8 1/100s ISO100'), iX, textY + baseFontSize * 3.5);
                 }
             };
 
