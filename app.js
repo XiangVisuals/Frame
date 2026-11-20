@@ -79,6 +79,7 @@ class AppController {
         this.dragInfo = { active: false, id: null, offsetX: 0, offsetY: 0, currX: 0, currY: 0 };
 
         this.initDOM();
+        if (this.dom.optProtectEnabled) this.dom.optProtectEnabled.checked = false;
         this.initColorSpace();
         this.restoreTheme();
         this.bindEvents();
@@ -348,13 +349,6 @@ class AppController {
                 const newStyle = target.dataset.style;
                 this.dom.styleBtns.forEach(b => b.classList.remove('active'));
                 target.classList.add('active');
-                // 选择“无框原图 · 防盗直出”时自动开启版权防盗水印
-                if (newStyle === 'raw_protect' && !this.state.protect.enabled) {
-                    this.state.protect.enabled = true;
-                    if (this.dom.optProtectEnabled) this.dom.optProtectEnabled.checked = true;
-                    this.updateProtectTelemetry();
-                    this.showToast('ANTI-THEFT PROTECT ENABLED // 已自动开启版权防盗水印', 'info');
-                }
                 this.updateSettings({ style: newStyle }, true);
             });
         });

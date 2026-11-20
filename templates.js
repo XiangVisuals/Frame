@@ -862,12 +862,12 @@ window.XiangTemplates = {
                 ctx.restore();
             };
 
-        // 13. 极简细线留白 (MINIMAL LINE)
+        // 13. 极简细线留白 (MINIMAL LINE — 纯净无字)
         } else if (style === 'minimal_line') {
             wallPaddingX = 0; wallPaddingY = 0;
-            const padX = shortEdge * 0.15 * matMultiplier;
-            const padTop = shortEdge * 0.22 * matMultiplier;
-            const padBot = shortEdge * 0.30 * matMultiplier;
+            const padX = shortEdge * 0.145 * matMultiplier;
+            const padTop = shortEdge * 0.21 * matMultiplier;
+            const padBot = shortEdge * 0.29 * matMultiplier;
             sceneW = imgW + padX * 2;
             sceneH = imgH + padTop + padBot;
 
@@ -880,18 +880,6 @@ window.XiangTemplates = {
                 ctx.strokeStyle = '#0a0a0a';
                 ctx.lineWidth = Math.max(1.2, shortEdge * 0.0018 * scale);
                 ctx.strokeRect(iX, iY, iW, iH);
-
-                if (matMultiplier > 0.45) {
-                    const fBase = shortEdge * 0.0115 * scale;
-                    const capY = iY + iH + padBot * scale * 0.36;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = '#52525b';
-                    ctx.font = `500 ${fBase}px "JetBrains Mono", monospace`;
-                    setTrack(fBase * 0.28);
-                    ctx.fillText(fitText(`${(textLeft || 'UNTITLED').toUpperCase()}  ·  ${(textRight || '© XIANGVISUALS').toUpperCase()}`, iW), sceneW * scale / 2, capY);
-                    setTrack(0);
-                }
             };
 
         // 14. 三联画廊海报 (TRIPTYCH WATERMARK)
@@ -969,6 +957,9 @@ window.XiangTemplates = {
                 ctx.shadowOffsetY = shortEdge * 0.022 * scale * shadowMultiplier;
                 ctx.fillStyle = '#faf8f3'; ctx.fillRect(pX, pY, pW, pH);
                 ctx.restore();
+                ctx.strokeStyle = 'rgba(10, 10, 10, 0.06)';
+                ctx.lineWidth = Math.max(1, scale * 0.8);
+                ctx.strokeRect(pX, pY, pW, pH);
 
                 const iX = pX + matX * scale, iY = pY + matTop * scale, iW = imgW * scale, iH = imgH * scale;
                 const fImg = app.getFilteredImage(imgData, iW, iH, bwAmount, invertAmount);
@@ -1008,8 +999,10 @@ window.XiangTemplates = {
 
                 ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = Math.max(1, shortEdge * 0.0018 * scale); ctx.strokeRect(iX, iY, iW, iH);
                 if (matMultiplier > 0.4) {
-                    const textY = iY + iH + (shortEdge * 0.048 * scale * matMultiplier);
+                    const sBot = padBot * scale;
                     const baseFontSize = shortEdge * 0.0155 * scale;
+                    const blockH = baseFontSize * 4.2;
+                    const textY = iY + iH + Math.max(baseFontSize * 1.4, (sBot - blockH) * 0.46);
                     const leftMaxW = iW * 0.64;
 
                     ctx.fillStyle = '#0a0a0a'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
@@ -1018,17 +1011,20 @@ window.XiangTemplates = {
 
                     ctx.font = `400 ${baseFontSize * 0.84}px "JetBrains Mono", monospace`;
                     ctx.fillStyle = '#52525b';
-                    ctx.fillText(fitText((exifLens || 'STANDARD LENS').toUpperCase(), leftMaxW), iX, textY + baseFontSize * 2.1);
-                    ctx.fillText(fitText(exifParams || '50mm f/2.8 1/100s ISO100', leftMaxW), iX, textY + baseFontSize * 3.35);
+                    ctx.fillText(fitText((exifLens || 'STANDARD LENS').toUpperCase(), leftMaxW), iX, textY + baseFontSize * 2.05);
+                    ctx.fillText(fitText(exifParams || '50mm f/2.8 1/100s ISO100', leftMaxW), iX, textY + baseFontSize * 3.3);
 
                     ctx.textAlign = 'right';
                     ctx.fillStyle = '#0a0a0a';
                     ctx.font = `600 ${baseFontSize * 0.86}px "JetBrains Mono", monospace`;
-                    ctx.fillText((textRight || '© XIANGVISUALS').toUpperCase(), iX + iW, textY + baseFontSize * 0.25);
+                    ctx.fillText((textRight || '© XIANGVISUALS').toUpperCase(), iX + iW, textY + baseFontSize * 0.2);
 
                     ctx.fillStyle = '#71717a';
                     ctx.font = `400 ${baseFontSize * 0.78}px "JetBrains Mono", monospace`;
-                    ctx.fillText((exifTime || '2026').toUpperCase(), iX + iW, textY + baseFontSize * 2.1);
+                    ctx.fillText((exifTime || '2026').toUpperCase(), iX + iW, textY + baseFontSize * 2.05);
+                    ctx.fillStyle = '#a1a1aa';
+                    ctx.font = `400 ${baseFontSize * 0.7}px "JetBrains Mono", monospace`;
+                    ctx.fillText(`${imgData.width}×${imgData.height}PX`, iX + iW, textY + baseFontSize * 3.3);
                 }
             };
 
@@ -1308,7 +1304,8 @@ window.XiangTemplates = {
 
                 if (matMultiplier > 0.35) {
                     const fBase = baseW * 0.0135 * scale;
-                    const footY = sH - padBot * 0.5;
+                    const photoBottom = drawY + drawH;
+                    const footY = photoBottom + Math.min((sH - photoBottom) * 0.5, padBot * 0.72);
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillStyle = isDarkWall ? '#f4f4f5' : '#0a0a0a';
@@ -1476,13 +1473,19 @@ window.XiangTemplates = {
                 ctx.fillRect(cX, cY, cW, cH);
                 ctx.restore();
 
-                // Secondary subtle translucent glass fill + luminous top/left edge
-                ctx.fillStyle = 'rgba(18, 18, 22, 0.34)';
+                // Secondary subtle translucent glass fill + diagonal specular sheen + luminous top edge
+                ctx.fillStyle = 'rgba(18, 18, 22, 0.32)';
+                ctx.fillRect(cX, cY, cW, cH);
+                const sheen = ctx.createLinearGradient(cX, cY, cX + cW, cY + cH);
+                sheen.addColorStop(0, 'rgba(255, 255, 255, 0.14)');
+                sheen.addColorStop(0.45, 'rgba(255, 255, 255, 0.03)');
+                sheen.addColorStop(1, 'rgba(255, 255, 255, 0.08)');
+                ctx.fillStyle = sheen;
                 ctx.fillRect(cX, cY, cW, cH);
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
                 ctx.lineWidth = Math.max(1, shortEdge * 0.0016 * scale);
                 ctx.strokeRect(cX, cY, cW, cH);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.58)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.62)';
                 ctx.beginPath();
                 ctx.moveTo(cX, cY); ctx.lineTo(cX + cW, cY);
                 ctx.stroke();
@@ -1631,9 +1634,17 @@ window.XiangTemplates = {
                 const iX = padX * scale, iY = padTop * scale, iW = imgW * scale, iH = imgH * scale;
                 const sBot = padBot * scale;
 
-                // Warm museum gallery wall
+                // Warm museum gallery wall + subtle overhead exhibition spotlight
                 ctx.fillStyle = wallColor === '#ffffff' ? '#efede7' : wallColor;
                 ctx.fillRect(0, 0, sW, sH);
+                if (wallColor !== '#0a0a0a') {
+                    const spot = ctx.createRadialGradient(sW / 2, iY * 0.4, sW * 0.05, sW / 2, sH * 0.45, Math.max(sW, sH) * 0.85);
+                    spot.addColorStop(0, 'rgba(255, 255, 255, 0.38)');
+                    spot.addColorStop(0.65, 'rgba(255, 255, 255, 0.0)');
+                    spot.addColorStop(1, 'rgba(0, 0, 0, 0.07)');
+                    ctx.fillStyle = spot;
+                    ctx.fillRect(0, 0, sW, sH);
+                }
 
                 // Framed artwork with realistic museum drop shadow
                 const frameThick = shortEdge * 0.014 * scale;
@@ -1771,6 +1782,9 @@ window.XiangTemplates = {
                 const fImg = app.getFilteredImage(imgData, drawW, drawH, bwAmount, invertAmount);
                 ctx.drawImage(fImg, drawX, drawY, drawW, drawH);
                 ctx.restore();
+                ctx.strokeStyle = 'rgba(10, 10, 10, 0.14)';
+                ctx.lineWidth = Math.max(1, scale * 0.85);
+                ctx.strokeRect(pad, photoY, innerW, photoH);
 
                 // Bottom editorial caption + minimalist barcode
                 const botY = photoY + photoH + fBase * 1.25;
