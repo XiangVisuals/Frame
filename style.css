@@ -548,6 +548,17 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; bac
 }
 .style-btn[data-style="newspaper_press"]:not(.active) .badge-tag { background: #1c1917; color: #f3efe6; }
 
+.style-btn[data-style="prism_slit"]:not(.active) {
+    background: linear-gradient(135deg, #0b0b0e 0%, #15151b 100%);
+    border-color: rgba(255, 255, 255, 0.16);
+    border-right: 3px solid transparent;
+    border-image: linear-gradient(180deg, #38bdf8 0%, #a78bfa 35%, #fb7185 70%, #fbbf24 100%) 1;
+}
+.style-btn[data-style="prism_slit"]:not(.active) .icon-wrapper { color: #e2e8f0; filter: drop-shadow(0 0 5px rgba(167, 139, 250, 0.6)); }
+.style-btn[data-style="prism_slit"]:not(.active) .title { color: #fafafa; }
+.style-btn[data-style="prism_slit"]:not(.active) .subtext { color: #a1a1aa; }
+.style-btn[data-style="prism_slit"]:not(.active) .badge-tag { background: rgba(167, 139, 250, 0.22); color: #ddd6fe; }
+
 .style-btn[data-style="cinema_scope"]:not(.active) {
     background: rgba(12, 12, 14, 0.94);
     border-color: rgba(255, 255, 255, 0.16);
@@ -759,7 +770,7 @@ body.dark-mode .tab-btn { color: #71717a !important; }
 body.dark-mode .tab-btn.bg-xv-black { background: #f4f4f5 !important; color: #09090b !important; }
 
 /* 深色模式下模版按钮：解决暗底黑色冲突与悬停/激活文字反色问题 */
-body.dark-mode .style-btn:not(.active):not([data-style^="film"]):not([data-style="halation_lab"]):not([data-style="cyanotype"]):not([data-style="vector_field"]):not([data-style="cinema_scope"]):not([data-style="ccd_timestamp"]):not([data-style="blueprint_spec"]) {
+body.dark-mode .style-btn:not(.active):not([data-style^="film"]):not([data-style="halation_lab"]):not([data-style="cyanotype"]):not([data-style="vector_field"]):not([data-style="cinema_scope"]):not([data-style="ccd_timestamp"]):not([data-style="blueprint_spec"]):not([data-style="prism_slit"]) {
     background: var(--glass-card) !important;
     border-color: var(--glass-border) !important;
 }
