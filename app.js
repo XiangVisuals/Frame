@@ -11,7 +11,7 @@ function triggerHaptic(type = 'light') {
     } catch(e) {}
 }
 
-// 2.6 秒五幕装裱开机动画逻辑
+// 五幕装裱开机动画逻辑（支持点击任意位置立即跳过）
 function runBootSequence() {
     const preloader = document.getElementById('bootPreloader');
     if (!preloader) return;
@@ -24,8 +24,15 @@ function runBootSequence() {
         document.body.classList.add('app-ready');
     };
 
-    setTimeout(finishBoot, 2600);
+    preloader.addEventListener('click', finishBoot, { once: true });
+    setTimeout(finishBoot, 2100);
 }
+
+const PROTECT_PRESETS = {
+    gallery:  { layout: 'adaptive', opacity: 15, centerFade: 60, size: 15, jitter: 32, blend: 'smart-luma', edgeAnchor: true,  microMesh: true, chroma: true },
+    social:   { layout: 'dense',    opacity: 20, centerFade: 42, size: 16, jitter: 40, blend: 'smart-luma', edgeAnchor: true,  microMesh: true, chroma: true },
+    proofing: { layout: 'dense',    opacity: 32, centerFade: 15, size: 22, jitter: 25, blend: 'difference', edgeAnchor: false, microMesh: true, chroma: false }
+};
 
 class AppController {
     constructor() {
@@ -45,6 +52,21 @@ class AppController {
                 hdrBoost: 0,
                 vectorCols: 70
             },
+            protect: {
+                enabled: false,
+                text: 'XIANGVISUALS',
+                layout: 'adaptive',
+                blend: 'smart-luma',
+                opacity: 15,
+                centerFade: 60,
+                size: 15,
+                jitter: 32,
+                edgeAnchor: true,
+                microMesh: true,
+                chroma: true,
+                lsb: true,
+                seed: Math.floor(Math.random() * 10000)
+            },
             isProcessing: false,
             grainPattern: null,
             supportsP3: false,
@@ -58,9 +80,11 @@ class AppController {
 
         this.initDOM();
         this.initColorSpace();
+        this.restoreTheme();
         this.bindEvents();
         this.initSortable();
         this.updateControlsVisibility(this.state.settings.style);
+        this.updateProtectTelemetry();
 
         window.addEventListener('resize', this.debounce(() => {
             this.handleResize();
@@ -89,9 +113,6 @@ class AppController {
             previewCanvas: $('previewCanvas'),
             controlPanel: $('controlPanel'),
             imgDimensions: $('imgDimensions'),
-            hudStyleName: $('hudStyleName'),
-            hudHdrBadge: $('hudHdrBadge'),
-            hudHdrText: $('hudHdrText'),
             inspectorColorSpace: $('inspectorColorSpace'),
             globalLoader: $('globalLoader'),
             loaderMainTitle: $('loaderMainTitle'),
@@ -130,7 +151,38 @@ class AppController {
             progressModal: $('progressModal'),
             progressBar: $('progressBar'),
             progressTitle: $('progressTitle'),
-            progressCount: $('progressCount')
+            progressCount: $('progressCount'),
+
+            // Status Dot & Drop Overlay
+            tabProtectDot: $('tabProtectDot'),
+            dropOverlay: $('dropOverlay'),
+
+            // Anti-Theft Copyright Watermark Studio
+            optProtectEnabled: $('optProtectEnabled'),
+            protectScoreTotal: $('protectScoreTotal'),
+            protectSecVal: $('protectSecVal'),
+            protectSecBar: $('protectSecBar'),
+            protectVisVal: $('protectVisVal'),
+            protectVisBar: $('protectVisBar'),
+            protectPresetBtns: document.querySelectorAll('.protect-preset-btn'),
+            protectText: $('protectText'),
+            protectLayout: $('protectLayout'),
+            protectBlend: $('protectBlend'),
+            optProtectEdge: $('optProtectEdge'),
+            optProtectMesh: $('optProtectMesh'),
+            optProtectChroma: $('optProtectChroma'),
+            optProtectLsb: $('optProtectLsb'),
+            protectOpacity: $('protectOpacity'),
+            protectOpacityVal: $('protectOpacityVal'),
+            protectCenterFade: $('protectCenterFade'),
+            protectCenterFadeVal: $('protectCenterFadeVal'),
+            protectSize: $('protectSize'),
+            protectSizeVal: $('protectSizeVal'),
+            protectJitter: $('protectJitter'),
+            protectJitterVal: $('protectJitterVal'),
+            btnProtectReseed: $('btnProtectReseed'),
+            verifyLsbInput: $('verifyLsbInput'),
+            verifyLsbResult: $('verifyLsbResult')
         };
     }
 
@@ -139,10 +191,11 @@ class AppController {
         try {
             this.ctx = this.dom.previewCanvas.getContext('2d', {
                 alpha: false,
+                willReadFrequently: true,
                 colorSpace: this.state.supportsP3 ? 'display-p3' : 'srgb'
             });
         } catch (e) {
-            this.ctx = this.dom.previewCanvas.getContext('2d', { alpha: false });
+            this.ctx = this.dom.previewCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
         }
     }
 
@@ -157,9 +210,19 @@ class AppController {
         }
     }
 
+    restoreTheme() {
+        try {
+            const saved = localStorage.getItem('xv-studio-theme');
+            if (saved === 'dark') this.toggleDarkMode(true);
+        } catch (e) {}
+    }
+
     toggleDarkMode(forceState = null) {
         this.state.darkMode = forceState !== null ? forceState : !this.state.darkMode;
         document.body.classList.toggle('dark-mode', this.state.darkMode);
+        try {
+            localStorage.setItem('xv-studio-theme', this.state.darkMode ? 'dark' : 'light');
+        } catch (e) {}
 
         const icon = this.dom.btnStudioTheme.querySelector('i');
         if (icon) {
@@ -257,16 +320,24 @@ class AppController {
             btn.addEventListener('click', (e) => this.switchToTab(1, e.currentTarget.dataset.tab));
         });
 
+        let dragCounter = 0;
+        document.body.addEventListener('dragenter', (e) => {
+            if (e.dataTransfer?.types?.includes('Files')) {
+                dragCounter++;
+                this.dom.dropOverlay?.classList.add('active');
+            }
+        });
         document.body.addEventListener('dragover', (e) => {
             e.preventDefault();
-            if (e.dataTransfer.types.includes('Files')) document.body.classList.add('opacity-80');
         });
-        document.body.addEventListener('dragleave', (e) => {
-            if (e.clientX === 0 || e.clientY === 0) document.body.classList.remove('opacity-80');
+        document.body.addEventListener('dragleave', () => {
+            dragCounter = Math.max(0, dragCounter - 1);
+            if (dragCounter === 0) this.dom.dropOverlay?.classList.remove('active');
         });
         document.body.addEventListener('drop', (e) => {
             e.preventDefault();
-            document.body.classList.remove('opacity-80');
+            dragCounter = 0;
+            this.dom.dropOverlay?.classList.remove('active');
             if (!this.state.isProcessing && e.dataTransfer.files.length > 0) this.handleFiles(e.dataTransfer.files);
         });
 
@@ -277,8 +348,12 @@ class AppController {
                 const newStyle = target.dataset.style;
                 this.dom.styleBtns.forEach(b => b.classList.remove('active'));
                 target.classList.add('active');
-                if (this.dom.hudStyleName) {
-                    this.dom.hudStyleName.textContent = newStyle.replace(/_/g, ' ').toUpperCase();
+                // 选择“无框原图 · 防盗直出”时自动开启版权防盗水印
+                if (newStyle === 'raw_protect' && !this.state.protect.enabled) {
+                    this.state.protect.enabled = true;
+                    if (this.dom.optProtectEnabled) this.dom.optProtectEnabled.checked = true;
+                    this.updateProtectTelemetry();
+                    this.showToast('ANTI-THEFT PROTECT ENABLED // 已自动开启版权防盗水印', 'info');
                 }
                 this.updateSettings({ style: newStyle }, true);
             });
@@ -361,40 +436,13 @@ class AppController {
         this.dom.btnDownloadAll.addEventListener('click', () => { triggerHaptic('medium'); this.downloadAll(); });
 
         // 交互式色卡微调器
-        const paletteContainer = document.getElementById('interactivePalette');
         const btnShufflePalette = document.getElementById('btnShufflePalette');
-
-        const renderPaletteEditor = () => {
-            const activeImg = this.getActiveImage();
-            if (!paletteContainer || !activeImg || !activeImg.palette) return;
-            paletteContainer.innerHTML = '';
-
-            activeImg.palette.forEach((colorObj, idx) => {
-                const wrap = document.createElement('div');
-                wrap.className = 'palette-chip-wrapper';
-                wrap.style.backgroundColor = colorObj.hex || colorObj.rgbStr;
-                wrap.innerHTML = `
-                    <input type="color" class="palette-chip-input" value="${colorObj.hex || '#334155'}">
-                    <span class="palette-chip-hex">${(colorObj.hex || '').replace('#', '')}</span>
-                `;
-                wrap.querySelector('input').addEventListener('input', (e) => {
-                    const hex = e.target.value.toUpperCase();
-                    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-                    activeImg.palette[idx] = { hex, r, g, b, rgbStr: `rgb(${r}, ${g}, ${b})` };
-                    wrap.style.backgroundColor = hex;
-                    wrap.querySelector('.palette-chip-hex').textContent = hex.replace('#', '');
-                    this.renderPreview(false);
-                });
-                paletteContainer.appendChild(wrap);
-            });
-        };
-
         btnShufflePalette?.addEventListener('click', () => {
             const activeImg = this.getActiveImage();
             if (!activeImg?.palette) return;
             triggerHaptic('light');
             activeImg.palette.push(activeImg.palette.shift());
-            renderPaletteEditor();
+            this.renderPaletteEditor();
             this.renderPreview(false);
         });
 
@@ -427,9 +475,110 @@ class AppController {
             });
         });
 
+        // =========================================================
+        // 版权防盗水印引擎交互绑定 (ANTI-THEFT PROTECT STUDIO)
+        // =========================================================
+        const syncProtectUI = () => {
+            const p = this.state.protect;
+            if (this.dom.protectOpacityVal) this.dom.protectOpacityVal.textContent = `${p.opacity}%`;
+            if (this.dom.protectCenterFadeVal) this.dom.protectCenterFadeVal.textContent = `${p.centerFade}%`;
+            if (this.dom.protectSizeVal) this.dom.protectSizeVal.textContent = `${(p.size / 10).toFixed(1)}%`;
+            if (this.dom.protectJitterVal) this.dom.protectJitterVal.textContent = `${p.jitter}%`;
+            this.updateProtectTelemetry();
+            this.renderPreview(false);
+        };
+
+        this.dom.optProtectEnabled?.addEventListener('change', (e) => {
+            triggerHaptic('light');
+            this.state.protect.enabled = e.target.checked;
+            syncProtectUI();
+            this.showToast(e.target.checked ? 'PROTECT LAYER ACTIVE // 版权防盗水印已启用' : 'PROTECT LAYER OFF // 已关闭防盗水印', 'info');
+        });
+
+        this.dom.protectPresetBtns?.forEach(btn => {
+            btn.addEventListener('click', () => {
+                triggerHaptic('light');
+                this.dom.protectPresetBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const preset = PROTECT_PRESETS[btn.dataset.preset];
+                if (!preset) return;
+                Object.assign(this.state.protect, preset);
+                if (!this.state.protect.enabled) {
+                    this.state.protect.enabled = true;
+                    if (this.dom.optProtectEnabled) this.dom.optProtectEnabled.checked = true;
+                }
+                if (this.dom.protectLayout) this.dom.protectLayout.value = preset.layout;
+                if (this.dom.protectBlend) this.dom.protectBlend.value = preset.blend;
+                if (this.dom.protectOpacity) this.dom.protectOpacity.value = preset.opacity;
+                if (this.dom.protectCenterFade) this.dom.protectCenterFade.value = preset.centerFade;
+                if (this.dom.protectSize) this.dom.protectSize.value = preset.size;
+                if (this.dom.protectJitter) this.dom.protectJitter.value = preset.jitter;
+                if (this.dom.optProtectEdge) this.dom.optProtectEdge.checked = preset.edgeAnchor;
+                if (this.dom.optProtectMesh) this.dom.optProtectMesh.checked = preset.microMesh;
+                if (this.dom.optProtectChroma) this.dom.optProtectChroma.checked = preset.chroma;
+                syncProtectUI();
+            });
+        });
+
+        this.dom.protectText?.addEventListener('input', this.debounce((e) => {
+            this.state.protect.text = e.target.value;
+            this.renderPreview(false);
+        }, 80));
+
+        this.dom.protectLayout?.addEventListener('change', (e) => { this.state.protect.layout = e.target.value; syncProtectUI(); });
+        this.dom.protectBlend?.addEventListener('change', (e) => { this.state.protect.blend = e.target.value; syncProtectUI(); });
+        this.dom.optProtectEdge?.addEventListener('change', (e) => { this.state.protect.edgeAnchor = e.target.checked; syncProtectUI(); });
+        this.dom.optProtectMesh?.addEventListener('change', (e) => { this.state.protect.microMesh = e.target.checked; syncProtectUI(); });
+        this.dom.optProtectChroma?.addEventListener('change', (e) => { this.state.protect.chroma = e.target.checked; syncProtectUI(); });
+        this.dom.optProtectLsb?.addEventListener('change', (e) => { this.state.protect.lsb = e.target.checked; syncProtectUI(); });
+
+        const bindProtectSlider = (el, key) => {
+            el?.addEventListener('input', (e) => {
+                this.state.protect[key] = parseInt(e.target.value, 10);
+                syncProtectUI();
+            });
+        };
+        bindProtectSlider(this.dom.protectOpacity, 'opacity');
+        bindProtectSlider(this.dom.protectCenterFade, 'centerFade');
+        bindProtectSlider(this.dom.protectSize, 'size');
+        bindProtectSlider(this.dom.protectJitter, 'jitter');
+
+        const doReseed = () => {
+            triggerHaptic('light');
+            this.state.protect.seed = Math.floor(Math.random() * 10000);
+            this.renderPreview(false);
+        };
+        this.dom.btnProtectReseed?.addEventListener('click', doReseed);
+
+        // LSB 盲水印溯源验真
+        this.dom.verifyLsbInput?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    const decoded = this.extractLsbFingerprint(img);
+                    const box = this.dom.verifyLsbResult;
+                    if (!box) return;
+                    box.classList.remove('hidden');
+                    if (decoded) {
+                        box.style.borderColor = '#10b981';
+                        box.innerHTML = `<div style="color:#10b981;font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-check-double"></i> 验证通过 · 检测到隐形版权指纹</div><div>${decoded}</div>`;
+                    } else {
+                        box.style.borderColor = '#d97706';
+                        box.innerHTML = `<div style="color:#d97706;font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-triangle-exclamation"></i> 未检测到 LSB 指纹</div><div class="opacity-70">该图片可能经过二次有损压缩，或未使用 PNG 无损格式导出。</div>`;
+                    }
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
         // 快捷键支持
         window.addEventListener('keydown', (e) => {
-            if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
                 e.preventDefault(); this.downloadCurrent(); return;
             }
@@ -440,6 +589,8 @@ class AppController {
                 this.setActiveImage(this.state.images[next].id);
             } else if (e.key.toLowerCase() === 'd') {
                 this.toggleDarkMode();
+            } else if (e.key.toLowerCase() === 'r' && this.state.protect.enabled) {
+                doReseed();
             }
         });
     }
@@ -707,13 +858,34 @@ class AppController {
         this.dom.btnDownloadCurrent.classList.replace('flex', 'hidden');
         this.dom.btnDownloadAll.classList.replace('flex', 'hidden');
         this.dom.previewCanvas.classList.remove('loaded');
-        this.dom.hudHdrBadge?.classList.add('hidden');
         this.ctx.clearRect(0, 0, this.dom.previewCanvas.width, this.dom.previewCanvas.height);
         this.dom.imgDimensions.textContent = '-- × --';
         if (window.innerWidth < 768) this.switchToTab(0);
     }
 
     getActiveImage() { return this.state.images.find(img => img.id === this.state.activeId); }
+
+    renderPaletteEditor() {
+        const activeImg = this.getActiveImage();
+        const paletteContainer = document.getElementById('interactivePalette');
+        if (!paletteContainer || !activeImg || !activeImg.palette) return;
+        paletteContainer.innerHTML = '';
+        activeImg.palette.forEach((colorObj, idx) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'palette-chip-wrapper';
+            wrap.style.backgroundColor = colorObj.hex || colorObj.rgbStr;
+            wrap.innerHTML = `<input type="color" class="palette-chip-input" value="${colorObj.hex || '#334155'}"><span class="palette-chip-hex">${(colorObj.hex || '').replace('#', '')}</span>`;
+            wrap.querySelector('input').addEventListener('input', (e) => {
+                const hex = e.target.value.toUpperCase();
+                const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+                activeImg.palette[idx] = { hex, r, g, b, rgbStr: `rgb(${r}, ${g}, ${b})` };
+                wrap.style.backgroundColor = hex;
+                wrap.querySelector('.palette-chip-hex').textContent = hex.replace('#', '');
+                this.renderPreview(false);
+            });
+            paletteContainer.appendChild(wrap);
+        });
+    }
 
     setActiveImage(id) {
         this.state.activeId = id;
@@ -732,36 +904,11 @@ class AppController {
         this.dom.inputFilmName.value = imgData.filmName || '';
         this.dom.imgDimensions.textContent = `${imgData.width} × ${imgData.height}`;
 
-        if (this.dom.hudHdrBadge) {
-            const showHdr = imgData.isHDR || imgData.colorProfile === 'DISPLAY-P3';
-            this.dom.hudHdrBadge.classList.toggle('hidden', !showHdr);
-            this.dom.hudHdrBadge.classList.toggle('flex', showHdr);
-            this.dom.hudHdrText.textContent = imgData.isHDR ? `${imgData.hdrType} · P3` : 'DISPLAY-P3';
-        }
         if (this.dom.inspectorColorSpace) {
             this.dom.inspectorColorSpace.textContent = imgData.isHDR ? imgData.hdrType : imgData.colorProfile;
         }
 
-        const paletteContainer = document.getElementById('interactivePalette');
-        if (paletteContainer && imgData.palette) {
-            paletteContainer.innerHTML = '';
-            imgData.palette.forEach((colorObj, idx) => {
-                const wrap = document.createElement('div');
-                wrap.className = 'palette-chip-wrapper';
-                wrap.style.backgroundColor = colorObj.hex || colorObj.rgbStr;
-                wrap.innerHTML = `<input type="color" class="palette-chip-input" value="${colorObj.hex || '#334155'}"><span class="palette-chip-hex">${(colorObj.hex || '').replace('#', '')}</span>`;
-                wrap.querySelector('input').addEventListener('input', (e) => {
-                    const hex = e.target.value.toUpperCase();
-                    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-                    imgData.palette[idx] = { hex, r, g, b, rgbStr: `rgb(${r}, ${g}, ${b})` };
-                    wrap.style.backgroundColor = hex;
-                    wrap.querySelector('.palette-chip-hex').textContent = hex.replace('#', '');
-                    this.renderPreview(false);
-                });
-                paletteContainer.appendChild(wrap);
-            });
-        }
-
+        this.renderPaletteEditor();
         this.renderPreview(true);
     }
 
@@ -775,17 +922,17 @@ class AppController {
     }
 
     updateControlsVisibility(style) {
-        const isFilm = style.startsWith('film') || style === 'halation_lab';
+        const isFilm = style.startsWith('film') || style === 'halation_lab' || style === 'cinema_scope' || style === 'ccd_timestamp';
         const isVector = style === 'vector_field';
-        const hasWall = ['polaroid', 'film35mm', 'film_strip'].includes(style);
-        const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'aura_blur'].includes(style);
+        const hasWall = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'ccd_timestamp'].includes(style);
+        const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'aura_blur', 'glass_card_blur', 'gallery_placard', 'ins_45_story'].includes(style);
 
         document.getElementById('section-vector').style.display = isVector ? 'block' : 'none';
         document.getElementById('ctrl-grain').style.display = isFilm ? 'block' : 'none';
         document.getElementById('section-materials').style.display = hasWall ? 'block' : 'none';
 
         const secLayout = document.getElementById('section-layout');
-        if (['film4x5', 'film_xpan', 'vector_field'].includes(style)) {
+        if (['film4x5', 'film_xpan', 'vector_field', 'raw_protect'].includes(style)) {
             secLayout.style.display = 'none';
         } else {
             secLayout.style.display = 'block';
@@ -879,17 +1026,313 @@ class AppController {
         }
     }
 
+    // =========================================================
+    // ANTI-THEFT COPYRIGHT WATERMARK & LSB FINGERPRINT ENGINE
+    // =========================================================
+    seededRandom(s) {
+        const x = Math.sin(s) * 10000;
+        return x - Math.floor(x);
+    }
+
+    computeEdgeMap(imgObj) {
+        const maxDim = 160;
+        const nW = imgObj.naturalWidth || imgObj.width;
+        const nH = imgObj.naturalHeight || imgObj.height;
+        const scale = Math.min(1, maxDim / Math.max(nW, nH));
+        const w = Math.max(16, Math.round(nW * scale));
+        const h = Math.max(16, Math.round(nH * scale));
+
+        const off = document.createElement('canvas');
+        off.width = w; off.height = h;
+        const octx = off.getContext('2d', { willReadFrequently: true });
+        octx.drawImage(imgObj, 0, 0, w, h);
+        const data = octx.getImageData(0, 0, w, h).data;
+
+        const gray = new Float32Array(w * h);
+        for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+            gray[p] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        }
+
+        const mag = new Float32Array(w * h);
+        for (let y = 1; y < h - 1; y++) {
+            for (let x = 1; x < w - 1; x++) {
+                const idx = y * w + x;
+                const gx = -gray[idx - w - 1] + gray[idx - w + 1] - 2 * gray[idx - 1] + 2 * gray[idx + 1] - gray[idx + w - 1] + gray[idx + w + 1];
+                const gy = -gray[idx - w - 1] - 2 * gray[idx - w] - gray[idx - w + 1] + gray[idx + w - 1] + 2 * gray[idx + w] + gray[idx + w + 1];
+                mag[idx] = Math.abs(gx) + Math.abs(gy);
+            }
+        }
+        return { edgeMap: mag, edgeW: w, edgeH: h };
+    }
+
+    getLocalLuminance(ctx, W, H, x, y, w, h) {
+        const sx = Math.max(0, Math.min(W - 1, Math.floor(x - w / 2)));
+        const sy = Math.max(0, Math.min(H - 1, Math.floor(y - h / 2)));
+        const sw = Math.max(1, Math.min(W - sx, Math.floor(w)));
+        const sh = Math.max(1, Math.min(H - sy, Math.floor(h)));
+        const data = ctx.getImageData(sx, sy, sw, sh).data;
+        let sum = 0, count = 0;
+        for (let i = 0; i < data.length; i += 16) {
+            sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            count++;
+        }
+        return count ? sum / count : 128;
+    }
+
+    renderCopyrightWatermark(ctx, imgData) {
+        const p = this.state.protect;
+        const W = ctx.canvas.width;
+        const H = ctx.canvas.height;
+        if (!W || !H) return;
+
+        // Lazily compute & cache Sobel edge map
+        if (p.edgeAnchor && imgData && !imgData.edgeData) {
+            try { imgData.edgeData = this.computeEdgeMap(imgData.imgObj); } catch (e) {}
+        }
+        const edgeData = imgData?.edgeData || null;
+
+        const text = (p.text.trim() || 'XIANGVISUALS').toUpperCase();
+        const baseOpacity = p.opacity / 100;
+        const centerFade = p.centerFade / 100;
+        const sizePct = p.size / 1000;
+        const jitter = p.jitter / 100;
+        const layout = p.layout;
+        const blend = p.blend;
+
+        const minDim = Math.min(W, H);
+        const ratio = W / H;
+        const fontSize = Math.max(11, Math.round(minDim * sizePct));
+
+        let cols, rows;
+        if (layout === 'dense') {
+            cols = ratio > 1.25 ? 5 : (ratio < 0.8 ? 3 : 4);
+            rows = ratio > 1.25 ? 3 : (ratio < 0.8 ? 5 : 4);
+        } else if (layout === 'perimeter') {
+            cols = ratio >= 1 ? 4 : 3;
+            rows = ratio >= 1 ? 3 : 4;
+        } else {
+            if (ratio > 1.35) { cols = 4; rows = 3; }
+            else if (ratio < 0.78) { cols = 3; rows = 4; }
+            else { cols = 3; rows = 3; }
+        }
+
+        const cellW = W / cols;
+        const cellH = H / rows;
+        let seedCursor = p.seed;
+
+        // 1. Ultra-Fine Anti-AI Micro-Mesh Layer
+        if (p.microMesh) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'overlay';
+            const step = Math.max(60, Math.round(minDim / 9));
+            ctx.strokeStyle = `rgba(255, 255, 255, ${Math.min(0.08, baseOpacity * 0.35)})`;
+            ctx.lineWidth = Math.max(0.75, minDim * 0.0006);
+            ctx.beginPath();
+            for (let x = step / 2; x < W; x += step) {
+                for (let y = step / 2; y < H; y += step) {
+                    const cross = fontSize * 0.28;
+                    ctx.moveTo(x - cross, y); ctx.lineTo(x + cross, y);
+                    ctx.moveTo(x, y - cross); ctx.lineTo(x, y + cross);
+                }
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 2. Primary Structural Watermark Nodes
+        ctx.save();
+        ctx.font = `600 ${fontSize}px "Inter", -apple-system, BlinkMacSystemFont, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (layout === 'perimeter' && r > 0 && r < rows - 1 && c > 0 && c < cols - 1) {
+                    continue;
+                }
+
+                let posX = (c + 0.5) * cellW;
+                let posY = (r + 0.5) * cellH;
+
+                if (p.edgeAnchor && edgeData) {
+                    let bestEnergy = -1, bestX = posX, bestY = posY;
+                    const samples = 5;
+                    for (let sy = 0; sy < samples; sy++) {
+                        for (let sx = 0; sx < samples; sx++) {
+                            const candX = (c + 0.18 + (sx / (samples - 1)) * 0.64) * cellW;
+                            const candY = (r + 0.18 + (sy / (samples - 1)) * 0.64) * cellH;
+                            const ex = Math.min(edgeData.edgeW - 1, Math.floor((candX / W) * edgeData.edgeW));
+                            const ey = Math.min(edgeData.edgeH - 1, Math.floor((candY / H) * edgeData.edgeH));
+                            const energy = edgeData.edgeMap[ey * edgeData.edgeW + ex];
+                            if (energy > bestEnergy) {
+                                bestEnergy = energy;
+                                bestX = candX;
+                                bestY = candY;
+                            }
+                        }
+                    }
+                    posX = posX * 0.35 + bestX * 0.65;
+                    posY = posY * 0.35 + bestY * 0.65;
+                }
+
+                const staggerX = (r % 2 === 1) ? cellW * 0.1 : -cellW * 0.1;
+                posX += staggerX + (this.seededRandom(seedCursor++) - 0.5) * cellW * jitter * 0.7;
+                posY += (this.seededRandom(seedCursor++) - 0.5) * cellH * jitter * 0.7;
+
+                const marginX = Math.min(W * 0.3, fontSize * 3.2);
+                const marginY = Math.min(H * 0.3, fontSize * 2.2);
+                posX = Math.max(marginX, Math.min(W - marginX, posX));
+                posY = Math.max(marginY, Math.min(H - marginY, posY));
+
+                const dx = (posX - W / 2) / (W / 2);
+                const dy = (posY - H / 2) / (H / 2);
+                const dist = Math.min(1, Math.sqrt(dx * dx + dy * dy));
+                const spatialWeight = (1 - centerFade) + centerFade * Math.pow(dist, 1.35);
+                const alpha = Math.max(0.025, baseOpacity * spatialWeight);
+
+                const textW = ctx.measureText(text).width;
+                const angle = (-14 + (this.seededRandom(seedCursor++) - 0.5) * 10) * (Math.PI / 180);
+
+                ctx.save();
+                ctx.translate(posX, posY);
+                ctx.rotate(angle);
+
+                let fillMain, strokeMain;
+                if (blend === 'smart-luma') {
+                    ctx.globalCompositeOperation = 'source-over';
+                    const luma = this.getLocalLuminance(ctx, W, H, posX, posY, textW, fontSize * 2);
+                    const isLightBg = luma > 132;
+                    fillMain = isLightBg ? `rgba(12, 12, 14, ${alpha})` : `rgba(248, 248, 250, ${alpha})`;
+                    strokeMain = isLightBg ? `rgba(12, 12, 14, ${alpha * 0.6})` : `rgba(248, 248, 250, ${alpha * 0.6})`;
+                } else {
+                    ctx.globalCompositeOperation = blend;
+                    fillMain = `rgba(255, 255, 255, ${Math.min(0.85, alpha * 1.35)})`;
+                    strokeMain = `rgba(255, 255, 255, ${alpha * 0.9})`;
+                }
+
+                if (p.chroma) {
+                    const shift = Math.max(1, fontSize * 0.045);
+                    ctx.fillStyle = `rgba(255, 60, 80, ${alpha * 0.32})`;
+                    ctx.fillText(text, -shift, 0);
+                    ctx.fillStyle = `rgba(60, 180, 255, ${alpha * 0.32})`;
+                    ctx.fillText(text, shift, 0);
+                }
+
+                ctx.fillStyle = fillMain;
+                ctx.fillText(text, 0, 0);
+
+                if (p.microMesh) {
+                    const lineW = textW * 0.42;
+                    const lineY = fontSize * 0.82;
+                    ctx.strokeStyle = strokeMain;
+                    ctx.lineWidth = Math.max(1, fontSize * 0.045);
+                    ctx.beginPath();
+                    ctx.moveTo(-lineW, lineY); ctx.lineTo(lineW, lineY);
+                    ctx.moveTo(0, lineY - fontSize * 0.22); ctx.lineTo(0, lineY + fontSize * 0.22);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+        ctx.restore();
+    }
+
+    embedLsbFingerprint(canvas, payloadText) {
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+
+        const msg = `XV::${payloadText}::END`;
+        const bits = [];
+        for (let i = 0; i < msg.length; i++) {
+            const code = msg.charCodeAt(i);
+            for (let b = 7; b >= 0; b--) bits.push((code >> b) & 1);
+        }
+
+        const totalPixels = canvas.width * canvas.height;
+        const bitLen = bits.length;
+        for (let p = 0; p < totalPixels; p++) {
+            const idx = p * 4 + 2; // Blue channel LSB
+            data[idx] = (data[idx] & 0xFE) | bits[p % bitLen];
+        }
+        ctx.putImageData(imgData, 0, 0);
+    }
+
+    extractLsbFingerprint(img) {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        const ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+        const scanH = Math.min(c.height, 80);
+        const data = ctx.getImageData(0, 0, c.width, scanH).data;
+
+        // Collect up to 36000 blue-channel LSB bits and test all 8 bit-alignments (resilient to arbitrary cropping)
+        const maxBits = Math.min(Math.floor(data.length / 4), 36000);
+        const bits = new Uint8Array(maxBits);
+        for (let p = 0; p < maxBits; p++) bits[p] = data[p * 4 + 2] & 1;
+
+        for (let offset = 0; offset < 8; offset++) {
+            let chars = '';
+            for (let i = offset; i + 8 <= maxBits; i += 8) {
+                const byte = (bits[i] << 7) | (bits[i+1] << 6) | (bits[i+2] << 5) | (bits[i+3] << 4) |
+                             (bits[i+4] << 3) | (bits[i+5] << 2) | (bits[i+6] << 1) | bits[i+7];
+                chars += (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : ' ';
+            }
+            const match = chars.match(/XV::([^:]+(?:\|[^:]+)*)::END/);
+            if (match) return match[1];
+        }
+        return null;
+    }
+
+    updateProtectTelemetry() {
+        const p = this.state.protect;
+        let sec = 42;
+        sec += Math.min(22, p.opacity * 0.75);
+        sec += p.layout === 'dense' ? 14 : (p.layout === 'adaptive' ? 10 : 6);
+        if (p.edgeAnchor) sec += 9;
+        if (p.microMesh) sec += 7;
+        if (p.chroma) sec += 6;
+        if (p.lsb) sec += 8;
+        sec = Math.min(99, Math.round(sec));
+
+        let vis = 100 - (p.opacity * 1.15) + (p.centerFade * 0.25);
+        if (p.layout === 'dense') vis -= 8;
+        if (p.edgeAnchor) vis += 5;
+        vis = Math.max(30, Math.min(98, Math.round(vis)));
+
+        const total = Math.round(sec * 0.6 + vis * 0.4);
+        if (this.dom.protectSecVal) this.dom.protectSecVal.textContent = `${sec}%`;
+        if (this.dom.protectSecBar) this.dom.protectSecBar.style.width = `${sec}%`;
+        if (this.dom.protectVisVal) this.dom.protectVisVal.textContent = `${vis}%`;
+        if (this.dom.protectVisBar) this.dom.protectVisBar.style.width = `${vis}%`;
+        if (this.dom.protectScoreTotal) this.dom.protectScoreTotal.textContent = `${total} / 100`;
+
+        // Sync tab indicator dot
+        this.dom.tabProtectDot?.classList.toggle('hidden', !p.enabled);
+    }
+
     renderHighResBlob(imgData, styleOverride = null) {
         return new Promise(async (resolve) => {
             const originalStyle = this.state.settings.style;
             if (styleOverride) this.state.settings.style = styleOverride;
             const offCanvas = document.createElement('canvas');
-            const offCtx = this.getCanvasContext(offCanvas, { alpha: false });
+            const offCtx = this.getCanvasContext(offCanvas, { alpha: false, willReadFrequently: true });
             await this.renderScene(offCtx, imgData, null, null);
+
+            // 若开启防盗水印与隐形盲水印且导出格式为 PNG，则自动写入像素底层 LSB 版权指纹
+            const fmt = this.state.exportFormat || 'image/jpeg';
+            if (fmt === 'image/png' && this.state.protect.enabled && this.state.protect.lsb) {
+                const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ');
+                const wmText = (this.state.protect.text.trim() || 'XIANGVISUALS').toUpperCase();
+                this.embedLsbFingerprint(offCanvas, `${wmText} | ${stamp} UTC`);
+            }
+
             offCanvas.toBlob((blob) => {
                 if (styleOverride) this.state.settings.style = originalStyle;
                 resolve(blob);
-            }, this.state.exportFormat || 'image/jpeg', 0.96);
+            }, fmt, 0.96);
         });
     }
 
@@ -907,11 +1350,14 @@ class AppController {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             const ext = this.state.exportFormat === 'image/png' ? 'png' : 'jpg';
-            link.download = `XIANGVISUALS_${this.state.settings.style.toUpperCase()}_${Date.now()}.${ext}`;
+            const protectTag = this.state.protect.enabled ? '_PROTECT' : '';
+            link.download = `XIANGVISUALS_${this.state.settings.style.toUpperCase()}${protectTag}_${Date.now()}.${ext}`;
             link.href = url; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(url), 1000);
             triggerHaptic('success');
-            this.showToast('HIGH-RES ARCHIVE EXPORTED // 高清作品已导出', 'success');
+            const lsbNote = (this.state.exportFormat === 'image/png' && this.state.protect.enabled && this.state.protect.lsb)
+                ? ' (含 LSB 盲水印)' : '';
+            this.showToast(`HIGH-RES ARCHIVE EXPORTED // 高清作品已导出${lsbNote}`, 'success');
         } catch (e) {
             console.error(e); this.showToast('EXPORT FAILED // 导出失败', 'error');
         } finally {
@@ -926,7 +1372,7 @@ class AppController {
         this.state.isProcessing = true;
         this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
 
-        const stylesToGen = ['exif_palette', 'exif_minimal', 'editorial_magazine', 'glass_overlay', 'gallery_passepartout', 'swiss_grid', 'optical_histogram', 'aura_blur'];
+        const stylesToGen = ['ins_45_story', 'xhs_editorial', 'glass_card_blur', 'magazine_cover', 'ccd_timestamp', 'exif_palette', 'editorial_magazine', 'cinema_scope', 'gallery_passepartout', 'swiss_grid'];
         const totalTasks = this.state.images.length * stylesToGen.length;
         let currentTask = 0;
 

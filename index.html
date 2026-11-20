@@ -156,18 +156,16 @@
             <div id="workspace" class="flex-1 relative canvas-bg w-full h-full flex items-center justify-center p-4 md:p-10 overflow-hidden">
                 <canvas id="previewCanvas"></canvas>
             </div>
-            
-            <!-- Top Floating HUD -->
-            <div class="absolute top-3 left-3 flex items-center gap-1.5 z-20 pointer-events-none">
-                <div class="glass-surface px-2.5 py-1 flex items-center gap-1.5 border border-xv-border">
-                    <span class="w-1.5 h-1.5 bg-xv-black inline-block"></span>
-                    <span id="hudStyleName" class="text-[9.5px] font-mono uppercase tracking-widest text-xv-black font-semibold">EXIF</span>
-                </div>
-                <div id="hudHdrBadge" class="hidden hdr-pill px-2 py-1 text-[9px] font-mono font-bold tracking-widest uppercase items-center gap-1">
-                    <i class="fa-solid fa-sun text-[9px] text-amber-300"></i>
-                    <span id="hudHdrText">HDR</span>
+
+            <!-- Drag & Drop Overlay -->
+            <div id="dropOverlay" class="drop-overlay pointer-events-none">
+                <div class="drop-overlay-box">
+                    <i class="fa-solid fa-arrow-down-to-bracket text-lg mb-2"></i>
+                    <span class="text-[11px] font-mono uppercase tracking-widest font-bold">释放以导入摄影作品</span>
+                    <span class="text-[9px] font-mono opacity-60 mt-1">HEIC · P3 HDR · PNG · JPEG</span>
                 </div>
             </div>
+
             <div class="absolute top-3 right-3 glass-surface border border-xv-border px-2.5 py-1 z-20 pointer-events-none hidden sm:flex items-center">
                 <span id="imgDimensions" class="text-[9.5px] font-mono text-xv-gray">-- × --</span>
             </div>
@@ -191,10 +189,11 @@
                 <!-- PANEL 3: CONTROLS -->
                 <aside id="panel-controls" class="stagger-enter delay-3 view-panel md:order-3">
                     <div class="border-b border-xv-border z-10 shrink-0 hidden md:block">
-                        <div class="grid grid-cols-3 divide-x divide-xv-border">
-                            <button class="tab-btn py-3 text-[10px] font-mono uppercase tracking-widest font-bold bg-xv-black text-white transition-all" data-tab="tab-templates">01 版式</button>
-                            <button class="tab-btn py-3 text-[10px] font-mono uppercase tracking-widest font-bold text-xv-gray hover:text-xv-black transition-all" data-tab="tab-adjust">02 调节</button>
-                            <button class="tab-btn py-3 text-[10px] font-mono uppercase tracking-widest font-bold text-xv-gray hover:text-xv-black transition-all" data-tab="tab-metadata">03 档案</button>
+                        <div class="grid grid-cols-4 divide-x divide-xv-border">
+                            <button class="tab-btn py-3 text-[10px] font-mono uppercase tracking-wider font-bold bg-xv-black text-white transition-all" data-tab="tab-templates">01 版式</button>
+                            <button class="tab-btn py-3 text-[10px] font-mono uppercase tracking-wider font-bold text-xv-gray hover:text-xv-black transition-all" data-tab="tab-adjust">02 调节</button>
+                            <button class="tab-btn py-3 text-[10px] font-mono uppercase tracking-wider font-bold text-xv-gray hover:text-xv-black transition-all" data-tab="tab-metadata">03 档案</button>
+                            <button class="tab-btn py-3 text-[10px] font-mono uppercase tracking-wider font-bold text-xv-gray hover:text-xv-black transition-all flex items-center justify-center gap-1" data-tab="tab-protect">04 防盗<span id="tabProtectDot" class="hidden w-1.5 h-1.5 bg-emerald-500 inline-block"></span></button>
                         </div>
                     </div>
 
@@ -207,13 +206,19 @@
                             <div>
                                 <div class="category-header">
                                     <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">01 / 画廊</span>
-                                    <span class="text-[9px] font-mono text-xv-gray">05</span>
+                                    <span class="text-[9px] font-mono text-xv-gray">06</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <button class="style-btn active" data-style="exif">
                                         <i class="fa-solid fa-align-left icon-wrapper pointer-events-none"></i>
                                         <span class="title pointer-events-none">原生</span>
                                         <span class="subtext pointer-events-none">EXIF Raw</span>
+                                    </button>
+                                    <button class="style-btn" data-style="ins_45_story">
+                                        <span class="badge-tag pointer-events-none">4:5</span>
+                                        <i class="fa-brands fa-instagram icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">INS 留白</span>
+                                        <span class="subtext pointer-events-none">IG 4:5 Feed</span>
                                     </button>
                                     <button class="style-btn" data-style="exif_palette">
                                         <span class="badge-tag pointer-events-none">HEX</span>
@@ -232,7 +237,7 @@
                                         <span class="title pointer-events-none">瑞士</span>
                                         <span class="subtext pointer-events-none">Swiss Spec</span>
                                     </button>
-                                    <button class="style-btn col-span-2" data-style="optical_histogram">
+                                    <button class="style-btn" data-style="optical_histogram">
                                         <span class="badge-tag pointer-events-none">IRE</span>
                                         <i class="fa-solid fa-chart-area icon-wrapper pointer-events-none"></i>
                                         <span class="title pointer-events-none">直方波形</span>
@@ -245,14 +250,32 @@
                             <div>
                                 <div class="category-header">
                                     <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">02 / 先锋</span>
-                                    <span class="text-[9px] font-mono text-xv-gray">05</span>
+                                    <span class="text-[9px] font-mono text-xv-gray">07</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
+                                    <button class="style-btn" data-style="xhs_editorial">
+                                        <span class="badge-tag pointer-events-none">RED</span>
+                                        <i class="fa-solid fa-bookmark icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">小红书卡片</span>
+                                        <span class="subtext pointer-events-none">3:4 Editorial</span>
+                                    </button>
+                                    <button class="style-btn" data-style="glass_card_blur">
+                                        <span class="badge-tag pointer-events-none">GLASS</span>
+                                        <i class="fa-solid fa-layer-group icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">弥散玻璃卡</span>
+                                        <span class="subtext pointer-events-none">Frosted Card</span>
+                                    </button>
                                     <button class="style-btn" data-style="editorial_magazine">
                                         <span class="badge-tag pointer-events-none">ISSUE</span>
                                         <i class="fa-solid fa-book-open icon-wrapper pointer-events-none"></i>
                                         <span class="title pointer-events-none">社论</span>
                                         <span class="subtext pointer-events-none">Magazine</span>
+                                    </button>
+                                    <button class="style-btn" data-style="cinema_scope">
+                                        <span class="badge-tag pointer-events-none">2.39:1</span>
+                                        <i class="fa-solid fa-clapperboard icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">电影字幕</span>
+                                        <span class="subtext pointer-events-none">Cinema Scope</span>
                                     </button>
                                     <button class="style-btn" data-style="glass_overlay">
                                         <span class="badge-tag pointer-events-none">HUD</span>
@@ -266,11 +289,6 @@
                                         <span class="title pointer-events-none">流光</span>
                                         <span class="subtext pointer-events-none">Aura Blur</span>
                                     </button>
-                                    <button class="style-btn" data-style="immersive_color">
-                                        <i class="fa-solid fa-droplet icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">色境</span>
-                                        <span class="subtext pointer-events-none">Solid Field</span>
-                                    </button>
                                     <button class="style-btn col-span-2" data-style="triptych_watermark">
                                         <i class="fa-solid fa-table-columns icon-wrapper pointer-events-none"></i>
                                         <span class="title pointer-events-none">三联海报</span>
@@ -283,7 +301,7 @@
                             <div>
                                 <div class="category-header">
                                     <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">03 / 装裱</span>
-                                    <span class="text-[9px] font-mono text-xv-gray">04</span>
+                                    <span class="text-[9px] font-mono text-xv-gray">06</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <button class="style-btn" data-style="gallery_passepartout">
@@ -291,6 +309,12 @@
                                         <i class="fa-solid fa-vector-square icon-wrapper pointer-events-none"></i>
                                         <span class="title pointer-events-none">卡纸</span>
                                         <span class="subtext pointer-events-none">Bevel Mat</span>
+                                    </button>
+                                    <button class="style-btn" data-style="magazine_cover">
+                                        <span class="badge-tag pointer-events-none">ZINE</span>
+                                        <i class="fa-solid fa-newspaper icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">独立画册</span>
+                                        <span class="subtext pointer-events-none">Zine Cover</span>
                                     </button>
                                     <button class="style-btn" data-style="japanese_zen">
                                         <span class="badge-tag pointer-events-none">印</span>
@@ -308,6 +332,12 @@
                                         <span class="title pointer-events-none">宝丽来</span>
                                         <span class="subtext pointer-events-none">Polaroid</span>
                                     </button>
+                                    <button class="style-btn" data-style="gallery_placard">
+                                        <span class="badge-tag pointer-events-none">MUSEUM</span>
+                                        <i class="fa-solid fa-landmark icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">美术馆展签</span>
+                                        <span class="subtext pointer-events-none">Wall Placard</span>
+                                    </button>
                                 </div>
                             </div>
 
@@ -315,9 +345,15 @@
                             <div>
                                 <div class="category-header">
                                     <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">04 / 暗房</span>
-                                    <span class="text-[9px] font-mono text-xv-gray">06</span>
+                                    <span class="text-[9px] font-mono text-xv-gray">07</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
+                                    <button class="style-btn" data-style="ccd_timestamp">
+                                        <span class="badge-tag pointer-events-none">CCD</span>
+                                        <i class="fa-solid fa-clock icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">复古 CCD</span>
+                                        <span class="subtext pointer-events-none">Date Stamp</span>
+                                    </button>
                                     <button class="style-btn" data-style="halation_lab">
                                         <span class="badge-tag pointer-events-none">800T</span>
                                         <i class="fa-solid fa-fire-flame-curved icon-wrapper pointer-events-none"></i>
@@ -345,10 +381,10 @@
                                         <span class="title pointer-events-none">宽幅</span>
                                         <span class="subtext pointer-events-none">65:24 XPan</span>
                                     </button>
-                                    <button class="style-btn" data-style="film_strip">
+                                    <button class="style-btn col-span-2" data-style="film_strip">
                                         <i class="fa-solid fa-grip-lines icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">印相</span>
-                                        <span class="subtext pointer-events-none">Contact</span>
+                                        <span class="title pointer-events-none">长卷接触印相</span>
+                                        <span class="subtext pointer-events-none">Multi-Frame Contact Sheet</span>
                                     </button>
                                 </div>
                             </div>
@@ -357,14 +393,26 @@
                             <div>
                                 <div class="category-header">
                                     <span class="text-[9.5px] font-mono text-xv-black uppercase tracking-widest font-bold">05 / 矩阵</span>
-                                    <span class="text-[9px] font-mono text-xv-gray">01</span>
+                                    <span class="text-[9px] font-mono text-xv-gray">03</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <button class="style-btn col-span-2" data-style="vector_field">
+                                    <button class="style-btn" data-style="vector_field">
                                         <span class="badge-tag pointer-events-none">70 COLS</span>
                                         <i class="fa-solid fa-compass icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">光学矢量场</span>
-                                        <span class="subtext pointer-events-none">Luminance Vector Matrix</span>
+                                        <span class="title pointer-events-none">矢量场</span>
+                                        <span class="subtext pointer-events-none">Vector Matrix</span>
+                                    </button>
+                                    <button class="style-btn" data-style="blueprint_spec">
+                                        <span class="badge-tag pointer-events-none">CAD</span>
+                                        <i class="fa-solid fa-drafting-compass icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">光学蓝图</span>
+                                        <span class="subtext pointer-events-none">Blueprint</span>
+                                    </button>
+                                    <button class="style-btn col-span-2" data-style="raw_protect">
+                                        <span class="badge-tag pointer-events-none">RAW</span>
+                                        <i class="fa-solid fa-shield-halved icon-wrapper pointer-events-none"></i>
+                                        <span class="title pointer-events-none">无框原图 · 防盗直出</span>
+                                        <span class="subtext pointer-events-none">Full-Bleed Anti-Theft Canvas</span>
                                     </button>
                                 </div>
                             </div>
@@ -505,6 +553,185 @@
                             </button>
                         </div>
 
+                        <!-- TAB 4: ANTI-THEFT COPYRIGHT WATERMARK STUDIO -->
+                        <div id="tab-protect" class="tab-pane hidden space-y-3.5">
+                            <!-- Master Toggle -->
+                            <section class="glass-card p-3.5 flex items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-[10.5px] font-mono uppercase tracking-wider text-xv-black font-bold flex items-center gap-1.5">
+                                        <i class="fa-solid fa-shield-halved text-[10px]"></i>
+                                        <span>版权防盗水印</span>
+                                    </div>
+                                    <div class="text-[9px] font-mono text-xv-gray mt-0.5">可叠加于任意版式或无框原图</div>
+                                </div>
+                                <label class="xv-switch">
+                                    <input type="checkbox" id="optProtectEnabled" />
+                                    <span class="xv-switch-track"></span>
+                                </label>
+                            </section>
+
+                            <!-- Real-time Security Telemetry -->
+                            <section class="glass-card p-3.5 space-y-2.5">
+                                <div class="flex items-baseline justify-between">
+                                    <span class="text-[9.5px] font-mono uppercase tracking-wider text-xv-gray font-bold flex items-center gap-1.5">
+                                        <i class="fa-solid fa-radar text-[9px]"></i> 综合防护评估
+                                    </span>
+                                    <span id="protectScoreTotal" class="text-[13px] font-mono font-bold text-emerald-600">92 / 100</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <div class="flex justify-between text-[9px] font-mono text-xv-gray mb-1">
+                                            <span>抗盗/抗AI</span>
+                                            <span id="protectSecVal" class="text-xv-black font-bold">94%</span>
+                                        </div>
+                                        <div class="protect-bar-track"><div id="protectSecBar" class="protect-bar-fill" style="width:94%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-[9px] font-mono text-xv-gray mb-1">
+                                            <span>预览通透度</span>
+                                            <span id="protectVisVal" class="text-xv-black font-bold">88%</span>
+                                        </div>
+                                        <div class="protect-bar-track"><div id="protectVisBar" class="protect-bar-fill" style="width:88%"></div></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Quick Presets & Text -->
+                            <section class="glass-card p-3.5 space-y-3">
+                                <div>
+                                    <label class="input-label">快速场景预设</label>
+                                    <div class="grid grid-cols-3 gap-1.5">
+                                        <button type="button" class="protect-preset-btn active" data-preset="gallery">画廊克制</button>
+                                        <button type="button" class="protect-preset-btn" data-preset="social">社媒防盗</button>
+                                        <button type="button" class="protect-preset-btn" data-preset="proofing">客户审片</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="input-label !mb-0">版权主标识</label>
+                                        <button id="btnProtectReseed" type="button" class="text-[9px] font-mono text-xv-black hover:opacity-70 flex items-center gap-1" title="重新生成防盗空间分布 (R)">
+                                            <i class="fa-solid fa-arrows-rotate text-[8.5px]"></i> 重排
+                                        </button>
+                                    </div>
+                                    <input type="text" id="protectText" class="input-elegant font-mono font-semibold" value="XIANGVISUALS" placeholder="输入版权标识">
+                                </div>
+                                <div class="grid grid-cols-1 gap-2.5">
+                                    <div>
+                                        <label class="input-label">比例自适应分布</label>
+                                        <select id="protectLayout" class="input-elegant font-mono">
+                                            <option value="adaptive">智能比例矩阵（横/竖/方自动适配）</option>
+                                            <option value="dense">高密交错防盗网（抗裁剪与抹除）</option>
+                                            <option value="perimeter">中心留白 + 四周强锚定</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="input-label">影调融合算法</label>
+                                        <select id="protectBlend" class="input-elegant font-mono">
+                                            <option value="smart-luma">局部亮度自适应反色（推荐）</option>
+                                            <option value="overlay">Overlay 光学叠加（保留高光）</option>
+                                            <option value="soft-light">Soft-Light 柔光嵌入</option>
+                                            <option value="difference">Difference 像素级差值（最强防盗）</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Anti-AI Switches -->
+                            <section class="glass-card p-3.5 space-y-3">
+                                <label class="input-label !mb-0">抗 AI 消除与数字指纹</label>
+                                <div class="flex items-center justify-between gap-2.5">
+                                    <div>
+                                        <div class="text-[10.5px] font-semibold text-xv-black">边缘结构吸附（抗 AI 修复）</div>
+                                        <div class="text-[9px] text-xv-gray">Sobel 边缘识别，优先跨结构线排布</div>
+                                    </div>
+                                    <label class="xv-switch">
+                                        <input type="checkbox" id="optProtectEdge" checked />
+                                        <span class="xv-switch-track"></span>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between gap-2.5">
+                                    <div>
+                                        <div class="text-[10.5px] font-semibold text-xv-black">微缩防伪网与校准线</div>
+                                        <div class="text-[9px] text-xv-gray">叠加极细防伪刻度，破坏 AI 纹理补全</div>
+                                    </div>
+                                    <label class="xv-switch">
+                                        <input type="checkbox" id="optProtectMesh" checked />
+                                        <span class="xv-switch-track"></span>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between gap-2.5">
+                                    <div>
+                                        <div class="text-[10.5px] font-semibold text-xv-black">色度微偏移（抗批处理消除）</div>
+                                        <div class="text-[9px] text-xv-gray">施加 1px 红蓝微色散，防止模板减法</div>
+                                    </div>
+                                    <label class="xv-switch">
+                                        <input type="checkbox" id="optProtectChroma" checked />
+                                        <span class="xv-switch-track"></span>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between gap-2.5">
+                                    <div>
+                                        <div class="text-[10.5px] font-semibold text-xv-black">隐形像素盲水印（PNG 专属）</div>
+                                        <div class="text-[9px] text-xv-gray">底层 LSB 通道写入加密版权指纹</div>
+                                    </div>
+                                    <label class="xv-switch">
+                                        <input type="checkbox" id="optProtectLsb" checked />
+                                        <span class="xv-switch-track"></span>
+                                    </label>
+                                </div>
+                            </section>
+
+                            <!-- Optics & Balance Sliders -->
+                            <section class="glass-card p-3.5 space-y-3">
+                                <label class="input-label !mb-0">视觉与防盗平衡参数</label>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-mono text-xv-black font-bold">基础不透明度</span>
+                                        <span id="protectOpacityVal" class="text-[9.5px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold">15%</span>
+                                    </div>
+                                    <input type="range" id="protectOpacity" min="4" max="50" step="1" value="15">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-mono text-xv-black font-bold">中心视觉保护</span>
+                                        <span id="protectCenterFadeVal" class="text-[9.5px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold">60%</span>
+                                    </div>
+                                    <input type="range" id="protectCenterFade" min="0" max="85" step="1" value="60">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-mono text-xv-black font-bold">水印字号比例</span>
+                                        <span id="protectSizeVal" class="text-[9.5px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold">1.5%</span>
+                                    </div>
+                                    <input type="range" id="protectSize" min="8" max="32" step="1" value="15">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-mono text-xv-black font-bold">非对称空间扰动</span>
+                                        <span id="protectJitterVal" class="text-[9.5px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold">32%</span>
+                                    </div>
+                                    <input type="range" id="protectJitter" min="0" max="75" step="1" value="32">
+                                </div>
+                            </section>
+
+                            <!-- LSB Fingerprint Verification -->
+                            <section class="glass-card p-3.5 space-y-2.5">
+                                <label class="input-label !mb-0 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-fingerprint text-[9.5px]"></i> 版权盲水印溯源验真
+                                </label>
+                                <p class="text-[9.5px] text-xv-gray leading-relaxed">
+                                    上传通过本系统导出的无损 PNG 图片，扫描底层 LSB 通道提取隐藏的版权归属与签发时间（支持裁剪后局部检测）。
+                                </p>
+                                <label class="verify-dropzone block cursor-pointer">
+                                    <i class="fa-solid fa-qrcode text-base text-xv-black mb-1.5 block"></i>
+                                    <span class="text-[10.5px] font-mono font-bold text-xv-black block">选择待检 PNG 图片</span>
+                                    <span class="text-[9px] font-mono text-xv-gray">LOCAL LSB CHANNEL SCANNER</span>
+                                    <input type="file" id="verifyLsbInput" accept="image/png" class="hidden" />
+                                </label>
+                                <div id="verifyLsbResult" class="verify-result hidden font-mono"></div>
+                            </section>
+                        </div>
+
                     </div>
                 </aside>
             </div>
@@ -529,6 +756,10 @@
             <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full relative text-xv-gray border-l border-xv-border" data-index="1" data-target="tab-metadata">
                 <i class="fa-solid fa-code text-[13px] mb-0.5"></i>
                 <span class="text-[9px] font-mono font-bold">档案</span>
+            </button>
+            <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full relative text-xv-gray border-l border-xv-border" data-index="1" data-target="tab-protect">
+                <i class="fa-solid fa-shield-halved text-[13px] mb-0.5"></i>
+                <span class="text-[9px] font-mono font-bold">防盗</span>
             </button>
         </div>
     </div>
