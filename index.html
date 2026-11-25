@@ -45,39 +45,20 @@
 </head>
 <body class="flex flex-col font-sans select-none">
 
-    <!-- OPTICAL VIEWFINDER PRELOADER (徕卡/哈苏磨砂对焦屏 · 极简奢华装裱序幕) -->
+    <!-- EDITORIAL GALLERY CURTAIN PRELOADER (实景摄影装裱幻灯片 · 推幕序幕) -->
     <div id="bootPreloader">
-        <div class="vf-loader">
-            <div class="vf-top-meta">
-                <span>35MM · P3</span>
-                <span>OPTICAL FRAMING</span>
-            </div>
-
-            <div class="vf-frame">
-                <i class="vf-axis vf-axis-t"></i>
-                <i class="vf-axis vf-axis-b"></i>
-                <i class="vf-axis vf-axis-l"></i>
-                <i class="vf-axis vf-axis-r"></i>
-
-                <div class="vf-inner-mat">
-                    <div class="vf-reticle">
-                        <span class="vf-ring"></span>
-                        <span class="vf-cross-h"></span>
-                        <span class="vf-cross-v"></span>
-                    </div>
-                    <div class="vf-wordmark">
-                        <em>Xiang Frame</em>
-                        <span>ARCHIVE &amp; WATERMARK STUDIO</span>
-                    </div>
+        <div class="curtain-stage">
+            <div class="curtain-mat">
+                <div class="curtain-window">
+                    <img src="./img/1.jpg" alt="" class="curtain-slide slide-1" decoding="async" />
+                    <img src="./img/2.jpg" alt="" class="curtain-slide slide-2" decoding="async" />
+                    <img src="./img/3.jpg" alt="" class="curtain-slide slide-3" decoding="async" />
                 </div>
             </div>
-
-            <div class="vf-meter">
-                <div class="vf-meter-track"><i></i></div>
-                <div class="vf-meter-ticks">
-                    <span>-2</span><span>-1</span><span>0</span><span>+1</span><span>+2</span>
-                </div>
-            </div>
+        </div>
+        <div class="curtain-footer">
+            <span>XIANG FRAME</span>
+            <span id="curtainCounter">01 / 03</span>
         </div>
     </div>
 
@@ -767,26 +748,10 @@
     
     <div id="toastContainer" style="top: max(16px, var(--s-top)); left: 50%; transform: translateX(-50%);"></div>
 
-    <!-- 导入解析照片时的光学对焦加载遮罩 -->
+    <!-- 导入解析照片时的极简顶栏进度遮罩 -->
     <div id="globalLoader">
-        <div class="vf-loader is-looping">
-            <div class="vf-frame vf-frame-sm">
-                <div class="vf-inner-mat">
-                    <div class="vf-reticle">
-                        <span class="vf-ring"></span>
-                        <span class="vf-cross-h"></span>
-                        <span class="vf-cross-v"></span>
-                    </div>
-                    <div class="vf-wordmark">
-                        <em>Developing</em>
-                        <span>DECODING RAW · P3</span>
-                    </div>
-                </div>
-            </div>
-            <div class="vf-meter">
-                <div class="vf-meter-track"><i></i></div>
-            </div>
-        </div>
+        <div class="top-hairline-progress"><i></i></div>
+        <div class="global-loader-label">LOADING</div>
         <span id="loaderMainTitle" class="hidden"></span>
         <span id="loaderSubTitle" class="hidden"></span>
     </div>

@@ -11,21 +11,36 @@ function triggerHaptic(type = 'light') {
     } catch(e) {}
 }
 
-// 五幕装裱开机动画逻辑（支持点击任意位置立即跳过）
+// 实景摄影装裱推幕开场逻辑（3 张实拍硬切定格 + 向上推幕，支持点击跳过）
 function runBootSequence() {
     const preloader = document.getElementById('bootPreloader');
     if (!preloader) return;
 
+    const slides = preloader.querySelectorAll('.curtain-slide');
+    const counter = document.getElementById('curtainCounter');
     let dismissed = false;
+    const timers = [];
+
+    const showSlide = (idx) => {
+        if (dismissed || !slides.length) return;
+        slides.forEach((img, i) => img.classList.toggle('is-active', i === idx));
+        if (counter) counter.textContent = `0${idx + 1} / 0${slides.length}`;
+    };
+
     const finishBoot = () => {
         if (dismissed) return;
         dismissed = true;
+        timers.forEach(t => clearTimeout(t));
         preloader.classList.add('dismissed');
         document.body.classList.add('app-ready');
     };
 
+    showSlide(0);
+    timers.push(setTimeout(() => showSlide(1), 360));
+    timers.push(setTimeout(() => showSlide(2), 720));
+    timers.push(setTimeout(finishBoot, 1180));
+
     preloader.addEventListener('click', finishBoot, { once: true });
-    setTimeout(finishBoot, 1400);
 }
 
 const PROTECT_PRESETS = {

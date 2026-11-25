@@ -24,245 +24,121 @@ html, body {
 }
 
 /* =========================================================
-   1. OPTICAL VIEWFINDER PRELOADER (徕卡/哈苏磨砂对焦屏序幕)
+   1. EDITORIAL GALLERY CURTAIN PRELOADER (实景装裱推幕序幕)
    ========================================================= */
-#bootPreloader,
-#globalLoader {
+#bootPreloader {
     position: fixed; inset: 0; z-index: 9999;
-    background: #f6f5f2;
-    background-image:
-        linear-gradient(to right, rgba(10, 10, 10, 0.025) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(10, 10, 10, 0.025) 1px, transparent 1px);
-    background-size: 36px 36px;
+    background: #f4f3ef;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.65s;
+    transition: transform 0.72s cubic-bezier(0.77, 0, 0.175, 1), visibility 0.72s;
+    will-change: transform;
 }
 #bootPreloader.dismissed {
-    opacity: 0;
-    transform: scale(1.045);
+    transform: translateY(-100%);
     visibility: hidden;
     pointer-events: none;
 }
+
+.curtain-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 实体画廊纯白装裱相框 */
+.curtain-mat {
+    width: 224px;
+    height: 276px;
+    padding: 16px 16px 36px 16px;
+    background: #ffffff;
+    box-shadow: 0 28px 64px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
+    display: flex;
+    animation: curtainMatRise 0.65s var(--ease-out-expo) both;
+}
+
+.curtain-window {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #141416;
+}
+
+.curtain-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.03);
+    transition: transform 0.6s var(--ease-out-expo);
+}
+.curtain-slide.is-active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.curtain-footer {
+    position: fixed;
+    left: 28px;
+    right: 28px;
+    bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: #0a0a0a;
+}
+
+@keyframes curtainMatRise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 767px) {
+    .curtain-mat { width: 184px; height: 228px; padding: 13px 13px 30px 13px; }
+    .curtain-footer { left: 20px; right: 20px; bottom: 20px; font-size: 9px; }
+}
+
+/* 导入图片时的极简顶栏进度遮罩 */
 #globalLoader {
-    z-index: 100; opacity: 0; pointer-events: none;
-    background: rgba(246, 245, 242, 0.9);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(244, 243, 239, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.28s ease;
 }
 #globalLoader.active {
     opacity: 1; pointer-events: all;
 }
-
-.vf-loader {
-    width: min(296px, 78vw);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-}
-
-.vf-top-meta {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 8.5px;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    color: rgba(10, 10, 10, 0.45);
-    opacity: 0;
-    animation: vfFadeIn 0.7s var(--ease-out-expo) 0.1s forwards;
-}
-
-/* 哈苏磨砂对焦屏主画幅框 */
-.vf-frame {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    border: 1px solid rgba(10, 10, 10, 0.85);
-    background: rgba(255, 255, 255, 0.58);
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.055);
-    animation: vfFrameLock 0.95s var(--ease-out-expo) both;
-}
-.vf-frame-sm {
-    width: 240px;
-    aspect-ratio: 16 / 10;
-}
-
-/* 延伸至框外的极细建筑对齐轴线 */
-.vf-axis {
-    position: absolute;
-    background: rgba(10, 10, 10, 0.14);
-    pointer-events: none;
-}
-.vf-axis-t { top: -22px; left: 50%; width: 1px; height: 22px; transform-origin: bottom; animation: vfAxisY 0.85s var(--ease-out-expo) 0.1s both; }
-.vf-axis-b { bottom: -22px; left: 50%; width: 1px; height: 22px; transform-origin: top; animation: vfAxisY 0.85s var(--ease-out-expo) 0.1s both; }
-.vf-axis-l { left: -24px; top: 50%; height: 1px; width: 24px; transform-origin: right; animation: vfAxisX 0.85s var(--ease-out-expo) 0.1s both; }
-.vf-axis-r { right: -24px; top: 50%; height: 1px; width: 24px; transform-origin: left; animation: vfAxisX 0.85s var(--ease-out-expo) 0.1s both; }
-
-/* 内层卡纸留白与光学对焦中心 */
-.vf-inner-mat {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border: 1px solid rgba(10, 10, 10, 0.12);
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.top-hairline-progress {
+    position: fixed; top: 0; left: 0; right: 0; height: 2px;
+    background: rgba(10, 10, 10, 0.08);
     overflow: hidden;
 }
-
-/* 中心裂像对焦圆环（微旋锁焦） */
-.vf-reticle {
-    position: absolute;
-    width: 66px;
-    height: 66px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    animation: vfReticleFocus 1.4s var(--ease-out-expo) both;
-}
-.vf-ring {
-    width: 100%;
-    height: 100%;
-    border: 1px solid rgba(10, 10, 10, 0.12);
-    border-radius: 999px !important;
-}
-.vf-cross-h {
-    position: absolute;
-    width: 82px;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(10,10,10,0.16) 0%, transparent 35%, transparent 65%, rgba(10,10,10,0.16) 100%);
-}
-.vf-cross-v {
-    position: absolute;
-    height: 82px;
-    width: 1px;
-    background: linear-gradient(180deg, rgba(10,10,10,0.16) 0%, transparent 35%, transparent 65%, rgba(10,10,10,0.16) 100%);
-}
-
-/* 杂志级衬线主视觉字标（合焦呼吸收拢） */
-.vf-wordmark {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-.vf-wordmark em {
-    font-family: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
-    font-style: italic;
-    font-weight: 600;
-    font-size: 32px;
-    line-height: 1;
-    color: #0a0a0a;
-    letter-spacing: 0.04em;
-    animation: vfWordFocus 1.15s var(--ease-out-expo) 0.12s both;
-}
-.vf-frame-sm .vf-wordmark em {
-    font-size: 24px;
-}
-.vf-wordmark span {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 7.5px;
-    font-weight: 600;
-    letter-spacing: 0.24em;
-    padding-left: 0.24em;
-    color: #71717a;
-    opacity: 0;
-    animation: vfFadeIn 0.75s var(--ease-out-expo) 0.32s forwards;
-}
-
-/* 相机曝光标尺进度条 (-2 -1 0 +1 +2) */
-.vf-meter {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.vf-meter-track {
-    width: 100%;
-    height: 1px;
-    background: rgba(10, 10, 10, 0.14);
-    overflow: hidden;
-}
-.vf-meter-track i {
-    display: block;
-    width: 100%;
-    height: 100%;
+.top-hairline-progress i {
+    display: block; width: 35%; height: 100%;
     background: #0a0a0a;
-    transform-origin: left;
-    transform: scaleX(0);
-    animation: vfMeterFill 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+    animation: topHairlineSweep 1.05s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
-.vf-meter-ticks {
-    display: flex;
-    justify-content: space-between;
+.global-loader-label {
     font-family: "JetBrains Mono", monospace;
-    font-size: 7.5px;
-    font-weight: 500;
-    color: rgba(10, 10, 10, 0.38);
-    letter-spacing: 0.05em;
-}
-.vf-meter-ticks span:nth-child(3) {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.24em;
     color: #0a0a0a;
-    font-weight: 700;
+    background: #ffffff;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    padding: 8px 16px;
 }
-
-/* 导入图片时的循环呼吸态 */
-.vf-loader.is-looping .vf-reticle {
-    animation: vfReticleLoop 2.2s ease-in-out infinite;
-}
-.vf-loader.is-looping .vf-meter-track i {
-    width: 36%;
-    transform: none;
-    animation: vfMeterSweep 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-@keyframes vfFrameLock {
-    0%   { opacity: 0; transform: scale(1.06); }
-    100% { opacity: 1; transform: scale(1); }
-}
-@keyframes vfAxisX {
-    0%   { opacity: 0; transform: scaleX(0); }
-    100% { opacity: 1; transform: scaleX(1); }
-}
-@keyframes vfAxisY {
-    0%   { opacity: 0; transform: scaleY(0); }
-    100% { opacity: 1; transform: scaleY(1); }
-}
-@keyframes vfReticleFocus {
-    0%   { opacity: 0; transform: scale(1.38) rotate(-28deg); }
-    55%  { opacity: 1; transform: scale(1) rotate(0deg); }
-    100% { opacity: 0.65; transform: scale(1) rotate(0deg); }
-}
-@keyframes vfReticleLoop {
-    0%, 100% { opacity: 0.35; transform: scale(0.95) rotate(0deg); }
-    50%      { opacity: 0.85; transform: scale(1.06) rotate(45deg); }
-}
-@keyframes vfWordFocus {
-    0%   { opacity: 0; letter-spacing: 0.18em; filter: blur(4px); }
-    100% { opacity: 1; letter-spacing: 0.04em; filter: blur(0px); }
-}
-@keyframes vfFadeIn {
-    0%   { opacity: 0; transform: translateY(3px); }
-    100% { opacity: 1; transform: translateY(0); }
-}
-@keyframes vfMeterFill {
-    0%   { transform: scaleX(0); }
-    100% { transform: scaleX(1); }
-}
-@keyframes vfMeterSweep {
+@keyframes topHairlineSweep {
     0%   { transform: translateX(-110%); }
-    100% { transform: translateX(310%); }
+    100% { transform: translateX(320%); }
 }
 
 /* Staggered UI Entrance */
@@ -700,29 +576,20 @@ body.dark-mode {
     color: #f4f4f5 !important;
 }
 
-body.dark-mode #bootPreloader,
-body.dark-mode #globalLoader {
-    background-color: #08080a !important;
-    background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px) !important;
+body.dark-mode #bootPreloader {
+    background: #09090b !important;
 }
-body.dark-mode #globalLoader {
-    background-color: rgba(8, 8, 10, 0.9) !important;
+body.dark-mode .curtain-mat {
+    background: #ffffff;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.72);
 }
-body.dark-mode .vf-top-meta { color: rgba(244, 244, 245, 0.45); }
-body.dark-mode .vf-frame { border-color: rgba(244, 244, 245, 0.85); background: rgba(18, 18, 22, 0.72); box-shadow: 0 28px 70px rgba(0, 0, 0, 0.65); }
-body.dark-mode .vf-axis { background: rgba(244, 244, 245, 0.16); }
-body.dark-mode .vf-inner-mat { border-color: rgba(244, 244, 245, 0.14); background: #0e0e12; }
-body.dark-mode .vf-ring { border-color: rgba(244, 244, 245, 0.16); }
-body.dark-mode .vf-cross-h { background: linear-gradient(90deg, rgba(244,244,245,0.2) 0%, transparent 35%, transparent 65%, rgba(244,244,245,0.2) 100%); }
-body.dark-mode .vf-cross-v { background: linear-gradient(180deg, rgba(244,244,245,0.2) 0%, transparent 35%, transparent 65%, rgba(244,244,245,0.2) 100%); }
-body.dark-mode .vf-wordmark em { color: #f4f4f5; }
-body.dark-mode .vf-wordmark span { color: #a1a1aa; }
-body.dark-mode .vf-meter-track { background: rgba(255, 255, 255, 0.14); }
-body.dark-mode .vf-meter-track i { background: #f4f4f5; }
-body.dark-mode .vf-meter-ticks { color: rgba(244, 244, 245, 0.35); }
-body.dark-mode .vf-meter-ticks span:nth-child(3) { color: #f4f4f5; }
+body.dark-mode .curtain-footer { color: #f4f4f5; }
+body.dark-mode #globalLoader {
+    background: rgba(9, 9, 11, 0.68) !important;
+}
+body.dark-mode .top-hairline-progress { background: rgba(255, 255, 255, 0.12); }
+body.dark-mode .top-hairline-progress i { background: #f4f4f5; }
+body.dark-mode .global-loader-label { background: #141418; color: #f4f4f5; border-color: rgba(255,255,255,0.14); }
 
 body.dark-mode header,
 body.dark-mode .view-panel,
