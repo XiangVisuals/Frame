@@ -43,6 +43,149 @@ window.XiangTemplates = {
             }
         };
 
+        // 统一智能主体 1:1 蒙版透视引擎（支持 聚焦 / 三联 / 双窗 / 圆镜 / 视带 5 种极简形态）
+        const drawSmartMaskReveal = (fImg, sW, sH, scale, paperBg, effectiveDark) => {
+            if (!imgData.saliency && typeof app.computeSaliencyAnchors === 'function') {
+                try { imgData.saliency = app.computeSaliencyAnchors(imgData.imgObj); } catch (e) {}
+            }
+            const sal = imgData.saliency || {
+                p1: { x: 0.45, y: 0.55 },
+                p2: { x: 0.72, y: 0.30 },
+                bestRowY: 0.52,
+                bestColX: 0.50
+            };
+
+            const mode = asciiMaskMode || 'focus';
+            const sizeFactor = Math.min(1.35, Math.max(0.55, 0.52 + matMultiplier * 0.48));
+            const hairlineCol = effectiveDark ? 'rgba(255, 255, 255, 0.24)' : 'rgba(10, 10, 10, 0.14)';
+            const hairlineW = Math.max(1, scale * 0.85);
+            const shBlur = Math.min(sW, sH) * 0.026 * shadowMultiplier;
+            const shOffY = Math.min(sW, sH) * 0.009 * shadowMultiplier;
+            const shCol = effectiveDark
+                ? `rgba(0, 0, 0, ${0.68 * shadowMultiplier})`
+                : `rgba(0, 0, 0, ${0.18 * shadowMultiplier})`;
+
+            const clampRect = (cx, cy, w, h, marginPct = 0.06) => {
+                const mx = sW * marginPct, my = sH * marginPct;
+                const cw = Math.min(w, sW - mx * 2);
+                const ch = Math.min(h, sH - my * 2);
+                const x = Math.max(mx, Math.min(sW - mx - cw, cx - cw / 2));
+                const y = Math.max(my, Math.min(sH - my - ch, cy - ch / 2));
+                return { x, y, w: cw, h: ch };
+            };
+
+            const revealRect = (x, y, w, h) => {
+                if (shadowMultiplier > 0) {
+                    ctx.save();
+                    ctx.shadowColor = shCol;
+                    ctx.shadowBlur = shBlur;
+                    ctx.shadowOffsetY = shOffY;
+                    ctx.fillStyle = paperBg;
+                    ctx.fillRect(x, y, w, h);
+                    ctx.restore();
+                }
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(x, y, w, h);
+                ctx.clip();
+                ctx.drawImage(fImg, 0, 0, sW, sH);
+                ctx.restore();
+                ctx.strokeStyle = hairlineCol;
+                ctx.lineWidth = hairlineW;
+                ctx.strokeRect(x, y, w, h);
+            };
+
+            const revealCircle = (cx, cy, r) => {
+                if (shadowMultiplier > 0) {
+                    ctx.save();
+                    ctx.shadowColor = shCol;
+                    ctx.shadowBlur = shBlur;
+                    ctx.shadowOffsetY = shOffY;
+                    ctx.fillStyle = paperBg;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.drawImage(fImg, 0, 0, sW, sH);
+                ctx.restore();
+                ctx.strokeStyle = hairlineCol;
+                ctx.lineWidth = hairlineW;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.stroke();
+            };
+
+            if (mode === 'focus') {
+                const w = sW * 0.48 * sizeFactor;
+                const h = sH * 0.48 * sizeFactor;
+                const r = clampRect(sal.p1.x * sW, sal.p1.y * sH, w, h, 0.075);
+                revealRect(r.x, r.y, r.w, r.h);
+            } else if (mode === 'triptych') {
+                const isPortrait = sH > sW * 1.1;
+                if (!isPortrait) {
+                    const totalW = Math.min(sW * 0.78, sW * 0.56 * sizeFactor);
+                    const gap = sW * 0.024;
+                    const stripW = (totalW - gap * 2) / 3;
+                    const baseH = Math.min(sH * 0.72, sH * 0.52 * sizeFactor);
+                    const groupX = Math.max(sW * 0.07, Math.min(sW - sW * 0.07 - totalW, sal.p1.x * sW - totalW / 2));
+                    const centerY = Math.max(sH * 0.28, Math.min(sH * 0.72, sal.p1.y * sH));
+                    const offsets = [-baseH * 0.14, 0, baseH * 0.14];
+                    const heights = [baseH * 0.88, baseH * 1.04, baseH * 0.88];
+                    for (let k = 0; k < 3; k++) {
+                        const sx = groupX + k * (stripW + gap);
+                        const sh = heights[k];
+                        const sy = Math.max(sH * 0.06, Math.min(sH - sH * 0.06 - sh, centerY - sh / 2 + offsets[k]));
+                        revealRect(sx, sy, stripW, sh);
+                    }
+                } else {
+                    const totalH = Math.min(sH * 0.76, sH * 0.54 * sizeFactor);
+                    const gap = sH * 0.022;
+                    const stripH = (totalH - gap * 2) / 3;
+                    const baseW = Math.min(sW * 0.76, sW * 0.56 * sizeFactor);
+                    const groupY = Math.max(sH * 0.07, Math.min(sH - sH * 0.07 - totalH, sal.p1.y * sH - totalH / 2));
+                    const centerX = Math.max(sW * 0.28, Math.min(sW * 0.72, sal.p1.x * sW));
+                    const offsets = [-baseW * 0.13, 0, baseW * 0.13];
+                    const widths = [baseW * 0.86, baseW * 1.04, baseW * 0.86];
+                    for (let k = 0; k < 3; k++) {
+                        const sy = groupY + k * (stripH + gap);
+                        const sw = widths[k];
+                        const sx = Math.max(sW * 0.06, Math.min(sW - sW * 0.06 - sw, centerX - sw / 2 + offsets[k]));
+                        revealRect(sx, sy, sw, stripH);
+                    }
+                }
+            } else if (mode === 'dual') {
+                const r1 = clampRect(sal.p1.x * sW, sal.p1.y * sH, sW * 0.42 * sizeFactor, sH * 0.44 * sizeFactor, 0.065);
+                const r2 = clampRect(sal.p2.x * sW, sal.p2.y * sH, sW * 0.27 * sizeFactor, sH * 0.28 * sizeFactor, 0.065);
+                revealRect(r2.x, r2.y, r2.w, r2.h);
+                revealRect(r1.x, r1.y, r1.w, r1.h);
+            } else if (mode === 'circle') {
+                const minDim = Math.min(sW, sH);
+                const r = Math.min(minDim * 0.42, minDim * 0.27 * sizeFactor);
+                const margin = r + minDim * 0.07;
+                const cx = Math.max(margin, Math.min(sW - margin, sal.p1.x * sW));
+                const cy = Math.max(margin, Math.min(sH - margin, sal.p1.y * sH));
+                revealCircle(cx, cy, r);
+            } else if (mode === 'band') {
+                const isPortrait = sH > sW * 1.15;
+                if (!isPortrait) {
+                    const bandH = Math.min(sH * 0.56, sH * 0.32 * sizeFactor);
+                    const sidePad = sW * 0.055;
+                    const y = Math.max(sH * 0.08, Math.min(sH - sH * 0.08 - bandH, sal.bestRowY * sH - bandH / 2));
+                    revealRect(sidePad, y, sW - sidePad * 2, bandH);
+                } else {
+                    const bandW = Math.min(sW * 0.58, sW * 0.36 * sizeFactor);
+                    const topPad = sH * 0.055;
+                    const x = Math.max(sW * 0.08, Math.min(sW - sW * 0.08 - bandW, sal.bestColX * sW - bandW / 2));
+                    revealRect(x, topPad, bandW, sH - topPad * 2);
+                }
+            }
+        };
+
         // 1. 高定色卡档案 (REFINED EXIF PALETTE)
         if (style === 'exif_palette') {
             wallPaddingX = 0; wallPaddingY = 0;
@@ -2261,158 +2404,286 @@ window.XiangTemplates = {
                 }
                 ctx.restore();
 
-                // 3. Smart Subject-Aware 1:1 Spatial Mask Reveal (根据画面显著性自动锁定主体 + 5 种极简高定蒙版形态)
-                if (!imgData.saliency && typeof app.computeSaliencyAnchors === 'function') {
-                    try { imgData.saliency = app.computeSaliencyAnchors(imgData.imgObj); } catch (e) {}
-                }
-                const sal = imgData.saliency || {
-                    p1: { x: 0.45, y: 0.55 },
-                    p2: { x: 0.72, y: 0.30 },
-                    bestRowY: 0.52,
-                    bestColX: 0.50
-                };
-
-                const mode = asciiMaskMode || 'focus';
-                const sizeFactor = Math.min(1.35, Math.max(0.55, 0.52 + matMultiplier * 0.48));
-                const hairlineCol = effectiveDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(10, 10, 10, 0.14)';
-                const hairlineW = Math.max(1, scale * 0.85);
-                const shBlur = Math.min(sW, sH) * 0.026 * shadowMultiplier;
-                const shOffY = Math.min(sW, sH) * 0.009 * shadowMultiplier;
-                const shCol = effectiveDark
-                    ? `rgba(0, 0, 0, ${0.68 * shadowMultiplier})`
-                    : `rgba(0, 0, 0, ${0.18 * shadowMultiplier})`;
-
-                const clampRect = (cx, cy, w, h, marginPct = 0.06) => {
-                    const mx = sW * marginPct, my = sH * marginPct;
-                    const cw = Math.min(w, sW - mx * 2);
-                    const ch = Math.min(h, sH - my * 2);
-                    const x = Math.max(mx, Math.min(sW - mx - cw, cx - cw / 2));
-                    const y = Math.max(my, Math.min(sH - my - ch, cy - ch / 2));
-                    return { x, y, w: cw, h: ch };
-                };
-
-                const revealRect = (x, y, w, h) => {
-                    if (shadowMultiplier > 0) {
-                        ctx.save();
-                        ctx.shadowColor = shCol;
-                        ctx.shadowBlur = shBlur;
-                        ctx.shadowOffsetY = shOffY;
-                        ctx.fillStyle = paperBg;
-                        ctx.fillRect(x, y, w, h);
-                        ctx.restore();
-                    }
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(x, y, w, h);
-                    ctx.clip();
-                    ctx.drawImage(fImg, 0, 0, sW, sH);
-                    ctx.restore();
-                    ctx.strokeStyle = hairlineCol;
-                    ctx.lineWidth = hairlineW;
-                    ctx.strokeRect(x, y, w, h);
-                };
-
-                const revealCircle = (cx, cy, r) => {
-                    if (shadowMultiplier > 0) {
-                        ctx.save();
-                        ctx.shadowColor = shCol;
-                        ctx.shadowBlur = shBlur;
-                        ctx.shadowOffsetY = shOffY;
-                        ctx.fillStyle = paperBg;
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.restore();
-                    }
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                    ctx.clip();
-                    ctx.drawImage(fImg, 0, 0, sW, sH);
-                    ctx.restore();
-                    ctx.strokeStyle = hairlineCol;
-                    ctx.lineWidth = hairlineW;
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                    ctx.stroke();
-                };
-
-                if (mode === 'focus') {
-                    // 1. 智能聚焦：单极简黄金比例蒙版自动锁定画面核心主体
-                    const w = sW * 0.48 * sizeFactor;
-                    const h = sH * 0.48 * sizeFactor;
-                    const r = clampRect(sal.p1.x * sW, sal.p1.y * sH, w, h, 0.075);
-                    revealRect(r.x, r.y, r.w, r.h);
-
-                } else if (mode === 'triptych') {
-                    // 2. 阶梯三联：围绕核心主体的三条交错建筑感切条，留出呼吸感字符缝隙
-                    const isPortrait = sH > sW * 1.1;
-                    if (!isPortrait) {
-                        const totalW = Math.min(sW * 0.78, sW * 0.56 * sizeFactor);
-                        const gap = sW * 0.024;
-                        const stripW = (totalW - gap * 2) / 3;
-                        const baseH = Math.min(sH * 0.72, sH * 0.52 * sizeFactor);
-                        const groupX = Math.max(sW * 0.07, Math.min(sW - sW * 0.07 - totalW, sal.p1.x * sW - totalW / 2));
-                        const centerY = Math.max(sH * 0.28, Math.min(sH * 0.72, sal.p1.y * sH));
-                        const offsets = [-baseH * 0.14, 0, baseH * 0.14];
-                        const heights = [baseH * 0.88, baseH * 1.04, baseH * 0.88];
-                        for (let k = 0; k < 3; k++) {
-                            const sx = groupX + k * (stripW + gap);
-                            const sh = heights[k];
-                            const sy = Math.max(sH * 0.06, Math.min(sH - sH * 0.06 - sh, centerY - sh / 2 + offsets[k]));
-                            revealRect(sx, sy, stripW, sh);
-                        }
-                    } else {
-                        const totalH = Math.min(sH * 0.76, sH * 0.54 * sizeFactor);
-                        const gap = sH * 0.022;
-                        const stripH = (totalH - gap * 2) / 3;
-                        const baseW = Math.min(sW * 0.76, sW * 0.56 * sizeFactor);
-                        const groupY = Math.max(sH * 0.07, Math.min(sH - sH * 0.07 - totalH, sal.p1.y * sH - totalH / 2));
-                        const centerX = Math.max(sW * 0.28, Math.min(sW * 0.72, sal.p1.x * sW));
-                        const offsets = [-baseW * 0.13, 0, baseW * 0.13];
-                        const widths = [baseW * 0.86, baseW * 1.04, baseW * 0.86];
-                        for (let k = 0; k < 3; k++) {
-                            const sy = groupY + k * (stripH + gap);
-                            const sw = widths[k];
-                            const sx = Math.max(sW * 0.06, Math.min(sW - sW * 0.06 - sw, centerX - sw / 2 + offsets[k]));
-                            revealRect(sx, sy, sw, stripH);
-                        }
-                    }
-
-                } else if (mode === 'dual') {
-                    // 3. 双重焦点：主次双视觉显著点自动成对透出，形成画面对话
-                    const r1 = clampRect(sal.p1.x * sW, sal.p1.y * sH, sW * 0.42 * sizeFactor, sH * 0.44 * sizeFactor, 0.065);
-                    const r2 = clampRect(sal.p2.x * sW, sal.p2.y * sH, sW * 0.27 * sizeFactor, sH * 0.28 * sizeFactor, 0.065);
-                    revealRect(r2.x, r2.y, r2.w, r2.h);
-                    revealRect(r1.x, r1.y, r1.w, r1.h);
-
-                } else if (mode === 'circle') {
-                    // 4. 光学圆镜：纯圆形光学透镜蒙版锁定主体焦点
-                    const minDim = Math.min(sW, sH);
-                    const r = Math.min(minDim * 0.42, minDim * 0.27 * sizeFactor);
-                    const margin = r + minDim * 0.07;
-                    const cx = Math.max(margin, Math.min(sW - margin, sal.p1.x * sW));
-                    const cy = Math.max(margin, Math.min(sH - margin, sal.p1.y * sH));
-                    revealCircle(cx, cy, r);
-
-                } else if (mode === 'band') {
-                    // 5. 横贯视带：自动追踪画面信息密度最高的水平/垂直视带贯穿画面
-                    const isPortrait = sH > sW * 1.15;
-                    if (!isPortrait) {
-                        const bandH = Math.min(sH * 0.56, sH * 0.32 * sizeFactor);
-                        const sidePad = sW * 0.055;
-                        const y = Math.max(sH * 0.08, Math.min(sH - sH * 0.08 - bandH, sal.bestRowY * sH - bandH / 2));
-                        revealRect(sidePad, y, sW - sidePad * 2, bandH);
-                    } else {
-                        const bandW = Math.min(sW * 0.58, sW * 0.36 * sizeFactor);
-                        const topPad = sH * 0.055;
-                        const x = Math.max(sW * 0.08, Math.min(sW - sW * 0.08 - bandW, sal.bestColX * sW - bandW / 2));
-                        revealRect(x, topPad, bandW, sH - topPad * 2);
-                    }
-                }
+                // 3. Smart Subject-Aware 1:1 Spatial Mask Reveal
+                drawSmartMaskReveal(fImg, sW, sH, scale, paperBg, effectiveDark);
             };
 
-        // 28. 无框原图 · 防盗直出 (RAW PROTECT)
+        // 28. 半调网点 · 印刷蒙版 (RISORAPH HALFTONE MASK — NEW)
+        } else if (style === 'halftone_mask') {
+            wallPaddingX = 0; wallPaddingY = 0;
+            sceneW = imgW;
+            sceneH = imgH;
+
+            drawLogic = (scale) => {
+                const sW = sceneW * scale, sH = sceneH * scale;
+                const baseDark = wallColor === '#0a0a0a';
+                const effectiveDark = asciiInvert ? !baseDark : baseDark;
+                const paperBg = effectiveDark ? '#0a0a0c' : (wallColor === '#0a0a0a' ? '#faf8f4' : (wallColor === '#ffffff' ? '#faf8f4' : wallColor));
+                const inkCol = effectiveDark ? '#f4f4f5' : '#111113';
+
+                ctx.fillStyle = paperBg;
+                ctx.fillRect(0, 0, sW, sH);
+
+                const fImg = app.getFilteredImage(imgData, sW, sH, bwAmount, invertAmount);
+
+                // Sample image for 45° Risograph halftone screen
+                const cols = Math.max(36, Math.min(130, Math.round((vectorCols || 70) * 1.1)));
+                const step = sW / cols;
+                const rows = Math.max(20, Math.ceil(sH / step));
+
+                const sCanvas = document.createElement('canvas');
+                sCanvas.width = cols; sCanvas.height = rows;
+                const sCtx = sCanvas.getContext('2d', { willReadFrequently: true });
+                sCtx.drawImage(fImg, 0, 0, cols, rows);
+                const px = sCtx.getImageData(0, 0, cols, rows).data;
+
+                // Staggered hexagonal / 45° printmaking dot grid
+                const maxR = step * 0.56;
+                ctx.save();
+                for (let r = 0; r < rows; r++) {
+                    const offsetX = (r % 2 === 1) ? step * 0.5 : 0;
+                    const cy = (r + 0.5) * step;
+                    for (let c = 0; c < cols; c++) {
+                        const idx = (r * cols + c) * 4;
+                        let cr = px[idx], cg = px[idx + 1], cb = px[idx + 2];
+                        const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
+                        const cLum = Math.max(0, Math.min(1, (lum - 0.05) / 0.90));
+                        const density = effectiveDark ? cLum : (1 - cLum);
+                        if (density < 0.05) continue;
+
+                        const radius = Math.pow(density, 0.85) * maxR;
+                        if (radius < 0.55) continue;
+
+                        if (asciiColor) {
+                            let dr = cr, dg = cg, db = cb;
+                            if (asciiInvert) { dr = 255 - dr; dg = 255 - dg; db = 255 - db; }
+                            ctx.fillStyle = `rgb(${Math.round(dr)}, ${Math.round(dg)}, ${Math.round(db)})`;
+                        } else {
+                            ctx.fillStyle = inkCol;
+                        }
+
+                        ctx.beginPath();
+                        ctx.arc(c * step + offsetX + step * 0.25, cy, radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                ctx.restore();
+
+                drawSmartMaskReveal(fImg, sW, sH, scale, paperBg, effectiveDark);
+            };
+
+        // 29. 长虹玻璃 · 建筑折射蒙版 (ARCHITECTURAL FLUTED GLASS — NEW)
+        } else if (style === 'fluted_glass') {
+            wallPaddingX = 0; wallPaddingY = 0;
+            sceneW = imgW;
+            sceneH = imgH;
+
+            drawLogic = (scale) => {
+                const sW = sceneW * scale, sH = sceneH * scale;
+                const fImg = app.getFilteredImage(imgData, sW, sH, bwAmount, invertAmount);
+
+                // Softened optical base for authentic frosted-reeded glass light diffusion
+                const blurCvs = document.createElement('canvas');
+                const bw = Math.min(640, Math.max(160, Math.round(sW * 0.35)));
+                const bh = Math.max(120, Math.round(bw * (sH / sW)));
+                blurCvs.width = bw; blurCvs.height = bh;
+                const bCtx = app.getCanvasContext(blurCvs);
+                bCtx.filter = asciiInvert ? 'blur(5px) invert(1) saturate(135%)' : (asciiColor ? 'blur(4px) saturate(165%) contrast(1.06)' : 'blur(4px) saturate(118%)');
+                bCtx.drawImage(fImg, 0, 0, bw, bh);
+
+                const flutes = Math.max(16, Math.min(72, Math.round((vectorCols || 70) * 0.52)));
+                const ribW = sW / flutes;
+                const srcRibW = bw / flutes;
+
+                // Cylindrical vertical glass rib refraction
+                for (let i = 0; i < flutes; i++) {
+                    const dx = i * ribW;
+                    // Each cylindrical lens stretches the inner ~54% of its strip across the full rib
+                    const sx = Math.max(0, Math.min(bw - srcRibW * 0.55, (i + 0.22) * srcRibW));
+                    ctx.drawImage(blurCvs, sx, 0, srcRibW * 0.56, bh, dx, 0, ribW + 0.6, sH);
+
+                    // Cylindrical glass specular highlight + depth crease
+                    const grad = ctx.createLinearGradient(dx, 0, dx + ribW, 0);
+                    grad.addColorStop(0.0,  'rgba(255, 255, 255, 0.28)');
+                    grad.addColorStop(0.16, 'rgba(255, 255, 255, 0.08)');
+                    grad.addColorStop(0.48, 'rgba(255, 255, 255, 0.0)');
+                    grad.addColorStop(0.84, 'rgba(0, 0, 0, 0.14)');
+                    grad.addColorStop(1.0,  'rgba(0, 0, 0, 0.30)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(dx, 0, ribW, sH);
+                }
+
+                // Subtle frosted architectural veil
+                ctx.fillStyle = asciiInvert ? 'rgba(10, 10, 14, 0.14)' : 'rgba(255, 255, 255, 0.08)';
+                ctx.fillRect(0, 0, sW, sH);
+
+                drawSmartMaskReveal(fImg, sW, sH, scale, '#121216', true);
+            };
+
+        // 30. 像素解构 · 色块网格蒙版 (BAUHAUS PIXEL MOSAIC — NEW)
+        } else if (style === 'pixel_mosaic') {
+            wallPaddingX = 0; wallPaddingY = 0;
+            sceneW = imgW;
+            sceneH = imgH;
+
+            drawLogic = (scale) => {
+                const sW = sceneW * scale, sH = sceneH * scale;
+                const fImg = app.getFilteredImage(imgData, sW, sH, bwAmount, invertAmount);
+
+                const cols = Math.max(16, Math.min(80, Math.round((vectorCols || 70) * 0.55)));
+                const cell = sW / cols;
+                const rows = Math.max(12, Math.ceil(sH / cell));
+
+                const sCanvas = document.createElement('canvas');
+                sCanvas.width = cols; sCanvas.height = rows;
+                const sCtx = sCanvas.getContext('2d', { willReadFrequently: true });
+                sCtx.drawImage(fImg, 0, 0, cols, rows);
+                const px = sCtx.getImageData(0, 0, cols, rows).data;
+
+                const grout = Math.max(0.8, cell * 0.045);
+                const effectiveDark = asciiInvert;
+                ctx.fillStyle = effectiveDark ? '#09090b' : '#ffffff';
+                ctx.fillRect(0, 0, sW, sH);
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const idx = (r * cols + c) * 4;
+                        let cr = px[idx], cg = px[idx + 1], cb = px[idx + 2];
+                        if (!asciiColor) {
+                            // Crisp architectural desaturated/tinted editorial mosaic when color boost is off, or full chromatic
+                            const lum = 0.299 * cr + 0.587 * cg + 0.114 * cb;
+                            cr = lum + (cr - lum) * 0.85;
+                            cg = lum + (cg - lum) * 0.85;
+                            cb = lum + (cb - lum) * 0.85;
+                        } else {
+                            // Vivid Gerhard Richter high-saturation color blocks
+                            const lum = 0.299 * cr + 0.587 * cg + 0.114 * cb;
+                            cr = Math.max(0, Math.min(255, lum + (cr - lum) * 1.45));
+                            cg = Math.max(0, Math.min(255, lum + (cg - lum) * 1.45));
+                            cb = Math.max(0, Math.min(255, lum + (cb - lum) * 1.45));
+                        }
+                        if (asciiInvert) {
+                            cr = 255 - cr; cg = 255 - cg; cb = 255 - cb;
+                        }
+                        ctx.fillStyle = `rgb(${Math.round(cr)}, ${Math.round(cg)}, ${Math.round(cb)})`;
+                        ctx.fillRect(c * cell + grout * 0.5, r * cell + grout * 0.5, cell - grout, cell - grout);
+                    }
+                }
+
+                drawSmartMaskReveal(fImg, sW, sH, scale, effectiveDark ? '#09090b' : '#ffffff', effectiveDark);
+            };
+
+        // 31. 光影等高线 · 地形测绘蒙版 (LUMINANCE TOPOGRAPHIC CONTOUR — NEW)
+        } else if (style === 'topo_contour') {
+            wallPaddingX = 0; wallPaddingY = 0;
+            sceneW = imgW;
+            sceneH = imgH;
+
+            drawLogic = (scale) => {
+                const sW = sceneW * scale, sH = sceneH * scale;
+                const baseDark = wallColor === '#0a0a0a';
+                const effectiveDark = asciiInvert ? !baseDark : baseDark;
+                const paperBg = effectiveDark ? '#09090b' : (wallColor === '#0a0a0a' ? '#f7f6f2' : (wallColor === '#ffffff' ? '#f7f6f2' : wallColor));
+                const inkRGB = effectiveDark ? '244, 244, 245' : '15, 15, 18';
+
+                ctx.fillStyle = paperBg;
+                ctx.fillRect(0, 0, sW, sH);
+
+                const fImg = app.getFilteredImage(imgData, sW, sH, bwAmount, invertAmount);
+
+                // Downsample & 2-pass smooth luminance field for silky architectural contour lines
+                const gW = Math.max(48, Math.min(130, Math.round((vectorCols || 70) * 1.25)));
+                const gH = Math.max(36, Math.round(gW * (sH / sW)));
+                const sCanvas = document.createElement('canvas');
+                sCanvas.width = gW; sCanvas.height = gH;
+                const sCtx = sCanvas.getContext('2d', { willReadFrequently: true });
+                sCtx.drawImage(fImg, 0, 0, gW, gH);
+                const px = sCtx.getImageData(0, 0, gW, gH).data;
+
+                let field = new Float32Array(gW * gH);
+                for (let i = 0, p = 0; i < px.length; i += 4, p++) {
+                    field[p] = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) / 255;
+                }
+                // 2-pass box blur so topographic lines flow organically
+                const tmp = new Float32Array(gW * gH);
+                for (let pass = 0; pass < 2; pass++) {
+                    for (let y = 1; y < gH - 1; y++) {
+                        for (let x = 1; x < gW - 1; x++) {
+                            const idx = y * gW + x;
+                            tmp[idx] = (
+                                field[idx - gW - 1] + field[idx - gW] + field[idx - gW + 1] +
+                                field[idx - 1]      + field[idx] * 2  + field[idx + 1] +
+                                field[idx + gW - 1] + field[idx + gW] + field[idx + gW + 1]
+                            ) / 10;
+                        }
+                    }
+                    field.set(tmp);
+                }
+
+                // Marching Squares contour tracing across 10 luminance elevation levels
+                const levels = 10;
+                const cellW = sW / (gW - 1);
+                const cellH = sH / (gH - 1);
+                const baseLineW = Math.max(0.85, Math.min(sW, sH) * 0.0012);
+
+                const interp = (v1, v2, t) => {
+                    const d = v2 - v1;
+                    return Math.abs(d) < 1e-5 ? 0.5 : Math.max(0, Math.min(1, (t - v1) / d));
+                };
+
+                ctx.save();
+                ctx.lineCap = 'round';
+                for (let lv = 1; lv < levels; lv++) {
+                    const t = lv / levels;
+                    const isMajor = lv % 3 === 0;
+                    ctx.lineWidth = isMajor ? baseLineW * 1.55 : baseLineW * 0.85;
+
+                    if (asciiColor) {
+                        // Subtle chromatic elevation tint from photo palette
+                        const pal = (imgData.palette && imgData.palette[lv % imgData.palette.length]) || { r: 15, g: 118, b: 110 };
+                        let cr = pal.r, cg = pal.g, cb = pal.b;
+                        if (asciiInvert) { cr = 255 - cr; cg = 255 - cg; cb = 255 - cb; }
+                        ctx.strokeStyle = `rgba(${Math.round(cr)}, ${Math.round(cg)}, ${Math.round(cb)}, ${isMajor ? 0.9 : 0.55})`;
+                    } else {
+                        ctx.strokeStyle = `rgba(${inkRGB}, ${isMajor ? 0.88 : 0.42})`;
+                    }
+
+                    ctx.beginPath();
+                    for (let y = 0; y < gH - 1; y++) {
+                        const row0 = y * gW, row1 = (y + 1) * gW;
+                        for (let x = 0; x < gW - 1; x++) {
+                            const tl = field[row0 + x], tr = field[row0 + x + 1];
+                            const br = field[row1 + x + 1], bl = field[row1 + x];
+                            const code = (tl >= t ? 8 : 0) | (tr >= t ? 4 : 0) | (br >= t ? 2 : 0) | (bl >= t ? 1 : 0);
+                            if (code === 0 || code === 15) continue;
+
+                            const x0 = x * cellW, y0 = y * cellH;
+                            const top    = [x0 + interp(tl, tr, t) * cellW, y0];
+                            const right  = [x0 + cellW, y0 + interp(tr, br, t) * cellH];
+                            const bottom = [x0 + interp(bl, br, t) * cellW, y0 + cellH];
+                            const left   = [x0, y0 + interp(tl, bl, t) * cellH];
+
+                            const seg = (a, b) => { ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); };
+                            switch (code) {
+                                case 1: case 14: seg(left, bottom); break;
+                                case 2: case 13: seg(bottom, right); break;
+                                case 3: case 12: seg(left, right); break;
+                                case 4: case 11: seg(top, right); break;
+                                case 5: seg(left, top); seg(bottom, right); break;
+                                case 6: case 9:  seg(top, bottom); break;
+                                case 7: case 8:  seg(left, top); break;
+                                case 10: seg(left, bottom); seg(top, right); break;
+                            }
+                        }
+                    }
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                drawSmartMaskReveal(fImg, sW, sH, scale, paperBg, effectiveDark);
+            };
+
+        // 32. 无框原图 · 防盗直出 (RAW PROTECT)
         } else if (style === 'raw_protect') {
             wallPaddingX = 0; wallPaddingY = 0;
             sceneW = imgW;

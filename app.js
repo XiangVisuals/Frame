@@ -949,14 +949,16 @@ class AppController {
     }
 
     updateControlsVisibility(style) {
+        const smartMaskStyles = ['ascii_inset', 'halftone_mask', 'fluted_glass', 'pixel_mosaic', 'topo_contour'];
+        const isSmartMask = smartMaskStyles.includes(style);
         const isFilm = style.startsWith('film') || style === 'halation_lab' || style === 'cinema_scope' || style === 'ccd_timestamp' || style === 'newspaper_press' || style === 'vinyl_record';
-        const isVector = style === 'vector_field' || style === 'ascii_inset';
-        const hasWall = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'ccd_timestamp', 'vinyl_record', 'ascii_inset'].includes(style);
-        const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'vinyl_record', 'ascii_inset'].includes(style);
+        const isVector = style === 'vector_field' || isSmartMask;
+        const hasWall = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'ccd_timestamp', 'vinyl_record', 'ascii_inset', 'halftone_mask', 'topo_contour'].includes(style);
+        const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'vinyl_record', ...smartMaskStyles].includes(style);
 
         document.getElementById('section-vector').style.display = isVector ? 'block' : 'none';
         const asciiOpts = document.getElementById('ctrl-ascii-opts');
-        if (asciiOpts) asciiOpts.style.display = style === 'ascii_inset' ? 'block' : 'none';
+        if (asciiOpts) asciiOpts.style.display = isSmartMask ? 'block' : 'none';
         document.getElementById('ctrl-grain').style.display = isFilm ? 'block' : 'none';
         document.getElementById('section-materials').style.display = hasWall ? 'block' : 'none';
 
@@ -1493,7 +1495,7 @@ class AppController {
         this.state.isProcessing = true;
         this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
 
-        const stylesToGen = ['ascii_inset', 'vinyl_record', 'ins_45_story', 'xhs_editorial', 'newspaper_press', 'magazine_cover', 'ccd_timestamp', 'exif_palette', 'editorial_magazine', 'cinema_scope'];
+        const stylesToGen = ['ascii_inset', 'halftone_mask', 'fluted_glass', 'pixel_mosaic', 'topo_contour', 'vinyl_record', 'ins_45_story', 'xhs_editorial', 'newspaper_press', 'magazine_cover'];
         const totalTasks = this.state.images.length * stylesToGen.length;
         let currentTask = 0;
 
