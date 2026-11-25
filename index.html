@@ -45,14 +45,21 @@
 </head>
 <body class="flex flex-col font-sans select-none">
 
-    <!-- MINIMALIST CURATORIAL PRELOADER (极简高级开场动效) -->
+    <!-- MINIMAL ARCHITECTURAL FRAMING PRELOADER (极简高级装裱开场动效) -->
     <div id="bootPreloader">
-        <div class="min-loader">
-            <div class="min-loader-mark">
-                <span>XV</span>
+        <div class="frame-loader">
+            <div class="fl-mat">
+                <i class="fl-corner fl-tl"></i>
+                <i class="fl-corner fl-tr"></i>
+                <i class="fl-corner fl-bl"></i>
+                <i class="fl-corner fl-br"></i>
+                <div class="fl-photo"></div>
+                <div class="fl-caption">
+                    <span>XIANG FRAME</span>
+                    <em>STUDIO</em>
+                </div>
             </div>
-            <div class="min-loader-title">XIANG FRAME</div>
-            <div class="min-loader-bar"><i></i></div>
+            <div class="fl-progress"><i></i></div>
         </div>
     </div>
 
@@ -418,28 +425,14 @@
                                             <i class="fa-solid fa-circle-half-stroke text-[10px]"></i> 字符反色
                                         </button>
                                     </div>
-                                    <div>
-                                        <div class="flex justify-between items-center mb-1.5">
-                                            <label class="text-[9.5px] font-mono uppercase tracking-wider text-xv-gray font-bold">智能主体蒙版</label>
-                                            <span class="text-[8.5px] font-mono text-xv-gray">AUTO SALIENCE</span>
+                                    <div class="pt-1 border-t border-xv-border space-y-1.5">
+                                        <div class="flex items-center justify-between text-[9px] font-mono text-xv-gray">
+                                            <span>拖动蒙版移动 · 空白处框选新增</span>
+                                            <span id="asciiCustomCount" class="text-xv-black font-bold">1 区域</span>
                                         </div>
-                                        <div class="grid grid-cols-3 gap-1.5" id="asciiMaskGroup">
-                                            <button type="button" class="ascii-mask-btn py-1.5 border border-xv-black bg-xv-black text-white text-[9.5px] font-mono font-bold" data-mask="focus">聚焦</button>
-                                            <button type="button" class="ascii-mask-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray" data-mask="triptych">三联</button>
-                                            <button type="button" class="ascii-mask-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray" data-mask="dual">双窗</button>
-                                            <button type="button" class="ascii-mask-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray" data-mask="circle">圆镜</button>
-                                            <button type="button" class="ascii-mask-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray" data-mask="band">视带</button>
-                                            <button type="button" class="ascii-mask-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray" data-mask="custom">自定义</button>
-                                        </div>
-                                        <div id="asciiCustomBar" class="hidden mt-2 pt-2 border-t border-xv-border space-y-1.5">
-                                            <div class="flex items-center justify-between text-[9px] font-mono text-xv-gray">
-                                                <span>在画布上拖拽框选区域（可多选）</span>
-                                                <span id="asciiCustomCount" class="text-xv-black font-bold">0 区域</span>
-                                            </div>
-                                            <div class="flex gap-1.5">
-                                                <button id="btnAsciiUndo" type="button" class="filter-btn flex-1 py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-black">撤销上个</button>
-                                                <button id="btnAsciiClear" type="button" class="filter-btn flex-1 py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray">清空重画</button>
-                                            </div>
+                                        <div class="flex gap-1.5">
+                                            <button id="btnAsciiUndo" type="button" class="filter-btn flex-1 py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-black">撤销上个</button>
+                                            <button id="btnAsciiReset" type="button" class="filter-btn flex-1 py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray">重置默认</button>
                                         </div>
                                     </div>
                                 </div>
@@ -756,14 +749,21 @@
     
     <div id="toastContainer" style="top: max(16px, var(--s-top)); left: 50%; transform: translateX(-50%);"></div>
 
-    <!-- 导入解析照片时的极简高级加载遮罩 -->
+    <!-- 导入解析照片时的极简装裱加载遮罩 -->
     <div id="globalLoader">
-        <div class="min-loader is-looping">
-            <div class="min-loader-mark">
-                <span>XV</span>
+        <div class="frame-loader is-looping">
+            <div class="fl-mat">
+                <i class="fl-corner fl-tl"></i>
+                <i class="fl-corner fl-tr"></i>
+                <i class="fl-corner fl-bl"></i>
+                <i class="fl-corner fl-br"></i>
+                <div class="fl-photo"></div>
+                <div class="fl-caption">
+                    <span>FRAMING</span>
+                    <em>P3</em>
+                </div>
             </div>
-            <div class="min-loader-title">PROCESSING</div>
-            <div class="min-loader-bar"><i></i></div>
+            <div class="fl-progress"><i></i></div>
         </div>
         <span id="loaderMainTitle" class="hidden"></span>
         <span id="loaderSubTitle" class="hidden"></span>

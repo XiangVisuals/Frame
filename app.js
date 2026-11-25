@@ -25,7 +25,7 @@ function runBootSequence() {
     };
 
     preloader.addEventListener('click', finishBoot, { once: true });
-    setTimeout(finishBoot, 1150);
+    setTimeout(finishBoot, 1400);
 }
 
 const PROTECT_PRESETS = {
@@ -52,8 +52,7 @@ class AppController {
                 hdrBoost: 0,
                 vectorCols: 70,
                 asciiColor: false,
-                asciiInvert: false,
-                asciiMaskMode: 'focus'
+                asciiInvert: false
             },
             protect: {
                 enabled: false,
@@ -71,6 +70,7 @@ class AppController {
                 seed: Math.floor(Math.random() * 10000)
             },
             isProcessing: false,
+            asciiDefaultMask: null,
             asciiCustomMasks: [],
             asciiDraftMask: null,
             grainPattern: null,
@@ -146,10 +146,9 @@ class AppController {
             btnToggleInvert: $('btnToggleInvert'),
             btnAsciiColor: $('btnAsciiColor'),
             btnAsciiInvert: $('btnAsciiInvert'),
-            asciiCustomBar: $('asciiCustomBar'),
             asciiCustomCount: $('asciiCustomCount'),
             btnAsciiUndo: $('btnAsciiUndo'),
-            btnAsciiClear: $('btnAsciiClear'),
+            btnAsciiReset: $('btnAsciiReset'),
             grainSlider: $('grainSlider'),
             grainVal: $('grainVal'),
 
@@ -403,32 +402,15 @@ class AppController {
         });
 
         const syncAsciiCustomUI = () => {
-            const isCustom = this.state.settings.style === 'ascii_inset' && this.state.settings.asciiMaskMode === 'custom';
-            this.dom.asciiCustomBar?.classList.toggle('hidden', !isCustom);
-            this.dom.previewCanvas?.classList.toggle('custom-mask-cursor', isCustom);
+            const isAscii = this.state.settings.style === 'ascii_inset';
+            this.dom.previewCanvas?.classList.toggle('custom-mask-cursor', isAscii);
+            if (!isAscii) this.dom.previewCanvas?.classList.remove('mask-move-cursor');
             if (this.dom.asciiCustomCount) {
-                this.dom.asciiCustomCount.textContent = `${this.state.asciiCustomMasks.length} 区域`;
+                const count = this.state.asciiCustomMasks.length || 1;
+                this.dom.asciiCustomCount.textContent = `${count} 区域`;
             }
         };
         this.syncAsciiCustomUI = syncAsciiCustomUI;
-
-        document.querySelectorAll('.ascii-mask-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                triggerHaptic('light');
-                const mode = e.currentTarget.dataset.mask;
-                document.querySelectorAll('.ascii-mask-btn').forEach(b => {
-                    const active = b === e.currentTarget;
-                    b.className = active
-                        ? 'ascii-mask-btn py-1.5 border border-xv-black bg-xv-black text-white text-[9.5px] font-mono font-bold'
-                        : 'ascii-mask-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray';
-                });
-                this.updateSettings({ asciiMaskMode: mode }, false);
-                syncAsciiCustomUI();
-                if (mode === 'custom' && !this.state.asciiCustomMasks.length) {
-                    this.showToast('DRAG ON CANVAS // 在画布上拖拽框选自定义蒙版区域', 'info');
-                }
-            });
-        });
 
         this.dom.btnAsciiUndo?.addEventListener('click', () => {
             if (!this.state.asciiCustomMasks.length) return;
@@ -438,16 +420,16 @@ class AppController {
             this.renderPreview(false);
         });
 
-        this.dom.btnAsciiClear?.addEventListener('click', () => {
-            if (!this.state.asciiCustomMasks.length) return;
+        this.dom.btnAsciiReset?.addEventListener('click', () => {
             triggerHaptic('light');
             this.state.asciiCustomMasks = [];
             syncAsciiCustomUI();
             this.renderPreview(false);
+            this.showToast('MASK RESET // 已重置为默认智能蒙版', 'info');
         });
 
-        // 在画布上直接拖拽绘制自定义 ASCII 蒙版区域（兼容桌面鼠标与移动端触屏）
-        let maskDrawStart = null;
+        // 字符蒙版画布直操：点击蒙版内部拖动移动，点击空白处拖拽框选新区域（兼容鼠标与触屏）
+        let maskOp = null; // { type: 'move', idx, offX, offY } | { type: 'draw', startX, startY }
         const getCanvasNormPos = (e) => {
             const rect = this.dom.previewCanvas.getBoundingClientRect();
             if (!rect.width || !rect.height) return null;
@@ -457,28 +439,72 @@ class AppController {
             };
         };
 
+        const getActiveAsciiMasks = () => {
+            if (this.state.asciiCustomMasks.length > 0) return this.state.asciiCustomMasks;
+            return this.state.asciiDefaultMask ? [this.state.asciiDefaultMask] : [];
+        };
+
+        const hitTestAsciiMask = (pos) => {
+            const list = getActiveAsciiMasks();
+            for (let i = list.length - 1; i >= 0; i--) {
+                const m = list[i];
+                if (pos.x >= m.x && pos.x <= m.x + m.w && pos.y >= m.y && pos.y <= m.y + m.h) {
+                    return i;
+                }
+            }
+            return -1;
+        };
+
         this.dom.previewCanvas.addEventListener('pointerdown', (e) => {
-            if (this.state.settings.style !== 'ascii_inset' || this.state.settings.asciiMaskMode !== 'custom') return;
-            if (!this.state.activeId) return;
+            if (this.state.settings.style !== 'ascii_inset' || !this.state.activeId) return;
             const pos = getCanvasNormPos(e);
             if (!pos) return;
             e.preventDefault();
             this.dom.previewCanvas.setPointerCapture?.(e.pointerId);
-            maskDrawStart = pos;
-            this.state.asciiDraftMask = { x: pos.x, y: pos.y, w: 0, h: 0 };
+
+            const hitIdx = hitTestAsciiMask(pos);
+            if (hitIdx !== -1) {
+                // 若当前还是默认蒙版，首次拖动时自动固化为可移动列表
+                if (!this.state.asciiCustomMasks.length && this.state.asciiDefaultMask) {
+                    this.state.asciiCustomMasks = [{ ...this.state.asciiDefaultMask }];
+                }
+                const target = this.state.asciiCustomMasks[hitIdx];
+                maskOp = { type: 'move', idx: hitIdx, offX: pos.x - target.x, offY: pos.y - target.y };
+            } else {
+                // 点击空白处主动框选新区域
+                maskOp = { type: 'draw', startX: pos.x, startY: pos.y };
+                this.state.asciiDraftMask = { x: pos.x, y: pos.y, w: 0, h: 0 };
+            }
         });
 
         this.dom.previewCanvas.addEventListener('pointermove', (e) => {
-            if (!maskDrawStart) return;
+            if (this.state.settings.style !== 'ascii_inset' || !this.state.activeId) return;
             const pos = getCanvasNormPos(e);
             if (!pos) return;
+
+            if (!maskOp) {
+                const overMask = hitTestAsciiMask(pos) !== -1;
+                this.dom.previewCanvas.classList.toggle('mask-move-cursor', overMask);
+                this.dom.previewCanvas.classList.toggle('custom-mask-cursor', !overMask);
+                return;
+            }
+
             e.preventDefault();
-            this.state.asciiDraftMask = {
-                x: Math.min(maskDrawStart.x, pos.x),
-                y: Math.min(maskDrawStart.y, pos.y),
-                w: Math.abs(pos.x - maskDrawStart.x),
-                h: Math.abs(pos.y - maskDrawStart.y)
-            };
+            if (maskOp.type === 'move') {
+                const m = this.state.asciiCustomMasks[maskOp.idx];
+                if (m) {
+                    m.x = Math.max(0, Math.min(1 - m.w, pos.x - maskOp.offX));
+                    m.y = Math.max(0, Math.min(1 - m.h, pos.y - maskOp.offY));
+                }
+            } else if (maskOp.type === 'draw') {
+                this.state.asciiDraftMask = {
+                    x: Math.min(maskOp.startX, pos.x),
+                    y: Math.min(maskOp.startY, pos.y),
+                    w: Math.abs(pos.x - maskOp.startX),
+                    h: Math.abs(pos.y - maskOp.startY)
+                };
+            }
+
             if (!this.isRendering) {
                 this.isRendering = true;
                 requestAnimationFrame(() => {
@@ -488,20 +514,25 @@ class AppController {
             }
         });
 
-        const finishMaskDraw = () => {
-            if (!maskDrawStart) return;
-            const draft = this.state.asciiDraftMask;
-            maskDrawStart = null;
-            this.state.asciiDraftMask = null;
-            if (draft && draft.w > 0.02 && draft.h > 0.02) {
-                triggerHaptic('light');
-                this.state.asciiCustomMasks.push({ ...draft });
-                syncAsciiCustomUI();
+        const finishMaskOp = () => {
+            if (!maskOp) return;
+            if (maskOp.type === 'draw') {
+                const draft = this.state.asciiDraftMask;
+                this.state.asciiDraftMask = null;
+                if (draft && draft.w > 0.025 && draft.h > 0.025) {
+                    if (!this.state.asciiCustomMasks.length && this.state.asciiDefaultMask) {
+                        this.state.asciiCustomMasks = [{ ...this.state.asciiDefaultMask }];
+                    }
+                    triggerHaptic('light');
+                    this.state.asciiCustomMasks.push({ ...draft });
+                    syncAsciiCustomUI();
+                }
             }
+            maskOp = null;
             this.renderPreview(false);
         };
-        this.dom.previewCanvas.addEventListener('pointerup', finishMaskDraw);
-        this.dom.previewCanvas.addEventListener('pointercancel', finishMaskDraw);
+        this.dom.previewCanvas.addEventListener('pointerup', finishMaskOp);
+        this.dom.previewCanvas.addEventListener('pointercancel', finishMaskOp);
 
         const bindSlider = (slider, key, label, fmt) => {
             if (!slider) return;

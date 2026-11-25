@@ -3,7 +3,7 @@
  */
 window.XiangTemplates = {
     async renderScene(app, ctx, imgData, targetWidth, targetHeight) {
-        const { style, wallColor, matMultiplier, shadowMultiplier, invertAmount, grainAmount, bwAmount, vectorCols, asciiColor, asciiInvert, asciiMaskMode } = app.state.settings;
+        const { style, wallColor, matMultiplier, shadowMultiplier, invertAmount, grainAmount, bwAmount, vectorCols, asciiColor, asciiInvert } = app.state.settings;
         const { width: imgW, height: imgH, textLeft, textRight, exifTime, exifCamera, exifLens, exifParams, filmName } = imgData;
 
         const shortEdge = Math.min(imgW, imgH);
@@ -43,19 +43,12 @@ window.XiangTemplates = {
             }
         };
 
-        // 统一智能主体 1:1 蒙版透视引擎（支持 聚焦 / 三联 / 双窗 / 圆镜 / 视带 5 种极简形态）
+        // 字符蒙版 1:1 透视渲染（支持智能默认蒙版 + 自由拖动移动 + 主动框选多区域）
         const drawSmartMaskReveal = (fImg, sW, sH, scale, paperBg, effectiveDark) => {
             if (!imgData.saliency && typeof app.computeSaliencyAnchors === 'function') {
                 try { imgData.saliency = app.computeSaliencyAnchors(imgData.imgObj); } catch (e) {}
             }
-            const sal = imgData.saliency || {
-                p1: { x: 0.45, y: 0.55 },
-                p2: { x: 0.72, y: 0.30 },
-                bestRowY: 0.52,
-                bestColX: 0.50
-            };
-
-            const mode = asciiMaskMode || 'focus';
+            const sal = imgData.saliency || { p1: { x: 0.45, y: 0.55 } };
             const sizeFactor = Math.min(1.35, Math.max(0.55, 0.52 + matMultiplier * 0.48));
             const hairlineCol = effectiveDark ? 'rgba(255, 255, 255, 0.24)' : 'rgba(10, 10, 10, 0.14)';
             const hairlineW = Math.max(1, scale * 0.85);
@@ -64,15 +57,6 @@ window.XiangTemplates = {
             const shCol = effectiveDark
                 ? `rgba(0, 0, 0, ${0.68 * shadowMultiplier})`
                 : `rgba(0, 0, 0, ${0.18 * shadowMultiplier})`;
-
-            const clampRect = (cx, cy, w, h, marginPct = 0.06) => {
-                const mx = sW * marginPct, my = sH * marginPct;
-                const cw = Math.min(w, sW - mx * 2);
-                const ch = Math.min(h, sH - my * 2);
-                const x = Math.max(mx, Math.min(sW - mx - cw, cx - cw / 2));
-                const y = Math.max(my, Math.min(sH - my - ch, cy - ch / 2));
-                return { x, y, w: cw, h: ch };
-            };
 
             const revealRect = (x, y, w, h) => {
                 if (shadowMultiplier > 0) {
@@ -95,110 +79,29 @@ window.XiangTemplates = {
                 ctx.strokeRect(x, y, w, h);
             };
 
-            const revealCircle = (cx, cy, r) => {
-                if (shadowMultiplier > 0) {
-                    ctx.save();
-                    ctx.shadowColor = shCol;
-                    ctx.shadowBlur = shBlur;
-                    ctx.shadowOffsetY = shOffY;
-                    ctx.fillStyle = paperBg;
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                }
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.clip();
-                ctx.drawImage(fImg, 0, 0, sW, sH);
-                ctx.restore();
-                ctx.strokeStyle = hairlineCol;
-                ctx.lineWidth = hairlineW;
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.stroke();
-            };
+            // 计算默认智能主体蒙版（归一化 0..1 坐标，供拖动命中检测）
+            const dw = Math.min(0.84, 0.48 * sizeFactor);
+            const dh = Math.min(0.84, 0.48 * sizeFactor);
+            const dx = Math.max(0.06, Math.min(1 - 0.06 - dw, sal.p1.x - dw / 2));
+            const dy = Math.max(0.06, Math.min(1 - 0.06 - dh, sal.p1.y - dh / 2));
+            app.state.asciiDefaultMask = { x: dx, y: dy, w: dw, h: dh };
 
-            if (mode === 'focus') {
-                const w = sW * 0.48 * sizeFactor;
-                const h = sH * 0.48 * sizeFactor;
-                const r = clampRect(sal.p1.x * sW, sal.p1.y * sH, w, h, 0.075);
-                revealRect(r.x, r.y, r.w, r.h);
-            } else if (mode === 'triptych') {
-                const isPortrait = sH > sW * 1.1;
-                if (!isPortrait) {
-                    const totalW = Math.min(sW * 0.78, sW * 0.56 * sizeFactor);
-                    const gap = sW * 0.024;
-                    const stripW = (totalW - gap * 2) / 3;
-                    const baseH = Math.min(sH * 0.72, sH * 0.52 * sizeFactor);
-                    const groupX = Math.max(sW * 0.07, Math.min(sW - sW * 0.07 - totalW, sal.p1.x * sW - totalW / 2));
-                    const centerY = Math.max(sH * 0.28, Math.min(sH * 0.72, sal.p1.y * sH));
-                    const offsets = [-baseH * 0.14, 0, baseH * 0.14];
-                    const heights = [baseH * 0.88, baseH * 1.04, baseH * 0.88];
-                    for (let k = 0; k < 3; k++) {
-                        const sx = groupX + k * (stripW + gap);
-                        const sh = heights[k];
-                        const sy = Math.max(sH * 0.06, Math.min(sH - sH * 0.06 - sh, centerY - sh / 2 + offsets[k]));
-                        revealRect(sx, sy, stripW, sh);
-                    }
-                } else {
-                    const totalH = Math.min(sH * 0.76, sH * 0.54 * sizeFactor);
-                    const gap = sH * 0.022;
-                    const stripH = (totalH - gap * 2) / 3;
-                    const baseW = Math.min(sW * 0.76, sW * 0.56 * sizeFactor);
-                    const groupY = Math.max(sH * 0.07, Math.min(sH - sH * 0.07 - totalH, sal.p1.y * sH - totalH / 2));
-                    const centerX = Math.max(sW * 0.28, Math.min(sW * 0.72, sal.p1.x * sW));
-                    const offsets = [-baseW * 0.13, 0, baseW * 0.13];
-                    const widths = [baseW * 0.86, baseW * 1.04, baseW * 0.86];
-                    for (let k = 0; k < 3; k++) {
-                        const sy = groupY + k * (stripH + gap);
-                        const sw = widths[k];
-                        const sx = Math.max(sW * 0.06, Math.min(sW - sW * 0.06 - sw, centerX - sw / 2 + offsets[k]));
-                        revealRect(sx, sy, sw, stripH);
-                    }
-                }
-            } else if (mode === 'dual') {
-                const r1 = clampRect(sal.p1.x * sW, sal.p1.y * sH, sW * 0.42 * sizeFactor, sH * 0.44 * sizeFactor, 0.065);
-                const r2 = clampRect(sal.p2.x * sW, sal.p2.y * sH, sW * 0.27 * sizeFactor, sH * 0.28 * sizeFactor, 0.065);
-                revealRect(r2.x, r2.y, r2.w, r2.h);
-                revealRect(r1.x, r1.y, r1.w, r1.h);
-            } else if (mode === 'circle') {
-                const minDim = Math.min(sW, sH);
-                const r = Math.min(minDim * 0.42, minDim * 0.27 * sizeFactor);
-                const margin = r + minDim * 0.07;
-                const cx = Math.max(margin, Math.min(sW - margin, sal.p1.x * sW));
-                const cy = Math.max(margin, Math.min(sH - margin, sal.p1.y * sH));
-                revealCircle(cx, cy, r);
-            } else if (mode === 'band') {
-                const isPortrait = sH > sW * 1.15;
-                if (!isPortrait) {
-                    const bandH = Math.min(sH * 0.56, sH * 0.32 * sizeFactor);
-                    const sidePad = sW * 0.055;
-                    const y = Math.max(sH * 0.08, Math.min(sH - sH * 0.08 - bandH, sal.bestRowY * sH - bandH / 2));
-                    revealRect(sidePad, y, sW - sidePad * 2, bandH);
-                } else {
-                    const bandW = Math.min(sW * 0.58, sW * 0.36 * sizeFactor);
-                    const topPad = sH * 0.055;
-                    const x = Math.max(sW * 0.08, Math.min(sW - sW * 0.08 - bandW, sal.bestColX * sW - bandW / 2));
-                    revealRect(x, topPad, bandW, sH - topPad * 2);
-                }
-            } else if (mode === 'custom') {
-                const list = Array.isArray(app.state.asciiCustomMasks) ? app.state.asciiCustomMasks : [];
-                list.forEach(m => {
-                    revealRect(m.x * sW, m.y * sH, m.w * sW, m.h * sH);
-                });
-                const draft = app.state.asciiDraftMask;
-                if (draft && draft.w > 0.005 && draft.h > 0.005) {
-                    const dx = draft.x * sW, dy = draft.y * sH, dw = draft.w * sW, dh = draft.h * sH;
-                    revealRect(dx, dy, dw, dh);
-                    ctx.save();
-                    ctx.setLineDash([6, 4]);
-                    ctx.strokeStyle = effectiveDark ? 'rgba(255,255,255,0.85)' : 'rgba(10,10,10,0.85)';
-                    ctx.lineWidth = Math.max(1.2, scale * 1.1);
-                    ctx.strokeRect(dx, dy, dw, dh);
-                    ctx.restore();
-                }
+            const customList = Array.isArray(app.state.asciiCustomMasks) ? app.state.asciiCustomMasks : [];
+            const activeMasks = customList.length > 0 ? customList : [app.state.asciiDefaultMask];
+            activeMasks.forEach(m => {
+                revealRect(m.x * sW, m.y * sH, m.w * sW, m.h * sH);
+            });
+
+            const draft = app.state.asciiDraftMask;
+            if (draft && draft.w > 0.005 && draft.h > 0.005) {
+                const rx = draft.x * sW, ry = draft.y * sH, rw = draft.w * sW, rh = draft.h * sH;
+                revealRect(rx, ry, rw, rh);
+                ctx.save();
+                ctx.setLineDash([6, 4]);
+                ctx.strokeStyle = effectiveDark ? 'rgba(255,255,255,0.85)' : 'rgba(10,10,10,0.85)';
+                ctx.lineWidth = Math.max(1.2, scale * 1.1);
+                ctx.strokeRect(rx, ry, rw, rh);
+                ctx.restore();
             }
         };
 

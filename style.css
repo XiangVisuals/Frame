@@ -24,7 +24,7 @@ html, body {
 }
 
 /* =========================================================
-   1. MINIMALIST CURATORIAL LOADER (极简高级画廊加载动效)
+   1. MINIMAL ARCHITECTURAL FRAMING LOADER (极简装裱画框动效)
    ========================================================= */
 #bootPreloader,
 #globalLoader {
@@ -47,74 +47,141 @@ html, body {
     opacity: 1; pointer-events: all;
 }
 
-.min-loader {
+.frame-loader {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 18px;
 }
 
-.min-loader-mark {
-    width: 38px;
-    height: 38px;
+/* 极简画廊装裱相框：从取景构图平滑展开为纯白留白相框 */
+.fl-mat {
+    position: relative;
+    width: 108px;
+    height: 132px;
+    padding: 12px 12px 30px 12px;
+    background: #ffffff;
     border: 1px solid #0a0a0a;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: #0a0a0a;
-    animation: minMarkIn 0.7s var(--ease-out-expo) both;
+    flex-direction: column;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
+    animation: flMatExpand 1.35s var(--ease-out-expo) both;
 }
 
-.min-loader-title {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.34em;
-    color: #0a0a0a;
-    padding-left: 0.34em;
-    opacity: 0;
-    animation: minFadeUp 0.65s var(--ease-out-expo) 0.12s forwards;
+/* 四角 1px 相机取景框准星 */
+.fl-corner {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-color: #0a0a0a;
+    border-style: solid;
+    border-width: 0;
+    pointer-events: none;
+    animation: flCornersSnap 1.35s var(--ease-out-expo) both;
 }
+.fl-tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
+.fl-tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
+.fl-bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
+.fl-br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
 
-.min-loader-bar {
-    width: 112px;
-    height: 1px;
-    background: rgba(10, 10, 10, 0.12);
+/* 内部极简银盐灰阶画幅 */
+.fl-photo {
+    flex: 1;
+    width: 100%;
+    background: linear-gradient(155deg, #27272a 0%, #111113 58%, #09090b 100%);
     position: relative;
     overflow: hidden;
+    animation: flPhotoIn 1.35s var(--ease-out-expo) both;
 }
-.min-loader-bar i {
+.fl-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.16) 50%, transparent 65%);
+    transform: translateX(-120%);
+    animation: flSheen 1.25s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+}
+
+/* 底部极简水印展签排版 */
+.fl-caption {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 9px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    font-family: "JetBrains Mono", monospace;
+    opacity: 0;
+    animation: flCaptionIn 1.35s var(--ease-out-expo) both;
+}
+.fl-caption span {
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #0a0a0a;
+}
+.fl-caption em {
+    font-style: normal;
+    font-size: 6.5px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: #71717a;
+}
+
+.fl-progress {
+    width: 108px;
+    height: 1px;
+    background: rgba(10, 10, 10, 0.12);
+    overflow: hidden;
+}
+.fl-progress i {
     display: block;
     width: 100%;
     height: 100%;
     background: #0a0a0a;
     transform-origin: left;
     transform: scaleX(0);
-    animation: minBarFill 1.05s cubic-bezier(0.22, 1, 0.36, 1) 0.08s forwards;
-}
-.min-loader.is-looping .min-loader-bar i {
-    width: 42%;
-    transform: none;
-    animation: minBarSweep 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: flBarFill 1.25s cubic-bezier(0.22, 1, 0.36, 1) 0.08s forwards;
 }
 
-@keyframes minMarkIn {
-    from { opacity: 0; transform: scale(0.92); }
-    to   { opacity: 1; transform: scale(1); }
+.frame-loader.is-looping .fl-photo::after {
+    animation: flSheen 1.4s ease-in-out infinite;
 }
-@keyframes minFadeUp {
-    from { opacity: 0; transform: translateY(5px); }
-    to   { opacity: 0.85; transform: translateY(0); }
+.frame-loader.is-looping .fl-progress i {
+    width: 42%;
+    transform: none;
+    animation: flBarSweep 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
-@keyframes minBarFill {
+
+@keyframes flMatExpand {
+    0%   { padding: 0; border-color: transparent; background: transparent; box-shadow: none; }
+    45%  { padding: 12px 12px 30px 12px; border-color: #0a0a0a; background: #ffffff; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08); }
+    100% { padding: 12px 12px 30px 12px; border-color: #0a0a0a; background: #ffffff; box-shadow: 0 18px 42px rgba(0, 0, 0, 0.1); }
+}
+@keyframes flCornersSnap {
+    0%   { opacity: 0; transform: scale(1.6); }
+    35%  { opacity: 0.55; transform: scale(1); }
+    100% { opacity: 0.35; transform: scale(1); }
+}
+@keyframes flPhotoIn {
+    0%   { opacity: 0; transform: scale(1.06); }
+    38%  { opacity: 1; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes flSheen {
+    0%   { transform: translateX(-130%); }
+    100% { transform: translateX(130%); }
+}
+@keyframes flCaptionIn {
+    0%, 42% { opacity: 0; transform: translateY(3px); }
+    72%, 100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes flBarFill {
     0%   { transform: scaleX(0); }
     100% { transform: scaleX(1); }
 }
-@keyframes minBarSweep {
+@keyframes flBarSweep {
     0%   { transform: translateX(-110%); }
     100% { transform: translateX(260%); }
 }
@@ -517,6 +584,8 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; bac
 }
 
 #previewCanvas.custom-mask-cursor { cursor: crosshair; }
+#previewCanvas.mask-move-cursor { cursor: grab; }
+#previewCanvas.mask-move-cursor:active { cursor: grabbing; }
 
 @media (max-width: 767px) {
     #panel-canvas { height: 45dvh; }
@@ -556,10 +625,9 @@ body.dark-mode #bootPreloader,
 body.dark-mode #globalLoader {
     background: rgba(10, 10, 13, 0.94) !important;
 }
-body.dark-mode .min-loader-mark { border-color: #f4f4f5; color: #f4f4f5; }
-body.dark-mode .min-loader-title { color: #f4f4f5; }
-body.dark-mode .min-loader-bar { background: rgba(255, 255, 255, 0.14); }
-body.dark-mode .min-loader-bar i { background: #f4f4f5; }
+body.dark-mode .fl-corner { border-color: #f4f4f5; }
+body.dark-mode .fl-progress { background: rgba(255, 255, 255, 0.14); }
+body.dark-mode .fl-progress i { background: #f4f4f5; }
 
 body.dark-mode header,
 body.dark-mode .view-panel,
