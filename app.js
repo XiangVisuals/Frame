@@ -25,7 +25,7 @@ function runBootSequence() {
     };
 
     preloader.addEventListener('click', finishBoot, { once: true });
-    setTimeout(finishBoot, 2100);
+    setTimeout(finishBoot, 1150);
 }
 
 const PROTECT_PRESETS = {
@@ -71,6 +71,8 @@ class AppController {
                 seed: Math.floor(Math.random() * 10000)
             },
             isProcessing: false,
+            asciiCustomMasks: [],
+            asciiDraftMask: null,
             grainPattern: null,
             supportsP3: false,
             currentTab: 0
@@ -144,6 +146,10 @@ class AppController {
             btnToggleInvert: $('btnToggleInvert'),
             btnAsciiColor: $('btnAsciiColor'),
             btnAsciiInvert: $('btnAsciiInvert'),
+            asciiCustomBar: $('asciiCustomBar'),
+            asciiCustomCount: $('asciiCustomCount'),
+            btnAsciiUndo: $('btnAsciiUndo'),
+            btnAsciiClear: $('btnAsciiClear'),
             grainSlider: $('grainSlider'),
             grainVal: $('grainVal'),
 
@@ -396,6 +402,16 @@ class AppController {
             this.updateSettings({ asciiInvert: next }, false);
         });
 
+        const syncAsciiCustomUI = () => {
+            const isCustom = this.state.settings.style === 'ascii_inset' && this.state.settings.asciiMaskMode === 'custom';
+            this.dom.asciiCustomBar?.classList.toggle('hidden', !isCustom);
+            this.dom.previewCanvas?.classList.toggle('custom-mask-cursor', isCustom);
+            if (this.dom.asciiCustomCount) {
+                this.dom.asciiCustomCount.textContent = `${this.state.asciiCustomMasks.length} 区域`;
+            }
+        };
+        this.syncAsciiCustomUI = syncAsciiCustomUI;
+
         document.querySelectorAll('.ascii-mask-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 triggerHaptic('light');
@@ -407,8 +423,85 @@ class AppController {
                         : 'ascii-mask-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray';
                 });
                 this.updateSettings({ asciiMaskMode: mode }, false);
+                syncAsciiCustomUI();
+                if (mode === 'custom' && !this.state.asciiCustomMasks.length) {
+                    this.showToast('DRAG ON CANVAS // 在画布上拖拽框选自定义蒙版区域', 'info');
+                }
             });
         });
+
+        this.dom.btnAsciiUndo?.addEventListener('click', () => {
+            if (!this.state.asciiCustomMasks.length) return;
+            triggerHaptic('light');
+            this.state.asciiCustomMasks.pop();
+            syncAsciiCustomUI();
+            this.renderPreview(false);
+        });
+
+        this.dom.btnAsciiClear?.addEventListener('click', () => {
+            if (!this.state.asciiCustomMasks.length) return;
+            triggerHaptic('light');
+            this.state.asciiCustomMasks = [];
+            syncAsciiCustomUI();
+            this.renderPreview(false);
+        });
+
+        // 在画布上直接拖拽绘制自定义 ASCII 蒙版区域（兼容桌面鼠标与移动端触屏）
+        let maskDrawStart = null;
+        const getCanvasNormPos = (e) => {
+            const rect = this.dom.previewCanvas.getBoundingClientRect();
+            if (!rect.width || !rect.height) return null;
+            return {
+                x: Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+                y: Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height))
+            };
+        };
+
+        this.dom.previewCanvas.addEventListener('pointerdown', (e) => {
+            if (this.state.settings.style !== 'ascii_inset' || this.state.settings.asciiMaskMode !== 'custom') return;
+            if (!this.state.activeId) return;
+            const pos = getCanvasNormPos(e);
+            if (!pos) return;
+            e.preventDefault();
+            this.dom.previewCanvas.setPointerCapture?.(e.pointerId);
+            maskDrawStart = pos;
+            this.state.asciiDraftMask = { x: pos.x, y: pos.y, w: 0, h: 0 };
+        });
+
+        this.dom.previewCanvas.addEventListener('pointermove', (e) => {
+            if (!maskDrawStart) return;
+            const pos = getCanvasNormPos(e);
+            if (!pos) return;
+            e.preventDefault();
+            this.state.asciiDraftMask = {
+                x: Math.min(maskDrawStart.x, pos.x),
+                y: Math.min(maskDrawStart.y, pos.y),
+                w: Math.abs(pos.x - maskDrawStart.x),
+                h: Math.abs(pos.y - maskDrawStart.y)
+            };
+            if (!this.isRendering) {
+                this.isRendering = true;
+                requestAnimationFrame(() => {
+                    this.renderPreview(false);
+                    this.isRendering = false;
+                });
+            }
+        });
+
+        const finishMaskDraw = () => {
+            if (!maskDrawStart) return;
+            const draft = this.state.asciiDraftMask;
+            maskDrawStart = null;
+            this.state.asciiDraftMask = null;
+            if (draft && draft.w > 0.02 && draft.h > 0.02) {
+                triggerHaptic('light');
+                this.state.asciiCustomMasks.push({ ...draft });
+                syncAsciiCustomUI();
+            }
+            this.renderPreview(false);
+        };
+        this.dom.previewCanvas.addEventListener('pointerup', finishMaskDraw);
+        this.dom.previewCanvas.addEventListener('pointercancel', finishMaskDraw);
 
         const bindSlider = (slider, key, label, fmt) => {
             if (!slider) return;
@@ -949,16 +1042,16 @@ class AppController {
     }
 
     updateControlsVisibility(style) {
-        const smartMaskStyles = ['ascii_inset', 'halftone_mask', 'fluted_glass', 'pixel_mosaic', 'topo_contour'];
-        const isSmartMask = smartMaskStyles.includes(style);
+        const isAscii = style === 'ascii_inset';
         const isFilm = style.startsWith('film') || style === 'halation_lab' || style === 'cinema_scope' || style === 'ccd_timestamp' || style === 'newspaper_press' || style === 'vinyl_record';
-        const isVector = style === 'vector_field' || isSmartMask;
-        const hasWall = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'ccd_timestamp', 'vinyl_record', 'ascii_inset', 'halftone_mask', 'topo_contour'].includes(style);
-        const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'vinyl_record', ...smartMaskStyles].includes(style);
+        const isVector = style === 'vector_field' || isAscii;
+        const hasWall = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'ccd_timestamp', 'vinyl_record', 'ascii_inset'].includes(style);
+        const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'vinyl_record', 'ascii_inset'].includes(style);
 
         document.getElementById('section-vector').style.display = isVector ? 'block' : 'none';
         const asciiOpts = document.getElementById('ctrl-ascii-opts');
-        if (asciiOpts) asciiOpts.style.display = isSmartMask ? 'block' : 'none';
+        if (asciiOpts) asciiOpts.style.display = isAscii ? 'block' : 'none';
+        if (typeof this.syncAsciiCustomUI === 'function') this.syncAsciiCustomUI();
         document.getElementById('ctrl-grain').style.display = isFilm ? 'block' : 'none';
         document.getElementById('section-materials').style.display = hasWall ? 'block' : 'none';
 
@@ -1495,7 +1588,7 @@ class AppController {
         this.state.isProcessing = true;
         this.dom.progressModal.classList.remove('opacity-0', 'pointer-events-none');
 
-        const stylesToGen = ['ascii_inset', 'halftone_mask', 'fluted_glass', 'pixel_mosaic', 'topo_contour', 'vinyl_record', 'ins_45_story', 'xhs_editorial', 'newspaper_press', 'magazine_cover'];
+        const stylesToGen = ['ascii_inset', 'vinyl_record', 'ins_45_story', 'xhs_editorial', 'newspaper_press', 'magazine_cover', 'ccd_timestamp', 'exif_palette', 'editorial_magazine', 'cinema_scope'];
         const totalTasks = this.state.images.length * stylesToGen.length;
         let currentTask = 0;
 

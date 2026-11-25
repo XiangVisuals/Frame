@@ -183,6 +183,22 @@ window.XiangTemplates = {
                     const x = Math.max(sW * 0.08, Math.min(sW - sW * 0.08 - bandW, sal.bestColX * sW - bandW / 2));
                     revealRect(x, topPad, bandW, sH - topPad * 2);
                 }
+            } else if (mode === 'custom') {
+                const list = Array.isArray(app.state.asciiCustomMasks) ? app.state.asciiCustomMasks : [];
+                list.forEach(m => {
+                    revealRect(m.x * sW, m.y * sH, m.w * sW, m.h * sH);
+                });
+                const draft = app.state.asciiDraftMask;
+                if (draft && draft.w > 0.005 && draft.h > 0.005) {
+                    const dx = draft.x * sW, dy = draft.y * sH, dw = draft.w * sW, dh = draft.h * sH;
+                    revealRect(dx, dy, dw, dh);
+                    ctx.save();
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeStyle = effectiveDark ? 'rgba(255,255,255,0.85)' : 'rgba(10,10,10,0.85)';
+                    ctx.lineWidth = Math.max(1.2, scale * 1.1);
+                    ctx.strokeRect(dx, dy, dw, dh);
+                    ctx.restore();
+                }
             }
         };
 
@@ -2408,282 +2424,7 @@ window.XiangTemplates = {
                 drawSmartMaskReveal(fImg, sW, sH, scale, paperBg, effectiveDark);
             };
 
-        // 28. 半调网点 · 印刷蒙版 (RISORAPH HALFTONE MASK — NEW)
-        } else if (style === 'halftone_mask') {
-            wallPaddingX = 0; wallPaddingY = 0;
-            sceneW = imgW;
-            sceneH = imgH;
-
-            drawLogic = (scale) => {
-                const sW = sceneW * scale, sH = sceneH * scale;
-                const baseDark = wallColor === '#0a0a0a';
-                const effectiveDark = asciiInvert ? !baseDark : baseDark;
-                const paperBg = effectiveDark ? '#0a0a0c' : (wallColor === '#0a0a0a' ? '#faf8f4' : (wallColor === '#ffffff' ? '#faf8f4' : wallColor));
-                const inkCol = effectiveDark ? '#f4f4f5' : '#111113';
-
-                ctx.fillStyle = paperBg;
-                ctx.fillRect(0, 0, sW, sH);
-
-                const fImg = app.getFilteredImage(imgData, sW, sH, bwAmount, invertAmount);
-
-                // Sample image for 45° Risograph halftone screen
-                const cols = Math.max(36, Math.min(130, Math.round((vectorCols || 70) * 1.1)));
-                const step = sW / cols;
-                const rows = Math.max(20, Math.ceil(sH / step));
-
-                const sCanvas = document.createElement('canvas');
-                sCanvas.width = cols; sCanvas.height = rows;
-                const sCtx = sCanvas.getContext('2d', { willReadFrequently: true });
-                sCtx.drawImage(fImg, 0, 0, cols, rows);
-                const px = sCtx.getImageData(0, 0, cols, rows).data;
-
-                // Staggered hexagonal / 45° printmaking dot grid
-                const maxR = step * 0.56;
-                ctx.save();
-                for (let r = 0; r < rows; r++) {
-                    const offsetX = (r % 2 === 1) ? step * 0.5 : 0;
-                    const cy = (r + 0.5) * step;
-                    for (let c = 0; c < cols; c++) {
-                        const idx = (r * cols + c) * 4;
-                        let cr = px[idx], cg = px[idx + 1], cb = px[idx + 2];
-                        const lum = (0.299 * cr + 0.587 * cg + 0.114 * cb) / 255;
-                        const cLum = Math.max(0, Math.min(1, (lum - 0.05) / 0.90));
-                        const density = effectiveDark ? cLum : (1 - cLum);
-                        if (density < 0.05) continue;
-
-                        const radius = Math.pow(density, 0.85) * maxR;
-                        if (radius < 0.55) continue;
-
-                        if (asciiColor) {
-                            let dr = cr, dg = cg, db = cb;
-                            if (asciiInvert) { dr = 255 - dr; dg = 255 - dg; db = 255 - db; }
-                            ctx.fillStyle = `rgb(${Math.round(dr)}, ${Math.round(dg)}, ${Math.round(db)})`;
-                        } else {
-                            ctx.fillStyle = inkCol;
-                        }
-
-                        ctx.beginPath();
-                        ctx.arc(c * step + offsetX + step * 0.25, cy, radius, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                }
-                ctx.restore();
-
-                drawSmartMaskReveal(fImg, sW, sH, scale, paperBg, effectiveDark);
-            };
-
-        // 29. 长虹玻璃 · 建筑折射蒙版 (ARCHITECTURAL FLUTED GLASS — NEW)
-        } else if (style === 'fluted_glass') {
-            wallPaddingX = 0; wallPaddingY = 0;
-            sceneW = imgW;
-            sceneH = imgH;
-
-            drawLogic = (scale) => {
-                const sW = sceneW * scale, sH = sceneH * scale;
-                const fImg = app.getFilteredImage(imgData, sW, sH, bwAmount, invertAmount);
-
-                // Softened optical base for authentic frosted-reeded glass light diffusion
-                const blurCvs = document.createElement('canvas');
-                const bw = Math.min(640, Math.max(160, Math.round(sW * 0.35)));
-                const bh = Math.max(120, Math.round(bw * (sH / sW)));
-                blurCvs.width = bw; blurCvs.height = bh;
-                const bCtx = app.getCanvasContext(blurCvs);
-                bCtx.filter = asciiInvert ? 'blur(5px) invert(1) saturate(135%)' : (asciiColor ? 'blur(4px) saturate(165%) contrast(1.06)' : 'blur(4px) saturate(118%)');
-                bCtx.drawImage(fImg, 0, 0, bw, bh);
-
-                const flutes = Math.max(16, Math.min(72, Math.round((vectorCols || 70) * 0.52)));
-                const ribW = sW / flutes;
-                const srcRibW = bw / flutes;
-
-                // Cylindrical vertical glass rib refraction
-                for (let i = 0; i < flutes; i++) {
-                    const dx = i * ribW;
-                    // Each cylindrical lens stretches the inner ~54% of its strip across the full rib
-                    const sx = Math.max(0, Math.min(bw - srcRibW * 0.55, (i + 0.22) * srcRibW));
-                    ctx.drawImage(blurCvs, sx, 0, srcRibW * 0.56, bh, dx, 0, ribW + 0.6, sH);
-
-                    // Cylindrical glass specular highlight + depth crease
-                    const grad = ctx.createLinearGradient(dx, 0, dx + ribW, 0);
-                    grad.addColorStop(0.0,  'rgba(255, 255, 255, 0.28)');
-                    grad.addColorStop(0.16, 'rgba(255, 255, 255, 0.08)');
-                    grad.addColorStop(0.48, 'rgba(255, 255, 255, 0.0)');
-                    grad.addColorStop(0.84, 'rgba(0, 0, 0, 0.14)');
-                    grad.addColorStop(1.0,  'rgba(0, 0, 0, 0.30)');
-                    ctx.fillStyle = grad;
-                    ctx.fillRect(dx, 0, ribW, sH);
-                }
-
-                // Subtle frosted architectural veil
-                ctx.fillStyle = asciiInvert ? 'rgba(10, 10, 14, 0.14)' : 'rgba(255, 255, 255, 0.08)';
-                ctx.fillRect(0, 0, sW, sH);
-
-                drawSmartMaskReveal(fImg, sW, sH, scale, '#121216', true);
-            };
-
-        // 30. 像素解构 · 色块网格蒙版 (BAUHAUS PIXEL MOSAIC — NEW)
-        } else if (style === 'pixel_mosaic') {
-            wallPaddingX = 0; wallPaddingY = 0;
-            sceneW = imgW;
-            sceneH = imgH;
-
-            drawLogic = (scale) => {
-                const sW = sceneW * scale, sH = sceneH * scale;
-                const fImg = app.getFilteredImage(imgData, sW, sH, bwAmount, invertAmount);
-
-                const cols = Math.max(16, Math.min(80, Math.round((vectorCols || 70) * 0.55)));
-                const cell = sW / cols;
-                const rows = Math.max(12, Math.ceil(sH / cell));
-
-                const sCanvas = document.createElement('canvas');
-                sCanvas.width = cols; sCanvas.height = rows;
-                const sCtx = sCanvas.getContext('2d', { willReadFrequently: true });
-                sCtx.drawImage(fImg, 0, 0, cols, rows);
-                const px = sCtx.getImageData(0, 0, cols, rows).data;
-
-                const grout = Math.max(0.8, cell * 0.045);
-                const effectiveDark = asciiInvert;
-                ctx.fillStyle = effectiveDark ? '#09090b' : '#ffffff';
-                ctx.fillRect(0, 0, sW, sH);
-
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        const idx = (r * cols + c) * 4;
-                        let cr = px[idx], cg = px[idx + 1], cb = px[idx + 2];
-                        if (!asciiColor) {
-                            // Crisp architectural desaturated/tinted editorial mosaic when color boost is off, or full chromatic
-                            const lum = 0.299 * cr + 0.587 * cg + 0.114 * cb;
-                            cr = lum + (cr - lum) * 0.85;
-                            cg = lum + (cg - lum) * 0.85;
-                            cb = lum + (cb - lum) * 0.85;
-                        } else {
-                            // Vivid Gerhard Richter high-saturation color blocks
-                            const lum = 0.299 * cr + 0.587 * cg + 0.114 * cb;
-                            cr = Math.max(0, Math.min(255, lum + (cr - lum) * 1.45));
-                            cg = Math.max(0, Math.min(255, lum + (cg - lum) * 1.45));
-                            cb = Math.max(0, Math.min(255, lum + (cb - lum) * 1.45));
-                        }
-                        if (asciiInvert) {
-                            cr = 255 - cr; cg = 255 - cg; cb = 255 - cb;
-                        }
-                        ctx.fillStyle = `rgb(${Math.round(cr)}, ${Math.round(cg)}, ${Math.round(cb)})`;
-                        ctx.fillRect(c * cell + grout * 0.5, r * cell + grout * 0.5, cell - grout, cell - grout);
-                    }
-                }
-
-                drawSmartMaskReveal(fImg, sW, sH, scale, effectiveDark ? '#09090b' : '#ffffff', effectiveDark);
-            };
-
-        // 31. 光影等高线 · 地形测绘蒙版 (LUMINANCE TOPOGRAPHIC CONTOUR — NEW)
-        } else if (style === 'topo_contour') {
-            wallPaddingX = 0; wallPaddingY = 0;
-            sceneW = imgW;
-            sceneH = imgH;
-
-            drawLogic = (scale) => {
-                const sW = sceneW * scale, sH = sceneH * scale;
-                const baseDark = wallColor === '#0a0a0a';
-                const effectiveDark = asciiInvert ? !baseDark : baseDark;
-                const paperBg = effectiveDark ? '#09090b' : (wallColor === '#0a0a0a' ? '#f7f6f2' : (wallColor === '#ffffff' ? '#f7f6f2' : wallColor));
-                const inkRGB = effectiveDark ? '244, 244, 245' : '15, 15, 18';
-
-                ctx.fillStyle = paperBg;
-                ctx.fillRect(0, 0, sW, sH);
-
-                const fImg = app.getFilteredImage(imgData, sW, sH, bwAmount, invertAmount);
-
-                // Downsample & 2-pass smooth luminance field for silky architectural contour lines
-                const gW = Math.max(48, Math.min(130, Math.round((vectorCols || 70) * 1.25)));
-                const gH = Math.max(36, Math.round(gW * (sH / sW)));
-                const sCanvas = document.createElement('canvas');
-                sCanvas.width = gW; sCanvas.height = gH;
-                const sCtx = sCanvas.getContext('2d', { willReadFrequently: true });
-                sCtx.drawImage(fImg, 0, 0, gW, gH);
-                const px = sCtx.getImageData(0, 0, gW, gH).data;
-
-                let field = new Float32Array(gW * gH);
-                for (let i = 0, p = 0; i < px.length; i += 4, p++) {
-                    field[p] = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) / 255;
-                }
-                // 2-pass box blur so topographic lines flow organically
-                const tmp = new Float32Array(gW * gH);
-                for (let pass = 0; pass < 2; pass++) {
-                    for (let y = 1; y < gH - 1; y++) {
-                        for (let x = 1; x < gW - 1; x++) {
-                            const idx = y * gW + x;
-                            tmp[idx] = (
-                                field[idx - gW - 1] + field[idx - gW] + field[idx - gW + 1] +
-                                field[idx - 1]      + field[idx] * 2  + field[idx + 1] +
-                                field[idx + gW - 1] + field[idx + gW] + field[idx + gW + 1]
-                            ) / 10;
-                        }
-                    }
-                    field.set(tmp);
-                }
-
-                // Marching Squares contour tracing across 10 luminance elevation levels
-                const levels = 10;
-                const cellW = sW / (gW - 1);
-                const cellH = sH / (gH - 1);
-                const baseLineW = Math.max(0.85, Math.min(sW, sH) * 0.0012);
-
-                const interp = (v1, v2, t) => {
-                    const d = v2 - v1;
-                    return Math.abs(d) < 1e-5 ? 0.5 : Math.max(0, Math.min(1, (t - v1) / d));
-                };
-
-                ctx.save();
-                ctx.lineCap = 'round';
-                for (let lv = 1; lv < levels; lv++) {
-                    const t = lv / levels;
-                    const isMajor = lv % 3 === 0;
-                    ctx.lineWidth = isMajor ? baseLineW * 1.55 : baseLineW * 0.85;
-
-                    if (asciiColor) {
-                        // Subtle chromatic elevation tint from photo palette
-                        const pal = (imgData.palette && imgData.palette[lv % imgData.palette.length]) || { r: 15, g: 118, b: 110 };
-                        let cr = pal.r, cg = pal.g, cb = pal.b;
-                        if (asciiInvert) { cr = 255 - cr; cg = 255 - cg; cb = 255 - cb; }
-                        ctx.strokeStyle = `rgba(${Math.round(cr)}, ${Math.round(cg)}, ${Math.round(cb)}, ${isMajor ? 0.9 : 0.55})`;
-                    } else {
-                        ctx.strokeStyle = `rgba(${inkRGB}, ${isMajor ? 0.88 : 0.42})`;
-                    }
-
-                    ctx.beginPath();
-                    for (let y = 0; y < gH - 1; y++) {
-                        const row0 = y * gW, row1 = (y + 1) * gW;
-                        for (let x = 0; x < gW - 1; x++) {
-                            const tl = field[row0 + x], tr = field[row0 + x + 1];
-                            const br = field[row1 + x + 1], bl = field[row1 + x];
-                            const code = (tl >= t ? 8 : 0) | (tr >= t ? 4 : 0) | (br >= t ? 2 : 0) | (bl >= t ? 1 : 0);
-                            if (code === 0 || code === 15) continue;
-
-                            const x0 = x * cellW, y0 = y * cellH;
-                            const top    = [x0 + interp(tl, tr, t) * cellW, y0];
-                            const right  = [x0 + cellW, y0 + interp(tr, br, t) * cellH];
-                            const bottom = [x0 + interp(bl, br, t) * cellW, y0 + cellH];
-                            const left   = [x0, y0 + interp(tl, bl, t) * cellH];
-
-                            const seg = (a, b) => { ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); };
-                            switch (code) {
-                                case 1: case 14: seg(left, bottom); break;
-                                case 2: case 13: seg(bottom, right); break;
-                                case 3: case 12: seg(left, right); break;
-                                case 4: case 11: seg(top, right); break;
-                                case 5: seg(left, top); seg(bottom, right); break;
-                                case 6: case 9:  seg(top, bottom); break;
-                                case 7: case 8:  seg(left, top); break;
-                                case 10: seg(left, bottom); seg(top, right); break;
-                            }
-                        }
-                    }
-                    ctx.stroke();
-                }
-                ctx.restore();
-
-                drawSmartMaskReveal(fImg, sW, sH, scale, paperBg, effectiveDark);
-            };
-
-        // 32. 无框原图 · 防盗直出 (RAW PROTECT)
+        // 28. 无框原图 · 防盗直出 (RAW PROTECT)
         } else if (style === 'raw_protect') {
             wallPaddingX = 0; wallPaddingY = 0;
             sceneW = imgW;
