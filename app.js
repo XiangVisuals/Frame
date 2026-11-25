@@ -270,6 +270,13 @@ class AppController {
             verifyLsbInput: $('verifyLsbInput'),
             verifyLsbResult: $('verifyLsbResult')
         };
+
+        // 赋予主站同源错峰入场索引（--h-idx / --c-idx / --s-idx）
+        document.querySelectorAll('header a, header #hdrEngineBadge, header #btnStudioTheme, header .btn-xv')
+            .forEach((el, i) => el.style.setProperty('--h-idx', i));
+        document.querySelectorAll('.category-header')
+            .forEach((el, i) => el.style.setProperty('--c-idx', i));
+        this.dom.styleBtns.forEach((el, i) => el.style.setProperty('--s-idx', Math.min(i, 16)));
     }
 
     initColorSpace() {
@@ -352,7 +359,13 @@ class AppController {
             });
 
             this.dom.tabPanes.forEach(pane => {
-                pane.style.display = pane.id === targetTabId ? 'block' : 'none';
+                const isTarget = pane.id === targetTabId;
+                pane.style.display = isTarget ? 'block' : 'none';
+                pane.classList.remove('pane-enter');
+                if (isTarget) {
+                    void pane.offsetWidth;
+                    pane.classList.add('pane-enter');
+                }
             });
         }
 

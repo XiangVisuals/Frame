@@ -2,6 +2,8 @@
     --s-top: env(safe-area-inset-top, 0px);
     --s-bottom: env(safe-area-inset-bottom, 0px);
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-silky: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-curtain: cubic-bezier(0.76, 0, 0.24, 1);
     --glass-bg: rgba(255, 255, 255, 0.78);
     --glass-card: rgba(255, 255, 255, 0.65);
     --glass-border: rgba(10, 10, 10, 0.08);
@@ -144,15 +146,102 @@ html, body {
     50%      { transform: scale(1.03); }
 }
 
-/* Staggered UI Entrance */
+/* Staggered UI Entrance — aligned with xiangvisuals.com silky choreography */
 .stagger-enter {
-    opacity: 0; transform: translateY(8px);
-    transition: opacity 0.55s var(--ease-out-expo), transform 0.55s var(--ease-out-expo);
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.92s var(--ease-silky), transform 0.98s var(--ease-out-expo);
+    will-change: opacity, transform;
 }
 body.app-ready .stagger-enter { opacity: 1; transform: translateY(0); }
-body.app-ready .delay-1 { transition-delay: 0.04s; }
-body.app-ready .delay-2 { transition-delay: 0.08s; }
-body.app-ready .delay-3 { transition-delay: 0.12s; }
+body.app-ready .delay-1 { transition-delay: 0.10s; }
+body.app-ready .delay-2 { transition-delay: 0.18s; }
+body.app-ready .delay-3 { transition-delay: 0.26s; }
+
+/* Header brand & action buttons silky staggered reveal */
+header a,
+header .btn-xv,
+header #btnStudioTheme,
+header #hdrEngineBadge {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.78s var(--ease-silky), transform 0.88s var(--ease-out-expo), background-color 0.32s var(--ease-silky), color 0.32s var(--ease-silky), border-color 0.32s var(--ease-silky);
+    transition-delay: calc(0.16s + var(--h-idx, 0) * 0.065s);
+}
+body.app-ready header a,
+body.app-ready header .btn-xv,
+body.app-ready header #btnStudioTheme,
+body.app-ready header #hdrEngineBadge {
+    opacity: 1;
+    transform: translateY(0);
+}
+body.app-ready header a:hover,
+body.app-ready header .btn-xv:hover,
+body.app-ready header #btnStudioTheme:hover {
+    transition-delay: 0s;
+}
+header a span:nth-of-type(1) {
+    transition: letter-spacing 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
+}
+header a:hover span:nth-of-type(1) {
+    letter-spacing: 0.22em;
+}
+
+/* Inspector tab hairline indicator & silky pane entrance */
+.tab-btn {
+    position: relative;
+    overflow: hidden;
+    transition: color 0.35s var(--ease-silky), background-color 0.38s var(--ease-silky);
+}
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: 0; width: 100%; height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.42s var(--ease-silky);
+}
+.tab-btn:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+}
+
+.tab-pane.pane-enter {
+    animation: paneSilkyIn 0.52s var(--ease-out-expo) both;
+}
+@keyframes paneSilkyIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Category headers & template cards staggered cascade */
+.category-header {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.72s var(--ease-silky), transform 0.82s var(--ease-out-expo);
+    transition-delay: calc(0.24s + var(--c-idx, 0) * 0.06s);
+}
+body.app-ready .category-header {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Button micro-line hover sweep (xiangvisuals.com signature) */
+.btn-xv::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: 0; width: 100%; height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.42s var(--ease-silky);
+    opacity: 0.65;
+}
+.btn-xv:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+}
 
 /* =========================================================
    2. FROSTED GLASS SURFACES (0px 直角磨砂玻璃)
@@ -248,21 +337,33 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; bac
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     box-shadow: var(--glass-highlight);
-    transition: all 0.28s var(--ease-out-expo);
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+        opacity 0.72s var(--ease-silky) calc(0.26s + var(--s-idx, 0) * 0.024s),
+        transform 0.82s var(--ease-out-expo) calc(0.26s + var(--s-idx, 0) * 0.024s),
+        border-color 0.35s var(--ease-silky),
+        background-color 0.35s var(--ease-silky),
+        box-shadow 0.35s var(--ease-silky);
     cursor: pointer; text-align: left; position: relative; overflow: hidden;
     min-width: 0;
 }
-.style-btn::after {
-    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2.5px;
-    background: #0a0a0a; transform: scaleX(0); transform-origin: right;
-    transition: transform 0.35s var(--ease-out-expo);
+body.app-ready .style-btn {
+    opacity: 1;
+    transform: translateY(0);
 }
-.style-btn:hover {
+body.app-ready .style-btn:hover {
     border-color: rgba(10, 10, 10, 0.45);
     background: rgba(255, 255, 255, 0.95);
     transform: translateY(-1.5px);
+    transition-delay: 0s;
 }
-.style-btn:hover::after { transform: scaleX(1); transform-origin: left; }
+.style-btn::after {
+    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
+    background: #0a0a0a; transform: scaleX(0); transform-origin: right center;
+    transition: transform 0.42s var(--ease-silky);
+}
+.style-btn:hover::after { transform: scaleX(1); transform-origin: left center; }
 
 .style-btn .icon-wrapper {
     color: #52525b; transition: color 0.2s ease, transform 0.25s var(--ease-out-expo);
