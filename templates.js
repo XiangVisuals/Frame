@@ -2174,7 +2174,166 @@ window.XiangTemplates = {
                 }
             };
 
-        // 27. 无框原图 · 防盗直出 (RAW PROTECT - NEW)
+        // 27. 字符矩阵 · 聚焦彩窗 (ASCII INSET MATRIX — 独创非胶片取景器形式)
+        } else if (style === 'ascii_inset') {
+            wallPaddingX = 0; wallPaddingY = 0;
+            sceneW = imgW;
+            sceneH = imgH;
+
+            drawLogic = (scale) => {
+                const sW = sceneW * scale, sH = sceneH * scale;
+                const isDark = wallColor === '#0a0a0a';
+                const paperBg = isDark ? '#09090b' : (wallColor || '#ffffff');
+                const inkRGB = isDark ? '244, 244, 245' : '12, 12, 14';
+
+                // 1. Full-bleed paper/terminal backdrop
+                ctx.fillStyle = paperBg;
+                ctx.fillRect(0, 0, sW, sH);
+
+                // 2. High-Contrast Typographic ASCII Matrix generated live from the photograph
+                const cols = Math.max(42, Math.min(140, Math.round((vectorCols || 70) * 1.15)));
+                const cellW = sW / cols;
+                const cellH = cellW * 1.46;
+                const rows = Math.max(18, Math.ceil(sH / cellH));
+
+                const sCanvas = document.createElement('canvas');
+                sCanvas.width = cols; sCanvas.height = rows;
+                const sCtx = sCanvas.getContext('2d', { willReadFrequently: true });
+                sCtx.drawImage(imgData.imgObj, 0, 0, cols, rows);
+                const px = sCtx.getImageData(0, 0, cols, rows).data;
+
+                // Architectural uppercase ASCII luminance ramp (bright air -> dense heavy ink)
+                const ramp = '   .,:;ilIJTtYVFAZPKHDBMWN#@';
+                const rampLen = ramp.length - 1;
+                const charSize = cellH * 0.98;
+
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                const fLight = `400 ${charSize}px "JetBrains Mono", monospace`;
+                const fMed   = `500 ${charSize}px "JetBrains Mono", monospace`;
+                const fBold  = `700 ${charSize}px "JetBrains Mono", monospace`;
+
+                for (let r = 0; r < rows; r++) {
+                    const cy = (r + 0.5) * cellH;
+                    for (let c = 0; c < cols; c++) {
+                        const idx = (r * cols + c) * 4;
+                        let lum = (0.299 * px[idx] + 0.587 * px[idx + 1] + 0.114 * px[idx + 2]) / 255;
+                        if (invertAmount > 0) lum = Math.abs(invertAmount - lum);
+
+                        // Subtle S-curve contrast lift so highlights stay clean & silhouettes pop crisply
+                        const cLum = Math.max(0, Math.min(1, (lum - 0.06) / 0.88));
+                        const darkness = isDark ? cLum : (1 - cLum);
+                        if (darkness < 0.07) continue;
+
+                        const charIdx = Math.min(rampLen, Math.floor(Math.pow(darkness, 0.92) * rampLen));
+                        const ch = ramp[charIdx];
+                        if (ch === ' ') continue;
+
+                        if (darkness > 0.68) {
+                            ctx.font = fBold;
+                            ctx.fillStyle = `rgba(${inkRGB}, 0.95)`;
+                        } else if (darkness > 0.36) {
+                            ctx.font = fMed;
+                            ctx.fillStyle = `rgba(${inkRGB}, 0.72)`;
+                        } else {
+                            ctx.font = fLight;
+                            ctx.fillStyle = `rgba(${inkRGB}, 0.44)`;
+                        }
+                        ctx.fillText(ch, (c + 0.5) * cellW, cy);
+                    }
+                }
+                ctx.restore();
+
+                // 3. Asymmetric Architectural Floating Focus Inset (Zero film/polaroid border!)
+                const insetScale = Math.min(1.25, Math.max(0.68, 0.72 + matMultiplier * 0.28));
+                const imgRatio = imgW / imgH;
+                let insetW = sW * 0.42 * insetScale;
+                let insetH = insetW / imgRatio;
+                const maxInsetH = sH * 0.46 * insetScale;
+                if (insetH > maxInsetH) {
+                    insetH = maxInsetH;
+                    insetW = insetH * imgRatio;
+                }
+
+                const fBase = Math.min(sW, sH) * 0.0145;
+                const tagH = fBase * 3.9;
+                const bracketGap = Math.max(4, fBase * 0.55);
+                const insetX = sW * 0.088;
+                const insetY = sH - sH * 0.085 - tagH - insetH;
+
+                // Subtle architectural paper isolation halo behind the inset & caption strip
+                const clearPad = bracketGap * 1.45;
+                ctx.save();
+                ctx.fillStyle = paperBg;
+                ctx.fillRect(insetX - clearPad, insetY - clearPad, insetW + clearPad * 2, insetH + tagH + clearPad * 2);
+                ctx.restore();
+
+                // Soft floating elevation shadow + razor-sharp full-color inset photograph
+                const fImg = app.getFilteredImage(imgData, insetW, insetH, bwAmount, invertAmount);
+                ctx.save();
+                if (shadowMultiplier > 0) {
+                    ctx.shadowColor = isDark ? `rgba(0, 0, 0, ${0.72 * shadowMultiplier})` : `rgba(0, 0, 0, ${0.22 * shadowMultiplier})`;
+                    ctx.shadowBlur = fBase * 2.2 * shadowMultiplier;
+                    ctx.shadowOffsetY = fBase * 0.85 * shadowMultiplier;
+                }
+                ctx.drawImage(fImg, insetX, insetY, insetW, insetH);
+                ctx.restore();
+
+                // Crisp 1px optical hairline edge on the photo itself
+                ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.28)' : 'rgba(10, 10, 10, 0.22)';
+                ctx.lineWidth = Math.max(1, scale * 0.9);
+                ctx.strokeRect(insetX, insetY, insetW, insetH);
+
+                // Precision 4-Corner Architectural Viewfinder Brackets (⌜ ⌝ ⌞ ⌟)
+                const bLen = Math.max(10, fBase * 1.35);
+                const bx1 = insetX - bracketGap, by1 = insetY - bracketGap;
+                const bx2 = insetX + insetW + bracketGap, by2 = insetY + insetH + bracketGap;
+                ctx.strokeStyle = `rgba(${inkRGB}, 0.92)`;
+                ctx.lineWidth = Math.max(1.4, fBase * 0.11);
+                ctx.beginPath();
+                // Top-left
+                ctx.moveTo(bx1, by1 + bLen); ctx.lineTo(bx1, by1); ctx.lineTo(bx1 + bLen, by1);
+                // Top-right
+                ctx.moveTo(bx2 - bLen, by1); ctx.lineTo(bx2, by1); ctx.lineTo(bx2, by1 + bLen);
+                // Bottom-left
+                ctx.moveTo(bx1, by2 - bLen); ctx.lineTo(bx1, by2); ctx.lineTo(bx1 + bLen, by2);
+                // Bottom-right
+                ctx.moveTo(bx2 - bLen, by2); ctx.lineTo(bx2, by2); ctx.lineTo(bx2, by2 - bLen);
+                ctx.stroke();
+
+                // Top-left floating optical telemetry micro-pill above bracket
+                ctx.save();
+                ctx.fillStyle = paperBg;
+                const topLabel = `FOCUS // ${(exifTime || '2026').toUpperCase()}`;
+                ctx.font = `600 ${fBase * 0.64}px "JetBrains Mono", monospace`;
+                const topLblW = ctx.measureText(topLabel).width + fBase * 0.9;
+                ctx.fillRect(bx1 - fBase * 0.2, by1 - fBase * 1.45, topLblW, fBase * 1.15);
+                ctx.fillStyle = `rgba(${inkRGB}, 0.85)`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                setTrack(fBase * 0.1);
+                ctx.fillText(topLabel, bx1, by1 - fBase * 0.42);
+                setTrack(0);
+                ctx.restore();
+
+                // Sleek Swiss Typographic Colophon docked cleanly below the viewfinder brackets
+                const capTop = by2 + fBase * 0.65;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = `rgba(${inkRGB}, 0.96)`;
+                ctx.font = `700 ${fBase * 1.18}px "Inter", "Noto Serif SC", sans-serif`;
+                setTrack(fBase * 0.12);
+                ctx.fillText(fitText((textLeft || 'UNTITLED STUDY').toUpperCase(), insetW), insetX, capTop);
+                setTrack(0);
+
+                ctx.fillStyle = `rgba(${inkRGB}, 0.58)`;
+                ctx.font = `500 ${fBase * 0.66}px "JetBrains Mono", monospace`;
+                ctx.fillText(fitText(`${(exifCamera || 'CAMERA').toUpperCase()}  ·  ${exifParams || '35mm  f/2.0  1/250s'}`, insetW), insetX, capTop + fBase * 1.65);
+            };
+
+        // 28. 无框原图 · 防盗直出 (RAW PROTECT)
         } else if (style === 'raw_protect') {
             wallPaddingX = 0; wallPaddingY = 0;
             sceneW = imgW;
