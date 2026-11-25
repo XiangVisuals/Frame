@@ -45,21 +45,39 @@
 </head>
 <body class="flex flex-col font-sans select-none">
 
-    <!-- MINIMAL ARCHITECTURAL FRAMING PRELOADER (极简高级装裱开场动效) -->
+    <!-- OPTICAL VIEWFINDER PRELOADER (徕卡/哈苏磨砂对焦屏 · 极简奢华装裱序幕) -->
     <div id="bootPreloader">
-        <div class="frame-loader">
-            <div class="fl-mat">
-                <i class="fl-corner fl-tl"></i>
-                <i class="fl-corner fl-tr"></i>
-                <i class="fl-corner fl-bl"></i>
-                <i class="fl-corner fl-br"></i>
-                <div class="fl-photo"></div>
-                <div class="fl-caption">
-                    <span>XIANG FRAME</span>
-                    <em>STUDIO</em>
+        <div class="vf-loader">
+            <div class="vf-top-meta">
+                <span>35MM · P3</span>
+                <span>OPTICAL FRAMING</span>
+            </div>
+
+            <div class="vf-frame">
+                <i class="vf-axis vf-axis-t"></i>
+                <i class="vf-axis vf-axis-b"></i>
+                <i class="vf-axis vf-axis-l"></i>
+                <i class="vf-axis vf-axis-r"></i>
+
+                <div class="vf-inner-mat">
+                    <div class="vf-reticle">
+                        <span class="vf-ring"></span>
+                        <span class="vf-cross-h"></span>
+                        <span class="vf-cross-v"></span>
+                    </div>
+                    <div class="vf-wordmark">
+                        <em>Xiang Frame</em>
+                        <span>ARCHIVE &amp; WATERMARK STUDIO</span>
+                    </div>
                 </div>
             </div>
-            <div class="fl-progress"><i></i></div>
+
+            <div class="vf-meter">
+                <div class="vf-meter-track"><i></i></div>
+                <div class="vf-meter-ticks">
+                    <span>-2</span><span>-1</span><span>0</span><span>+1</span><span>+2</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -749,21 +767,25 @@
     
     <div id="toastContainer" style="top: max(16px, var(--s-top)); left: 50%; transform: translateX(-50%);"></div>
 
-    <!-- 导入解析照片时的极简装裱加载遮罩 -->
+    <!-- 导入解析照片时的光学对焦加载遮罩 -->
     <div id="globalLoader">
-        <div class="frame-loader is-looping">
-            <div class="fl-mat">
-                <i class="fl-corner fl-tl"></i>
-                <i class="fl-corner fl-tr"></i>
-                <i class="fl-corner fl-bl"></i>
-                <i class="fl-corner fl-br"></i>
-                <div class="fl-photo"></div>
-                <div class="fl-caption">
-                    <span>FRAMING</span>
-                    <em>P3</em>
+        <div class="vf-loader is-looping">
+            <div class="vf-frame vf-frame-sm">
+                <div class="vf-inner-mat">
+                    <div class="vf-reticle">
+                        <span class="vf-ring"></span>
+                        <span class="vf-cross-h"></span>
+                        <span class="vf-cross-v"></span>
+                    </div>
+                    <div class="vf-wordmark">
+                        <em>Developing</em>
+                        <span>DECODING RAW · P3</span>
+                    </div>
                 </div>
             </div>
-            <div class="fl-progress"><i></i></div>
+            <div class="vf-meter">
+                <div class="vf-meter-track"><i></i></div>
+            </div>
         </div>
         <span id="loaderMainTitle" class="hidden"></span>
         <span id="loaderSubTitle" class="hidden"></span>

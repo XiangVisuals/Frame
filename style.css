@@ -24,166 +24,245 @@ html, body {
 }
 
 /* =========================================================
-   1. MINIMAL ARCHITECTURAL FRAMING LOADER (极简装裱画框动效)
+   1. OPTICAL VIEWFINDER PRELOADER (徕卡/哈苏磨砂对焦屏序幕)
    ========================================================= */
 #bootPreloader,
 #globalLoader {
     position: fixed; inset: 0; z-index: 9999;
-    background: rgba(248, 248, 250, 0.96);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    background: #f6f5f2;
+    background-image:
+        linear-gradient(to right, rgba(10, 10, 10, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(10, 10, 10, 0.025) 1px, transparent 1px);
+    background-size: 36px 36px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.55s;
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.65s;
 }
 #bootPreloader.dismissed {
     opacity: 0;
+    transform: scale(1.045);
     visibility: hidden;
     pointer-events: none;
 }
 #globalLoader {
     z-index: 100; opacity: 0; pointer-events: none;
+    background: rgba(246, 245, 242, 0.9);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
 }
 #globalLoader.active {
     opacity: 1; pointer-events: all;
 }
 
-.frame-loader {
+.vf-loader {
+    width: min(296px, 78vw);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
 }
 
-/* 极简画廊装裱相框：从取景构图平滑展开为纯白留白相框 */
-.fl-mat {
-    position: relative;
-    width: 108px;
-    height: 132px;
-    padding: 12px 12px 30px 12px;
-    background: #ffffff;
-    border: 1px solid #0a0a0a;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
-    animation: flMatExpand 1.35s var(--ease-out-expo) both;
-}
-
-/* 四角 1px 相机取景框准星 */
-.fl-corner {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    border-color: #0a0a0a;
-    border-style: solid;
-    border-width: 0;
-    pointer-events: none;
-    animation: flCornersSnap 1.35s var(--ease-out-expo) both;
-}
-.fl-tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
-.fl-tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
-.fl-bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
-.fl-br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
-
-/* 内部极简银盐灰阶画幅 */
-.fl-photo {
-    flex: 1;
+.vf-top-meta {
     width: 100%;
-    background: linear-gradient(155deg, #27272a 0%, #111113 58%, #09090b 100%);
-    position: relative;
-    overflow: hidden;
-    animation: flPhotoIn 1.35s var(--ease-out-expo) both;
-}
-.fl-photo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.16) 50%, transparent 65%);
-    transform: translateX(-120%);
-    animation: flSheen 1.25s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
-}
-
-/* 底部极简水印展签排版 */
-.fl-caption {
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: 9px;
     display: flex;
-    align-items: baseline;
     justify-content: space-between;
     font-family: "JetBrains Mono", monospace;
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: rgba(10, 10, 10, 0.45);
     opacity: 0;
-    animation: flCaptionIn 1.35s var(--ease-out-expo) both;
-}
-.fl-caption span {
-    font-size: 7.5px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: #0a0a0a;
-}
-.fl-caption em {
-    font-style: normal;
-    font-size: 6.5px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: #71717a;
+    animation: vfFadeIn 0.7s var(--ease-out-expo) 0.1s forwards;
 }
 
-.fl-progress {
-    width: 108px;
-    height: 1px;
-    background: rgba(10, 10, 10, 0.12);
+/* 哈苏磨砂对焦屏主画幅框 */
+.vf-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border: 1px solid rgba(10, 10, 10, 0.85);
+    background: rgba(255, 255, 255, 0.58);
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.055);
+    animation: vfFrameLock 0.95s var(--ease-out-expo) both;
+}
+.vf-frame-sm {
+    width: 240px;
+    aspect-ratio: 16 / 10;
+}
+
+/* 延伸至框外的极细建筑对齐轴线 */
+.vf-axis {
+    position: absolute;
+    background: rgba(10, 10, 10, 0.14);
+    pointer-events: none;
+}
+.vf-axis-t { top: -22px; left: 50%; width: 1px; height: 22px; transform-origin: bottom; animation: vfAxisY 0.85s var(--ease-out-expo) 0.1s both; }
+.vf-axis-b { bottom: -22px; left: 50%; width: 1px; height: 22px; transform-origin: top; animation: vfAxisY 0.85s var(--ease-out-expo) 0.1s both; }
+.vf-axis-l { left: -24px; top: 50%; height: 1px; width: 24px; transform-origin: right; animation: vfAxisX 0.85s var(--ease-out-expo) 0.1s both; }
+.vf-axis-r { right: -24px; top: 50%; height: 1px; width: 24px; transform-origin: left; animation: vfAxisX 0.85s var(--ease-out-expo) 0.1s both; }
+
+/* 内层卡纸留白与光学对焦中心 */
+.vf-inner-mat {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
 }
-.fl-progress i {
+
+/* 中心裂像对焦圆环（微旋锁焦） */
+.vf-reticle {
+    position: absolute;
+    width: 66px;
+    height: 66px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    animation: vfReticleFocus 1.4s var(--ease-out-expo) both;
+}
+.vf-ring {
+    width: 100%;
+    height: 100%;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 999px !important;
+}
+.vf-cross-h {
+    position: absolute;
+    width: 82px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(10,10,10,0.16) 0%, transparent 35%, transparent 65%, rgba(10,10,10,0.16) 100%);
+}
+.vf-cross-v {
+    position: absolute;
+    height: 82px;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(10,10,10,0.16) 0%, transparent 35%, transparent 65%, rgba(10,10,10,0.16) 100%);
+}
+
+/* 杂志级衬线主视觉字标（合焦呼吸收拢） */
+.vf-wordmark {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.vf-wordmark em {
+    font-family: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 1;
+    color: #0a0a0a;
+    letter-spacing: 0.04em;
+    animation: vfWordFocus 1.15s var(--ease-out-expo) 0.12s both;
+}
+.vf-frame-sm .vf-wordmark em {
+    font-size: 24px;
+}
+.vf-wordmark span {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7.5px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    padding-left: 0.24em;
+    color: #71717a;
+    opacity: 0;
+    animation: vfFadeIn 0.75s var(--ease-out-expo) 0.32s forwards;
+}
+
+/* 相机曝光标尺进度条 (-2 -1 0 +1 +2) */
+.vf-meter {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.vf-meter-track {
+    width: 100%;
+    height: 1px;
+    background: rgba(10, 10, 10, 0.14);
+    overflow: hidden;
+}
+.vf-meter-track i {
     display: block;
     width: 100%;
     height: 100%;
     background: #0a0a0a;
     transform-origin: left;
     transform: scaleX(0);
-    animation: flBarFill 1.25s cubic-bezier(0.22, 1, 0.36, 1) 0.08s forwards;
+    animation: vfMeterFill 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+}
+.vf-meter-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7.5px;
+    font-weight: 500;
+    color: rgba(10, 10, 10, 0.38);
+    letter-spacing: 0.05em;
+}
+.vf-meter-ticks span:nth-child(3) {
+    color: #0a0a0a;
+    font-weight: 700;
 }
 
-.frame-loader.is-looping .fl-photo::after {
-    animation: flSheen 1.4s ease-in-out infinite;
+/* 导入图片时的循环呼吸态 */
+.vf-loader.is-looping .vf-reticle {
+    animation: vfReticleLoop 2.2s ease-in-out infinite;
 }
-.frame-loader.is-looping .fl-progress i {
-    width: 42%;
+.vf-loader.is-looping .vf-meter-track i {
+    width: 36%;
     transform: none;
-    animation: flBarSweep 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: vfMeterSweep 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-@keyframes flMatExpand {
-    0%   { padding: 0; border-color: transparent; background: transparent; box-shadow: none; }
-    45%  { padding: 12px 12px 30px 12px; border-color: #0a0a0a; background: #ffffff; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08); }
-    100% { padding: 12px 12px 30px 12px; border-color: #0a0a0a; background: #ffffff; box-shadow: 0 18px 42px rgba(0, 0, 0, 0.1); }
-}
-@keyframes flCornersSnap {
-    0%   { opacity: 0; transform: scale(1.6); }
-    35%  { opacity: 0.55; transform: scale(1); }
-    100% { opacity: 0.35; transform: scale(1); }
-}
-@keyframes flPhotoIn {
+@keyframes vfFrameLock {
     0%   { opacity: 0; transform: scale(1.06); }
-    38%  { opacity: 1; transform: scale(1); }
     100% { opacity: 1; transform: scale(1); }
 }
-@keyframes flSheen {
-    0%   { transform: translateX(-130%); }
-    100% { transform: translateX(130%); }
+@keyframes vfAxisX {
+    0%   { opacity: 0; transform: scaleX(0); }
+    100% { opacity: 1; transform: scaleX(1); }
 }
-@keyframes flCaptionIn {
-    0%, 42% { opacity: 0; transform: translateY(3px); }
-    72%, 100% { opacity: 1; transform: translateY(0); }
+@keyframes vfAxisY {
+    0%   { opacity: 0; transform: scaleY(0); }
+    100% { opacity: 1; transform: scaleY(1); }
 }
-@keyframes flBarFill {
+@keyframes vfReticleFocus {
+    0%   { opacity: 0; transform: scale(1.38) rotate(-28deg); }
+    55%  { opacity: 1; transform: scale(1) rotate(0deg); }
+    100% { opacity: 0.65; transform: scale(1) rotate(0deg); }
+}
+@keyframes vfReticleLoop {
+    0%, 100% { opacity: 0.35; transform: scale(0.95) rotate(0deg); }
+    50%      { opacity: 0.85; transform: scale(1.06) rotate(45deg); }
+}
+@keyframes vfWordFocus {
+    0%   { opacity: 0; letter-spacing: 0.18em; filter: blur(4px); }
+    100% { opacity: 1; letter-spacing: 0.04em; filter: blur(0px); }
+}
+@keyframes vfFadeIn {
+    0%   { opacity: 0; transform: translateY(3px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes vfMeterFill {
     0%   { transform: scaleX(0); }
     100% { transform: scaleX(1); }
 }
-@keyframes flBarSweep {
+@keyframes vfMeterSweep {
     0%   { transform: translateX(-110%); }
-    100% { transform: translateX(260%); }
+    100% { transform: translateX(310%); }
 }
 
 /* Staggered UI Entrance */
@@ -623,11 +702,27 @@ body.dark-mode {
 
 body.dark-mode #bootPreloader,
 body.dark-mode #globalLoader {
-    background: rgba(10, 10, 13, 0.94) !important;
+    background-color: #08080a !important;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px) !important;
 }
-body.dark-mode .fl-corner { border-color: #f4f4f5; }
-body.dark-mode .fl-progress { background: rgba(255, 255, 255, 0.14); }
-body.dark-mode .fl-progress i { background: #f4f4f5; }
+body.dark-mode #globalLoader {
+    background-color: rgba(8, 8, 10, 0.9) !important;
+}
+body.dark-mode .vf-top-meta { color: rgba(244, 244, 245, 0.45); }
+body.dark-mode .vf-frame { border-color: rgba(244, 244, 245, 0.85); background: rgba(18, 18, 22, 0.72); box-shadow: 0 28px 70px rgba(0, 0, 0, 0.65); }
+body.dark-mode .vf-axis { background: rgba(244, 244, 245, 0.16); }
+body.dark-mode .vf-inner-mat { border-color: rgba(244, 244, 245, 0.14); background: #0e0e12; }
+body.dark-mode .vf-ring { border-color: rgba(244, 244, 245, 0.16); }
+body.dark-mode .vf-cross-h { background: linear-gradient(90deg, rgba(244,244,245,0.2) 0%, transparent 35%, transparent 65%, rgba(244,244,245,0.2) 100%); }
+body.dark-mode .vf-cross-v { background: linear-gradient(180deg, rgba(244,244,245,0.2) 0%, transparent 35%, transparent 65%, rgba(244,244,245,0.2) 100%); }
+body.dark-mode .vf-wordmark em { color: #f4f4f5; }
+body.dark-mode .vf-wordmark span { color: #a1a1aa; }
+body.dark-mode .vf-meter-track { background: rgba(255, 255, 255, 0.14); }
+body.dark-mode .vf-meter-track i { background: #f4f4f5; }
+body.dark-mode .vf-meter-ticks { color: rgba(244, 244, 245, 0.35); }
+body.dark-mode .vf-meter-ticks span:nth-child(3) { color: #f4f4f5; }
 
 body.dark-mode header,
 body.dark-mode .view-panel,
