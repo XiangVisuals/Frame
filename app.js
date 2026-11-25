@@ -50,7 +50,9 @@ class AppController {
                 grainAmount: 0.15,
                 bwAmount: 0,
                 hdrBoost: 0,
-                vectorCols: 70
+                vectorCols: 70,
+                asciiColor: false,
+                asciiInvert: false
             },
             protect: {
                 enabled: false,
@@ -139,6 +141,8 @@ class AppController {
 
             btnToggleBW: $('btnToggleBW'),
             btnToggleInvert: $('btnToggleInvert'),
+            btnAsciiColor: $('btnAsciiColor'),
+            btnAsciiInvert: $('btnAsciiInvert'),
             grainSlider: $('grainSlider'),
             grainVal: $('grainVal'),
 
@@ -375,6 +379,20 @@ class AppController {
             const isInvert = this.state.settings.invertAmount === 1;
             this.animateFilter('invertAmount', isInvert ? 0 : 1);
             this.dom.btnToggleInvert.classList.toggle('active-invert', !isInvert);
+        });
+
+        this.dom.btnAsciiColor?.addEventListener('click', () => {
+            triggerHaptic('light');
+            const next = !this.state.settings.asciiColor;
+            this.dom.btnAsciiColor.classList.toggle('active-bw', next);
+            this.updateSettings({ asciiColor: next }, false);
+        });
+
+        this.dom.btnAsciiInvert?.addEventListener('click', () => {
+            triggerHaptic('light');
+            const next = !this.state.settings.asciiInvert;
+            this.dom.btnAsciiInvert.classList.toggle('active-invert', next);
+            this.updateSettings({ asciiInvert: next }, false);
         });
 
         const bindSlider = (slider, key, label, fmt) => {
@@ -922,6 +940,8 @@ class AppController {
         const hasShadow = ['polaroid', 'film35mm', 'film_strip', 'gallery_placard', 'ins_45_story', 'vinyl_record', 'ascii_inset'].includes(style);
 
         document.getElementById('section-vector').style.display = isVector ? 'block' : 'none';
+        const asciiOpts = document.getElementById('ctrl-ascii-opts');
+        if (asciiOpts) asciiOpts.style.display = style === 'ascii_inset' ? 'flex' : 'none';
         document.getElementById('ctrl-grain').style.display = isFilm ? 'block' : 'none';
         document.getElementById('section-materials').style.display = hasWall ? 'block' : 'none';
 

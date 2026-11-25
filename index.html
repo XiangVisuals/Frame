@@ -393,8 +393,8 @@
                                     <button class="style-btn" data-style="ascii_inset">
                                         <span class="badge-tag pointer-events-none">ASCII</span>
                                         <i class="fa-solid fa-terminal icon-wrapper pointer-events-none"></i>
-                                        <span class="title pointer-events-none">字符矩阵</span>
-                                        <span class="subtext pointer-events-none">ASCII Inset</span>
+                                        <span class="title pointer-events-none">字符蒙版</span>
+                                        <span class="subtext pointer-events-none">ASCII Mask</span>
                                     </button>
                                     <button class="style-btn" data-style="vector_field">
                                         <span class="badge-tag pointer-events-none">70 COLS</span>
@@ -449,12 +449,22 @@
                                 </div>
                             </section>
 
-                            <section id="section-vector" class="glass-card p-3.5" style="display: none;">
-                                <div class="flex justify-between items-center mb-1.5">
-                                    <label class="text-[10px] font-mono uppercase tracking-wider text-xv-black font-bold">矩阵密度</label>
-                                    <span class="text-[10px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold" id="vectorColsVal">70 列</span>
+                            <section id="section-vector" class="glass-card p-3.5 space-y-3" style="display: none;">
+                                <div>
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-[10px] font-mono uppercase tracking-wider text-xv-black font-bold">矩阵密度</label>
+                                        <span class="text-[10px] font-mono text-white bg-xv-black px-1.5 py-0.5 font-bold" id="vectorColsVal">70 列</span>
+                                    </div>
+                                    <input type="range" id="vectorColsSlider" min="20" max="120" step="2" value="70">
                                 </div>
-                                <input type="range" id="vectorColsSlider" min="20" max="120" step="2" value="70">
+                                <div id="ctrl-ascii-opts" class="flex gap-2 pt-0.5" style="display: none;">
+                                    <button id="btnAsciiColor" type="button" class="filter-btn flex-1 py-2 border border-xv-border text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 text-xv-black">
+                                        <i class="fa-solid fa-palette text-[10px]"></i> 彩色字符
+                                    </button>
+                                    <button id="btnAsciiInvert" type="button" class="filter-btn btn-invert flex-1 py-2 border border-xv-border text-[11px] font-mono font-bold flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-circle-half-stroke text-[10px]"></i> 字符反色
+                                    </button>
+                                </div>
                             </section>
 
                             <section id="section-optical" class="space-y-3.5 glass-card p-3.5">
