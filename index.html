@@ -45,20 +45,21 @@
 </head>
 <body class="flex flex-col font-sans select-none">
 
-    <!-- EDITORIAL GALLERY CURTAIN PRELOADER (实景摄影装裱幻灯片 · 推幕序幕) -->
-    <div id="bootPreloader">
-        <div class="curtain-stage">
-            <div class="curtain-mat">
-                <div class="curtain-window">
-                    <img src="./img/1.jpg" alt="" class="curtain-slide slide-1" decoding="async" />
-                    <img src="./img/2.jpg" alt="" class="curtain-slide slide-2" decoding="async" />
-                    <img src="./img/3.jpg" alt="" class="curtain-slide slide-3" decoding="async" />
-                </div>
+    <!-- XIANGVISUALS ARCHITECTURAL SLAT-TO-FRAME PRELOADER (主站建筑切片展开为装裱画框) -->
+    <div id="bootPreloader" aria-hidden="true">
+        <div class="geo-loader-stage" id="geo-loader-stage">
+            <span class="geo-wing-slat" data-dist="4"></span>
+            <span class="geo-wing-slat" data-dist="3"></span>
+            <span class="geo-wing-slat" data-dist="2"></span>
+            <span class="geo-wing-slat" data-dist="1"></span>
+            <div class="geo-center-frame" id="geo-center-frame">
+                <div class="geo-center-photo" id="geo-center-photo"></div>
+                <div class="geo-center-mark" id="geo-center-mark"><i></i><em></em></div>
             </div>
-        </div>
-        <div class="curtain-footer">
-            <span>XIANG FRAME</span>
-            <span id="curtainCounter">01 / 03</span>
+            <span class="geo-wing-slat" data-dist="1"></span>
+            <span class="geo-wing-slat" data-dist="2"></span>
+            <span class="geo-wing-slat" data-dist="3"></span>
+            <span class="geo-wing-slat" data-dist="4"></span>
         </div>
     </div>
 
@@ -748,10 +749,18 @@
     
     <div id="toastContainer" style="top: max(16px, var(--s-top)); left: 50%; transform: translateX(-50%);"></div>
 
-    <!-- 导入解析照片时的极简顶栏进度遮罩 -->
-    <div id="globalLoader">
-        <div class="top-hairline-progress"><i></i></div>
-        <div class="global-loader-label">LOADING</div>
+    <!-- 导入解析照片时的建筑切片呼吸遮罩 -->
+    <div id="globalLoader" aria-hidden="true">
+        <div class="geo-loader-stage geo-looping">
+            <span class="geo-wing-slat" style="--d:0"></span>
+            <span class="geo-wing-slat" style="--d:1"></span>
+            <div class="geo-center-frame geo-frame-loop">
+                <div class="geo-center-photo"></div>
+                <div class="geo-center-mark"><i></i><em></em></div>
+            </div>
+            <span class="geo-wing-slat" style="--d:1"></span>
+            <span class="geo-wing-slat" style="--d:0"></span>
+        </div>
         <span id="loaderMainTitle" class="hidden"></span>
         <span id="loaderSubTitle" class="hidden"></span>
     </div>

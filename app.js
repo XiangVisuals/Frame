@@ -11,36 +11,96 @@ function triggerHaptic(type = 'light') {
     } catch(e) {}
 }
 
-// 实景摄影装裱推幕开场逻辑（3 张实拍硬切定格 + 向上推幕，支持点击跳过）
+// XIANGVISUALS 主站同源：极简建筑切片展开为装裱画框与水印微线（smoothCosine 物理驱动）
 function runBootSequence() {
     const preloader = document.getElementById('bootPreloader');
     if (!preloader) return;
 
-    const slides = preloader.querySelectorAll('.curtain-slide');
-    const counter = document.getElementById('curtainCounter');
-    let dismissed = false;
-    const timers = [];
+    const stageEl = document.getElementById('geo-loader-stage');
+    const centerFrameEl = document.getElementById('geo-center-frame');
+    const centerPhotoEl = document.getElementById('geo-center-photo');
+    const centerMarkEl = document.getElementById('geo-center-mark');
+    const wingSlats = Array.from(preloader.querySelectorAll('.geo-wing-slat'));
 
-    const showSlide = (idx) => {
-        if (dismissed || !slides.length) return;
-        slides.forEach((img, i) => img.classList.toggle('is-active', i === idx));
-        if (counter) counter.textContent = `0${idx + 1} / 0${slides.length}`;
+    const startTime = performance.now();
+    const duration = 1360;
+    let dismissed = false;
+    let rafId = null;
+    let appReadyTriggered = false;
+
+    const smoothCosine = (x) => {
+        const c = Math.max(0, Math.min(1, x));
+        return 0.5 * (1 - Math.cos(Math.PI * c));
     };
 
     const finishBoot = () => {
         if (dismissed) return;
         dismissed = true;
-        timers.forEach(t => clearTimeout(t));
+        if (rafId) cancelAnimationFrame(rafId);
         preloader.classList.add('dismissed');
         document.body.classList.add('app-ready');
     };
 
-    showSlide(0);
-    timers.push(setTimeout(() => showSlide(1), 360));
-    timers.push(setTimeout(() => showSlide(2), 720));
-    timers.push(setTimeout(finishBoot, 1180));
-
     preloader.addEventListener('click', finishBoot, { once: true });
+
+    const isDark = () => document.body.classList.contains('dark-mode');
+    const targetHeights = [1, 0.80, 0.58, 0.38, 0.22];
+
+    const animateLoader = (now) => {
+        if (dismissed) return;
+        const rawT = Math.min(1, Math.max(0, (now - startTime) / duration));
+
+        const expandT = smoothCosine((rawT - 0.32) / 0.46);
+        const markT = smoothCosine((rawT - 0.52) / 0.26);
+        const exitT = smoothCosine((rawT - 0.78) / 0.22);
+        const centerDropT = smoothCosine(rawT / 0.30);
+
+        const frameW = 1.5 + expandT * 46.5;
+        const fillRGB = isDark() ? '244, 244, 245' : '10, 10, 10';
+        if (centerFrameEl) {
+            centerFrameEl.style.width = `${frameW.toFixed(2)}px`;
+            centerFrameEl.style.transform = `scaleY(${centerDropT.toFixed(4)})`;
+            centerFrameEl.style.backgroundColor = `rgba(${fillRGB}, ${(0.9 * (1 - expandT * 0.96)).toFixed(3)})`;
+        }
+        if (centerPhotoEl) {
+            centerPhotoEl.style.opacity = (expandT * (1 - exitT * 0.5)).toFixed(3);
+            centerPhotoEl.style.transform = `scale(${(0.94 + expandT * 0.06).toFixed(4)})`;
+        }
+        if (centerMarkEl) {
+            centerMarkEl.style.opacity = (markT * (1 - exitT * 0.6)).toFixed(3);
+            centerMarkEl.style.transform = `scaleX(${(0.4 + markT * 0.6).toFixed(4)})`;
+        }
+
+        wingSlats.forEach((slat) => {
+            const dist = Number(slat.dataset.dist) || 1;
+            const delay = dist * 0.062;
+            const dropT = smoothCosine((rawT - delay) / 0.30);
+            const stepRatio = targetHeights[dist] || 0.28;
+            const currentScaleY = dropT * (1 - expandT * (1 - stepRatio)) * (1 - exitT * 0.65);
+            const currentOpacity = Math.min(1, dropT * 1.2) * (1 - expandT * (dist * 0.11)) * (1 - exitT);
+            slat.style.transform = `scaleY(${Math.max(0, currentScaleY).toFixed(4)})`;
+            slat.style.opacity = Math.max(0, currentOpacity).toFixed(3);
+        });
+
+        if (stageEl) {
+            const stageScale = 1 + exitT * 0.16;
+            stageEl.style.transform = `scale(${stageScale.toFixed(4)})`;
+            stageEl.style.opacity = (1 - exitT).toFixed(3);
+        }
+
+        if (rawT >= 0.76 && !appReadyTriggered) {
+            appReadyTriggered = true;
+            document.body.classList.add('app-ready');
+        }
+
+        if (rawT < 1) {
+            rafId = requestAnimationFrame(animateLoader);
+        } else {
+            finishBoot();
+        }
+    };
+
+    rafId = requestAnimationFrame(animateLoader);
 }
 
 const PROTECT_PRESETS = {

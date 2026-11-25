@@ -24,121 +24,124 @@ html, body {
 }
 
 /* =========================================================
-   1. EDITORIAL GALLERY CURTAIN PRELOADER (实景装裱推幕序幕)
+   1. XIANGVISUALS ARCHITECTURAL SLAT-TO-FRAME LOADER
    ========================================================= */
 #bootPreloader {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #f4f3ef;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    transition: transform 0.72s cubic-bezier(0.77, 0, 0.175, 1), visibility 0.72s;
-    will-change: transform;
+    position: fixed; inset: 0; width: 100%; height: 100%; min-height: 100lvh;
+    background-color: #ffffff; z-index: 99999;
+    display: flex; justify-content: center; align-items: center;
+    opacity: 1; transition: opacity 0.88s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.88s;
+    will-change: opacity;
 }
 #bootPreloader.dismissed {
-    transform: translateY(-100%);
+    opacity: 0;
     visibility: hidden;
     pointer-events: none;
 }
 
-.curtain-stage {
+.geo-loader-stage {
+    position: relative;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+    will-change: transform, opacity;
 }
 
-/* 实体画廊纯白装裱相框 */
-.curtain-mat {
-    width: 224px;
-    height: 276px;
-    padding: 16px 16px 36px 16px;
-    background: #ffffff;
-    box-shadow: 0 28px 64px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
-    display: flex;
-    animation: curtainMatRise 0.65s var(--ease-out-expo) both;
-}
-
-.curtain-window {
-    position: relative;
-    flex: 1;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #141416;
-}
-
-.curtain-slide {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.geo-wing-slat {
+    width: 1.5px;
+    height: 52px;
+    background-color: #0a0a0a;
+    transform-origin: top center;
+    transform: scaleY(0);
     opacity: 0;
-    transform: scale(1.03);
-    transition: transform 0.6s var(--ease-out-expo);
-}
-.curtain-slide.is-active {
-    opacity: 1;
-    transform: scale(1);
+    will-change: transform, opacity;
 }
 
-.curtain-footer {
-    position: fixed;
-    left: 28px;
-    right: 28px;
-    bottom: 24px;
+.geo-center-frame {
+    position: relative;
+    width: 1.5px;
+    height: 60px;
+    border: 1px solid #0a0a0a;
+    background-color: rgba(10, 10, 10, 0.03);
+    transform-origin: top center;
+    transform: scaleY(0);
+    overflow: hidden;
+    will-change: width, transform, opacity;
+}
+
+/* 展开后浮现的画廊留白内窗（底部留白略宽，体现装裱相框比例） */
+.geo-center-photo {
+    position: absolute;
+    top: 5px; left: 5px; right: 5px; bottom: 15px;
+    background: linear-gradient(145deg, rgba(10, 10, 10, 0.14) 0%, rgba(10, 10, 10, 0.04) 100%);
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+/* 底部极简 1px 抽象水印/EXIF 展签微线 */
+.geo-center-mark {
+    position: absolute;
+    left: 5px; right: 5px; bottom: 5px;
+    height: 5px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    color: #0a0a0a;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+.geo-center-mark i {
+    display: block;
+    width: 48%;
+    height: 1.25px;
+    background: #0a0a0a;
+}
+.geo-center-mark em {
+    display: block;
+    width: 22%;
+    height: 1px;
+    background: rgba(10, 10, 10, 0.35);
 }
 
-@keyframes curtainMatRise {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 767px) {
-    .curtain-mat { width: 184px; height: 228px; padding: 13px 13px 30px 13px; }
-    .curtain-footer { left: 20px; right: 20px; bottom: 20px; font-size: 9px; }
-}
-
-/* 导入图片时的极简顶栏进度遮罩 */
+/* 导入解析照片时的同源极简切片呼吸遮罩 */
 #globalLoader {
     position: fixed; inset: 0; z-index: 100;
-    background: rgba(244, 243, 239, 0.65);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
     display: flex; align-items: center; justify-content: center;
     opacity: 0; pointer-events: none;
-    transition: opacity 0.28s ease;
+    transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 #globalLoader.active {
     opacity: 1; pointer-events: all;
 }
-.top-hairline-progress {
-    position: fixed; top: 0; left: 0; right: 0; height: 2px;
-    background: rgba(10, 10, 10, 0.08);
-    overflow: hidden;
+.geo-looping .geo-wing-slat {
+    height: 36px;
+    transform-origin: center center;
+    animation: geoLoopSlat 1.3s ease-in-out infinite;
+    animation-delay: calc(var(--d, 0) * 0.14s);
 }
-.top-hairline-progress i {
-    display: block; width: 35%; height: 100%;
-    background: #0a0a0a;
-    animation: topHairlineSweep 1.05s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+.geo-looping .geo-frame-loop {
+    width: 38px;
+    height: 46px;
+    transform: scaleY(1);
+    transform-origin: center center;
+    animation: geoLoopFrame 1.3s ease-in-out infinite;
 }
-.global-loader-label {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px; font-weight: 600; letter-spacing: 0.24em;
-    color: #0a0a0a;
-    background: #ffffff;
-    border: 1px solid rgba(10, 10, 10, 0.12);
-    padding: 8px 16px;
+.geo-looping .geo-center-photo,
+.geo-looping .geo-center-mark {
+    opacity: 0.85;
 }
-@keyframes topHairlineSweep {
-    0%   { transform: translateX(-110%); }
-    100% { transform: translateX(320%); }
+@keyframes geoLoopSlat {
+    0%, 100% { transform: scaleY(0.45); opacity: 0.28; }
+    50%      { transform: scaleY(0.95); opacity: 0.85; }
+}
+@keyframes geoLoopFrame {
+    0%, 100% { transform: scale(0.96); }
+    50%      { transform: scale(1.03); }
 }
 
 /* Staggered UI Entrance */
@@ -577,19 +580,16 @@ body.dark-mode {
 }
 
 body.dark-mode #bootPreloader {
-    background: #09090b !important;
+    background-color: #09090b !important;
 }
-body.dark-mode .curtain-mat {
-    background: #ffffff;
-    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.72);
-}
-body.dark-mode .curtain-footer { color: #f4f4f5; }
 body.dark-mode #globalLoader {
-    background: rgba(9, 9, 11, 0.68) !important;
+    background: rgba(9, 9, 11, 0.86) !important;
 }
-body.dark-mode .top-hairline-progress { background: rgba(255, 255, 255, 0.12); }
-body.dark-mode .top-hairline-progress i { background: #f4f4f5; }
-body.dark-mode .global-loader-label { background: #141418; color: #f4f4f5; border-color: rgba(255,255,255,0.14); }
+body.dark-mode .geo-wing-slat { background-color: #f4f4f5; }
+body.dark-mode .geo-center-frame { border-color: #f4f4f5; background-color: rgba(244, 244, 245, 0.04); }
+body.dark-mode .geo-center-photo { background: linear-gradient(145deg, rgba(244, 244, 245, 0.18) 0%, rgba(244, 244, 245, 0.04) 100%); border-color: rgba(244, 244, 245, 0.16); }
+body.dark-mode .geo-center-mark i { background: #f4f4f5; }
+body.dark-mode .geo-center-mark em { background: rgba(244, 244, 245, 0.38); }
 
 body.dark-mode header,
 body.dark-mode .view-panel,
