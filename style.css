@@ -869,7 +869,8 @@ body.dark-mode .filter-btn.active-bw { background: #f4f4f5 !important; color: #0
 body.dark-mode .btn-invert.active-invert { background: #facc15 !important; color: #09090b !important; border-color: #facc15 !important; }
 
 body.dark-mode .res-btn.bg-xv-black,
-body.dark-mode .fmt-btn.bg-xv-black {
+body.dark-mode .fmt-btn.bg-xv-black,
+body.dark-mode .ascii-mask-btn.bg-xv-black {
     background-color: #f4f4f5 !important;
     color: #09090b !important;
     border-color: #f4f4f5 !important;

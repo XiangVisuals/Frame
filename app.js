@@ -52,7 +52,8 @@ class AppController {
                 hdrBoost: 0,
                 vectorCols: 70,
                 asciiColor: false,
-                asciiInvert: false
+                asciiInvert: false,
+                asciiMaskMode: 'focus'
             },
             protect: {
                 enabled: false,
@@ -393,6 +394,20 @@ class AppController {
             const next = !this.state.settings.asciiInvert;
             this.dom.btnAsciiInvert.classList.toggle('active-invert', next);
             this.updateSettings({ asciiInvert: next }, false);
+        });
+
+        document.querySelectorAll('.ascii-mask-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                triggerHaptic('light');
+                const mode = e.currentTarget.dataset.mask;
+                document.querySelectorAll('.ascii-mask-btn').forEach(b => {
+                    const active = b === e.currentTarget;
+                    b.className = active
+                        ? 'ascii-mask-btn py-1.5 border border-xv-black bg-xv-black text-white text-[9.5px] font-mono font-bold'
+                        : 'ascii-mask-btn py-1.5 border border-xv-border text-[9.5px] font-mono font-semibold text-xv-gray';
+                });
+                this.updateSettings({ asciiMaskMode: mode }, false);
+            });
         });
 
         const bindSlider = (slider, key, label, fmt) => {
@@ -941,7 +956,7 @@ class AppController {
 
         document.getElementById('section-vector').style.display = isVector ? 'block' : 'none';
         const asciiOpts = document.getElementById('ctrl-ascii-opts');
-        if (asciiOpts) asciiOpts.style.display = style === 'ascii_inset' ? 'flex' : 'none';
+        if (asciiOpts) asciiOpts.style.display = style === 'ascii_inset' ? 'block' : 'none';
         document.getElementById('ctrl-grain').style.display = isFilm ? 'block' : 'none';
         document.getElementById('section-materials').style.display = hasWall ? 'block' : 'none';
 
@@ -1077,6 +1092,98 @@ class AppController {
             }
         }
         return { edgeMap: mag, edgeW: w, edgeH: h };
+    }
+
+    // 视觉显著性分析：结合 Sobel 结构边缘、色彩饱和度与构图权重，自动定位画面主/次视觉焦点
+    computeSaliencyAnchors(imgObj) {
+        const maxDim = 64;
+        const nW = imgObj.naturalWidth || imgObj.width;
+        const nH = imgObj.naturalHeight || imgObj.height;
+        const scale = Math.min(1, maxDim / Math.max(nW, nH));
+        const w = Math.max(20, Math.round(nW * scale));
+        const h = Math.max(20, Math.round(nH * scale));
+
+        const off = document.createElement('canvas');
+        off.width = w; off.height = h;
+        const octx = off.getContext('2d', { willReadFrequently: true });
+        octx.drawImage(imgObj, 0, 0, w, h);
+        const data = octx.getImageData(0, 0, w, h).data;
+
+        const gray = new Float32Array(w * h);
+        const sat = new Float32Array(w * h);
+        for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            gray[p] = 0.299 * r + 0.587 * g + 0.114 * b;
+            sat[p] = Math.max(r, g, b) - Math.min(r, g, b);
+        }
+
+        const sal = new Float32Array(w * h);
+        for (let y = 1; y < h - 1; y++) {
+            const ny = (y / h) - 0.5;
+            for (let x = 1; x < w - 1; x++) {
+                const nx = (x / w) - 0.5;
+                const idx = y * w + x;
+                const gx = -gray[idx - w - 1] + gray[idx - w + 1] - 2 * gray[idx - 1] + 2 * gray[idx + 1] - gray[idx + w - 1] + gray[idx + w + 1];
+                const gy = -gray[idx - w - 1] - 2 * gray[idx - w] - gray[idx - w + 1] + gray[idx + w - 1] + 2 * gray[idx + w] + gray[idx + w + 1];
+                const edge = (Math.abs(gx) + Math.abs(gy)) * 0.25;
+                // Gentle center/rule-of-thirds composition prior
+                const prior = 0.55 + 0.45 * Math.exp(-(nx * nx + ny * ny) * 3.2);
+                sal[idx] = (edge + sat[idx] * 0.65) * prior;
+            }
+        }
+
+        // Find primary & secondary focal regions via sliding-box energy
+        const winR = Math.max(3, Math.round(Math.min(w, h) * 0.14));
+        const scoreGrid = new Float32Array(w * h);
+        let best1 = -1, p1 = { x: 0.46, y: 0.54 };
+
+        for (let y = winR; y < h - winR; y++) {
+            for (let x = winR; x < w - winR; x++) {
+                let sum = 0;
+                for (let dy = -winR; dy <= winR; dy += 2) {
+                    const rowOff = (y + dy) * w;
+                    for (let dx = -winR; dx <= winR; dx += 2) {
+                        sum += sal[rowOff + x + dx];
+                    }
+                }
+                scoreGrid[y * w + x] = sum;
+                if (sum > best1) {
+                    best1 = sum;
+                    p1 = { x: x / w, y: y / h };
+                }
+            }
+        }
+
+        // Secondary peak with spatial separation >= 0.34 normalized distance
+        let best2 = -1, p2 = { x: p1.x > 0.5 ? 0.28 : 0.72, y: p1.y > 0.5 ? 0.28 : 0.72 };
+        for (let y = winR; y < h - winR; y++) {
+            for (let x = winR; x < w - winR; x++) {
+                const nx = x / w, ny = y / h;
+                const dist = Math.hypot(nx - p1.x, ny - p1.y);
+                if (dist < 0.34) continue;
+                const sc = scoreGrid[y * w + x];
+                if (sc > best2) {
+                    best2 = sc;
+                    p2 = { x: nx, y: ny };
+                }
+            }
+        }
+
+        // Best horizontal band Y and vertical band X
+        let bestRowScore = -1, bestRowY = 0.5;
+        for (let y = Math.floor(h * 0.24); y <= Math.floor(h * 0.76); y++) {
+            let s = 0;
+            for (let x = 2; x < w - 2; x++) s += sal[y * w + x];
+            if (s > bestRowScore) { bestRowScore = s; bestRowY = y / h; }
+        }
+        let bestColScore = -1, bestColX = 0.5;
+        for (let x = Math.floor(w * 0.24); x <= Math.floor(w * 0.76); x++) {
+            let s = 0;
+            for (let y = 2; y < h - 2; y++) s += sal[y * w + x];
+            if (s > bestColScore) { bestColScore = s; bestColX = x / w; }
+        }
+
+        return { p1, p2, bestRowY, bestColX };
     }
 
     getLocalLuminance(ctx, W, H, x, y, w, h) {

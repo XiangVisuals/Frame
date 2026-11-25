@@ -3,7 +3,7 @@
  */
 window.XiangTemplates = {
     async renderScene(app, ctx, imgData, targetWidth, targetHeight) {
-        const { style, wallColor, matMultiplier, shadowMultiplier, invertAmount, grainAmount, bwAmount, vectorCols, asciiColor, asciiInvert } = app.state.settings;
+        const { style, wallColor, matMultiplier, shadowMultiplier, invertAmount, grainAmount, bwAmount, vectorCols, asciiColor, asciiInvert, asciiMaskMode } = app.state.settings;
         const { width: imgW, height: imgH, textLeft, textRight, exifTime, exifCamera, exifLens, exifParams, filmName } = imgData;
 
         const shortEdge = Math.min(imgW, imgH);
@@ -2261,39 +2261,155 @@ window.XiangTemplates = {
                 }
                 ctx.restore();
 
-                // 3. Minimalist 1:1 Spatial Mask Reveal Window (蒙版透视：与底图像素 1:1 严丝合缝对齐)
-                const winScale = Math.min(0.84, Math.max(0.28, 0.28 + matMultiplier * 0.24));
-                const winW = sW * winScale;
-                const winH = sH * winScale;
-                // Asymmetric lower-left golden-ratio placement (clean, borderless mask feel)
-                const winX = sW * 0.10;
-                const winY = Math.max(sH * 0.08, sH - sH * 0.10 - winH);
-
-                // Optional subtle depth shadow under the revealed reality mask
-                if (shadowMultiplier > 0) {
-                    ctx.save();
-                    ctx.shadowColor = effectiveDark
-                        ? `rgba(0, 0, 0, ${0.68 * shadowMultiplier})`
-                        : `rgba(0, 0, 0, ${0.18 * shadowMultiplier})`;
-                    ctx.shadowBlur = Math.min(sW, sH) * 0.028 * shadowMultiplier;
-                    ctx.shadowOffsetY = Math.min(sW, sH) * 0.01 * shadowMultiplier;
-                    ctx.fillStyle = paperBg;
-                    ctx.fillRect(winX, winY, winW, winH);
-                    ctx.restore();
+                // 3. Smart Subject-Aware 1:1 Spatial Mask Reveal (根据画面显著性自动锁定主体 + 5 种极简高定蒙版形态)
+                if (!imgData.saliency && typeof app.computeSaliencyAnchors === 'function') {
+                    try { imgData.saliency = app.computeSaliencyAnchors(imgData.imgObj); } catch (e) {}
                 }
+                const sal = imgData.saliency || {
+                    p1: { x: 0.45, y: 0.55 },
+                    p2: { x: 0.72, y: 0.30 },
+                    bestRowY: 0.52,
+                    bestColX: 0.50
+                };
 
-                // True 1:1 Mask Clip — reveals exact underlying pixels of the original photo!
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(winX, winY, winW, winH);
-                ctx.clip();
-                ctx.drawImage(fImg, 0, 0, sW, sH);
-                ctx.restore();
+                const mode = asciiMaskMode || 'focus';
+                const sizeFactor = Math.min(1.35, Math.max(0.55, 0.52 + matMultiplier * 0.48));
+                const hairlineCol = effectiveDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(10, 10, 10, 0.14)';
+                const hairlineW = Math.max(1, scale * 0.85);
+                const shBlur = Math.min(sW, sH) * 0.026 * shadowMultiplier;
+                const shOffY = Math.min(sW, sH) * 0.009 * shadowMultiplier;
+                const shCol = effectiveDark
+                    ? `rgba(0, 0, 0, ${0.68 * shadowMultiplier})`
+                    : `rgba(0, 0, 0, ${0.18 * shadowMultiplier})`;
 
-                // Ultra-minimal 1px hairline separation (zero parameter frame, zero text clutter)
-                ctx.strokeStyle = effectiveDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(10, 10, 10, 0.14)';
-                ctx.lineWidth = Math.max(1, scale * 0.85);
-                ctx.strokeRect(winX, winY, winW, winH);
+                const clampRect = (cx, cy, w, h, marginPct = 0.06) => {
+                    const mx = sW * marginPct, my = sH * marginPct;
+                    const cw = Math.min(w, sW - mx * 2);
+                    const ch = Math.min(h, sH - my * 2);
+                    const x = Math.max(mx, Math.min(sW - mx - cw, cx - cw / 2));
+                    const y = Math.max(my, Math.min(sH - my - ch, cy - ch / 2));
+                    return { x, y, w: cw, h: ch };
+                };
+
+                const revealRect = (x, y, w, h) => {
+                    if (shadowMultiplier > 0) {
+                        ctx.save();
+                        ctx.shadowColor = shCol;
+                        ctx.shadowBlur = shBlur;
+                        ctx.shadowOffsetY = shOffY;
+                        ctx.fillStyle = paperBg;
+                        ctx.fillRect(x, y, w, h);
+                        ctx.restore();
+                    }
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(x, y, w, h);
+                    ctx.clip();
+                    ctx.drawImage(fImg, 0, 0, sW, sH);
+                    ctx.restore();
+                    ctx.strokeStyle = hairlineCol;
+                    ctx.lineWidth = hairlineW;
+                    ctx.strokeRect(x, y, w, h);
+                };
+
+                const revealCircle = (cx, cy, r) => {
+                    if (shadowMultiplier > 0) {
+                        ctx.save();
+                        ctx.shadowColor = shCol;
+                        ctx.shadowBlur = shBlur;
+                        ctx.shadowOffsetY = shOffY;
+                        ctx.fillStyle = paperBg;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(fImg, 0, 0, sW, sH);
+                    ctx.restore();
+                    ctx.strokeStyle = hairlineCol;
+                    ctx.lineWidth = hairlineW;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                };
+
+                if (mode === 'focus') {
+                    // 1. 智能聚焦：单极简黄金比例蒙版自动锁定画面核心主体
+                    const w = sW * 0.48 * sizeFactor;
+                    const h = sH * 0.48 * sizeFactor;
+                    const r = clampRect(sal.p1.x * sW, sal.p1.y * sH, w, h, 0.075);
+                    revealRect(r.x, r.y, r.w, r.h);
+
+                } else if (mode === 'triptych') {
+                    // 2. 阶梯三联：围绕核心主体的三条交错建筑感切条，留出呼吸感字符缝隙
+                    const isPortrait = sH > sW * 1.1;
+                    if (!isPortrait) {
+                        const totalW = Math.min(sW * 0.78, sW * 0.56 * sizeFactor);
+                        const gap = sW * 0.024;
+                        const stripW = (totalW - gap * 2) / 3;
+                        const baseH = Math.min(sH * 0.72, sH * 0.52 * sizeFactor);
+                        const groupX = Math.max(sW * 0.07, Math.min(sW - sW * 0.07 - totalW, sal.p1.x * sW - totalW / 2));
+                        const centerY = Math.max(sH * 0.28, Math.min(sH * 0.72, sal.p1.y * sH));
+                        const offsets = [-baseH * 0.14, 0, baseH * 0.14];
+                        const heights = [baseH * 0.88, baseH * 1.04, baseH * 0.88];
+                        for (let k = 0; k < 3; k++) {
+                            const sx = groupX + k * (stripW + gap);
+                            const sh = heights[k];
+                            const sy = Math.max(sH * 0.06, Math.min(sH - sH * 0.06 - sh, centerY - sh / 2 + offsets[k]));
+                            revealRect(sx, sy, stripW, sh);
+                        }
+                    } else {
+                        const totalH = Math.min(sH * 0.76, sH * 0.54 * sizeFactor);
+                        const gap = sH * 0.022;
+                        const stripH = (totalH - gap * 2) / 3;
+                        const baseW = Math.min(sW * 0.76, sW * 0.56 * sizeFactor);
+                        const groupY = Math.max(sH * 0.07, Math.min(sH - sH * 0.07 - totalH, sal.p1.y * sH - totalH / 2));
+                        const centerX = Math.max(sW * 0.28, Math.min(sW * 0.72, sal.p1.x * sW));
+                        const offsets = [-baseW * 0.13, 0, baseW * 0.13];
+                        const widths = [baseW * 0.86, baseW * 1.04, baseW * 0.86];
+                        for (let k = 0; k < 3; k++) {
+                            const sy = groupY + k * (stripH + gap);
+                            const sw = widths[k];
+                            const sx = Math.max(sW * 0.06, Math.min(sW - sW * 0.06 - sw, centerX - sw / 2 + offsets[k]));
+                            revealRect(sx, sy, sw, stripH);
+                        }
+                    }
+
+                } else if (mode === 'dual') {
+                    // 3. 双重焦点：主次双视觉显著点自动成对透出，形成画面对话
+                    const r1 = clampRect(sal.p1.x * sW, sal.p1.y * sH, sW * 0.42 * sizeFactor, sH * 0.44 * sizeFactor, 0.065);
+                    const r2 = clampRect(sal.p2.x * sW, sal.p2.y * sH, sW * 0.27 * sizeFactor, sH * 0.28 * sizeFactor, 0.065);
+                    revealRect(r2.x, r2.y, r2.w, r2.h);
+                    revealRect(r1.x, r1.y, r1.w, r1.h);
+
+                } else if (mode === 'circle') {
+                    // 4. 光学圆镜：纯圆形光学透镜蒙版锁定主体焦点
+                    const minDim = Math.min(sW, sH);
+                    const r = Math.min(minDim * 0.42, minDim * 0.27 * sizeFactor);
+                    const margin = r + minDim * 0.07;
+                    const cx = Math.max(margin, Math.min(sW - margin, sal.p1.x * sW));
+                    const cy = Math.max(margin, Math.min(sH - margin, sal.p1.y * sH));
+                    revealCircle(cx, cy, r);
+
+                } else if (mode === 'band') {
+                    // 5. 横贯视带：自动追踪画面信息密度最高的水平/垂直视带贯穿画面
+                    const isPortrait = sH > sW * 1.15;
+                    if (!isPortrait) {
+                        const bandH = Math.min(sH * 0.56, sH * 0.32 * sizeFactor);
+                        const sidePad = sW * 0.055;
+                        const y = Math.max(sH * 0.08, Math.min(sH - sH * 0.08 - bandH, sal.bestRowY * sH - bandH / 2));
+                        revealRect(sidePad, y, sW - sidePad * 2, bandH);
+                    } else {
+                        const bandW = Math.min(sW * 0.58, sW * 0.36 * sizeFactor);
+                        const topPad = sH * 0.055;
+                        const x = Math.max(sW * 0.08, Math.min(sW - sW * 0.08 - bandW, sal.bestColX * sW - bandW / 2));
+                        revealRect(x, topPad, bandW, sH - topPad * 2);
+                    }
+                }
             };
 
         // 28. 无框原图 · 防盗直出 (RAW PROTECT)
